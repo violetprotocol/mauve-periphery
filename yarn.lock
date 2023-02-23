@@ -1055,10 +1055,10 @@
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
 
-"@uniswap/v3-core@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@uniswap/v3-core/-/v3-core-1.0.0.tgz#6c24adacc4c25dceee0ba3ca142b35adbd7e359d"
-  integrity sha512-kSC4djMGKMHj7sLMYVnn61k9nu+lHjMIxgg9CDQT+s2QYLoA56GbSK9Oxr+qJXzzygbkrmuY6cwgP6cW2JXPFA==
+"@violetprotocol/mauve-v3-core@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-v3-core/-/mauve-v3-core-1.1.0.tgz#2f1b2b17ea7e2c7c09796d864780a8f1c370c33a"
+  integrity sha512-JM1+dhGnGzyG+JQ7l/IK+zKouVyIvA2wNTHZhW9hUQEZL4UEul8MnuWUWDIeMVM29JxJ9WXibDNYHml3g42Nvw==
 
 "@yarnpkg/lockfile@^1.1.0":
   version "1.1.0"
