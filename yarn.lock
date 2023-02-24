@@ -1056,20 +1056,20 @@
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
 
-"@uniswap/v3-core@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@uniswap/v3-core/-/v3-core-1.0.0.tgz#6c24adacc4c25dceee0ba3ca142b35adbd7e359d"
-  integrity sha512-kSC4djMGKMHj7sLMYVnn61k9nu+lHjMIxgg9CDQT+s2QYLoA56GbSK9Oxr+qJXzzygbkrmuY6cwgP6cW2JXPFA==
+"@violetprotocol/mauve-v3-core@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-v3-core/-/mauve-v3-core-1.1.1.tgz#d1cf20f1f40a6e92962991999af2e16e89578060"
+  integrity sha512-GsWLg0ZVtaVPwvdyhPf9Xc959r2jsdskgn0fNHan4oE/ZC/ZVu3jXiizVSiG7JYD7ncJLyvHzCibSHdJfdllFg==
 
-"@uniswap/v3-periphery@1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@uniswap/v3-periphery/-/v3-periphery-1.4.1.tgz#b90f08b7386163c0abfd7258831caef6339c7862"
-  integrity sha512-Ab0ZCKOQrQMKIcpBTezTsEhWfQjItd0TtkCG8mPhoQu+wC67nPaf4hYUhM6wGHeFUmDiYY5MpEQuokB0ENvoTg==
+"@violetprotocol/mauve-v3-periphery@1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-v3-periphery/-/mauve-v3-periphery-1.5.0.tgz#a55e039d952203bc46441054f8db95cd55fde90a"
+  integrity sha512-lqJxx540EyF2Rkd3ShTtD51YWZMH89K7C1RmXQvmVM39nKEyJ1LCtdvsU1TKYLYITyajs6gyD2/lUMbm2vS4ew==
   dependencies:
     "@openzeppelin/contracts" "3.4.2-solc-0.7"
     "@uniswap/lib" "^4.0.1-alpha"
     "@uniswap/v2-core" "1.0.1"
-    "@uniswap/v3-core" "1.0.0"
+    "@violetprotocol/mauve-v3-core" "1.1.1"
     base64-sol "1.0.1"
     hardhat-watcher "^2.1.1"
 
