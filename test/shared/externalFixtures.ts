@@ -1,7 +1,7 @@
 import {
   abi as FACTORY_ABI,
   bytecode as FACTORY_BYTECODE,
-} from '@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
+} from '@violetprotocol/mauve-v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
 import { abi as FACTORY_V2_ABI, bytecode as FACTORY_V2_BYTECODE } from '@uniswap/v2-core/build/UniswapV2Factory.json'
 import { Fixture } from 'ethereum-waffle'
 import { ethers, waffle } from 'hardhat'
@@ -14,7 +14,7 @@ import { constants } from 'ethers'
 import {
   abi as NFT_POSITION_MANAGER_ABI,
   bytecode as NFT_POSITION_MANAGER_BYTECODE,
-} from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
+} from '@violetprotocol/mauve-v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
 
 const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
   const weth9 = (await waffle.deployContract(wallet, {
