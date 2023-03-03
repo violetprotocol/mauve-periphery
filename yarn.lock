@@ -1055,6 +1055,11 @@
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
 
+"@violetprotocol/ethereum-access-token@0.2.0-sol07":
+  version "0.2.0-sol07"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token/-/ethereum-access-token-0.2.0-sol07.tgz#3309332b42c13128453361f72810f3ca49851591"
+  integrity sha512-Lq8v7fiSM+hNjewguOSrBvW2ewqkiNdlaX61LsFViP6LD3jfrND8jMeLr3Bau1WEZUooNRaRsKTsRuCIGrrCkg==
+
 "@violetprotocol/mauve-v3-core@1.1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-v3-core/-/mauve-v3-core-1.1.1.tgz#d1cf20f1f40a6e92962991999af2e16e89578060"
