@@ -1,20 +1,20 @@
 {
-  "name": "@uniswap/v3-periphery",
-  "description": "🎚 Peripheral smart contracts for interacting with Uniswap V3",
+  "name": "@violetprotocol/mauve-v3-periphery",
+  "description": "Peripheral smart contracts for interacting with Mauve",
   "license": "GPL-2.0-or-later",
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.4.1",
-  "homepage": "https://uniswap.org",
+  "version": "1.5.0",
+  "homepage": "https://mauve.org",
   "keywords": [
-    "uniswap",
+    "mauve",
     "periphery",
     "v3"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Uniswap/uniswap-v3-periphery"
+    "url": "https://github.com/violetprotocol/mauve-v3-periphery"
   },
   "files": [
     "contracts/base",
@@ -32,7 +32,7 @@
     "@openzeppelin/contracts": "3.4.2-solc-0.7",
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "1.0.1",
-    "@uniswap/v3-core": "1.0.0",
+    "@violetprotocol/mauve-v3-core": "1.1.1",
     "base64-sol": "1.0.1",
     "hardhat-watcher": "^2.1.1"
   },
