@@ -98,7 +98,13 @@ interface INonfungiblePositionManager is
     /// @return liquidity The amount of liquidity for this position
     /// @return amount0 The amount of token0
     /// @return amount1 The amount of token1
-    function mint(MintParams calldata params)
+    function mint(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        MintParams calldata params
+    )
         external
         payable
         returns (

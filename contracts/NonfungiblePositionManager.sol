@@ -12,7 +12,7 @@ import './libraries/PositionKey.sol';
 import './libraries/PoolAddress.sol';
 import './base/LiquidityManagement.sol';
 import './base/PeripheryImmutableState.sol';
-import './base/Multicall.sol';
+import './base/EATMulticall.sol';
 import './base/ERC721Permit.sol';
 import './base/PeripheryValidation.sol';
 import './base/SelfPermit.sol';
@@ -22,7 +22,7 @@ import './base/PoolInitializer.sol';
 /// @notice Wraps Uniswap V3 positions in the ERC721 non-fungible token interface
 contract NonfungiblePositionManager is
     INonfungiblePositionManager,
-    Multicall,
+    EATMulticall,
     ERC721Permit,
     PeripheryImmutableState,
     PoolInitializer,
@@ -71,8 +71,13 @@ contract NonfungiblePositionManager is
     constructor(
         address _factory,
         address _WETH9,
-        address _tokenDescriptor_
-    ) ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1') PeripheryImmutableState(_factory, _WETH9) {
+        address _tokenDescriptor_,
+        address _eatVerifier
+    )
+        ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1')
+        PeripheryImmutableState(_factory, _WETH9)
+        EATMulticall(_eatVerifier)
+    {
         _tokenDescriptor = _tokenDescriptor_;
     }
 
@@ -125,10 +130,17 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function mint(MintParams calldata params)
+    function mint(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        MintParams calldata params
+    )
         external
         payable
         override
+        onlySelfMulticall
         checkDeadline(params.deadline)
         returns (
             uint256 tokenId,
