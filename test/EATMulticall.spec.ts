@@ -16,7 +16,7 @@ describe('EATMulticall', async () => {
   let signer: Wallet
   let wallets: Wallet[]
 
-  let multicall: TestEATMulticall
+  let testMulticall: TestEATMulticall
   let verifier: AccessTokenVerifier
 
   let domain: messages.Domain
