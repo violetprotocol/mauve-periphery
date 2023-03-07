@@ -19,12 +19,11 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
         bytes[] calldata data
     ) public payable override requiresAuth(v, r, s, expiry) returns (bytes[] memory results) {
         // performs an external call to self for core multicall logic
-        return this.multicall{value: msg.value}(data);
+        return super.multicall(data);
     }
 
     /// @inheritdoc IMulticall
     function multicall(bytes[] calldata data) public payable override returns (bytes[] memory results) {
-        require(msg.sender == address(this), 'non-EAT multicall disallowed');
-        return super.multicall(data);
+        revert('non-EAT multicall disallowed');
     }
 }
