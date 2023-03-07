@@ -20,9 +20,12 @@ jobs:
         with:
           node-version: 12.x
           registry-url: https://registry.npmjs.org
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Run linters
         uses: wearerequired/lint-action@a8497ddb33fb1205941fd40452ca9fff07e0770d
