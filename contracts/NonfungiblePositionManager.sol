@@ -15,6 +15,7 @@ import './base/PeripheryImmutableState.sol';
 import './base/EATMulticall.sol';
 import './base/ERC721Permit.sol';
 import './base/PeripheryValidation.sol';
+
 // import './base/SelfPermit.sol';
 // import './base/PoolInitializer.sol';
 
@@ -73,10 +74,10 @@ contract NonfungiblePositionManager is
         address _WETH9,
         address _tokenDescriptor_,
         address _eatVerifier
-    ) 
-    ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1')
-    PeripheryImmutableState(_factory, _WETH9)
-    EATMulticall(_eatVerifier)
+    )
+        ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1')
+        PeripheryImmutableState(_factory, _WETH9)
+        EATMulticall(_eatVerifier)
     {
         _tokenDescriptor = _tokenDescriptor_;
     }
