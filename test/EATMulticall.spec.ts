@@ -145,7 +145,9 @@ describe('EATMulticall', async () => {
     })
 
     it('should fail without multicall', async () => {
-      await expect(testMulticall.functionThatCanOnlyBeMulticalled()).to.be.revertedWith('only callable by self multicall')
+      await expect(testMulticall.functionThatCanOnlyBeMulticalled()).to.be.revertedWith(
+        'only callable by self multicall'
+      )
     })
   })
 })
