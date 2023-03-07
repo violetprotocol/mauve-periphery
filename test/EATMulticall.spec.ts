@@ -43,23 +43,23 @@ describe('EATMulticall', async () => {
 
   beforeEach('create multicall', async () => {
     const multicallTestFactory = await ethers.getContractFactory('TestEATMulticall')
-    multicall = (await multicallTestFactory.deploy(verifier.address)) as TestEATMulticall
+    testMulticall = (await multicallTestFactory.deploy(verifier.address)) as TestEATMulticall
   })
 
   it('revert messages are returned', async () => {
-    const parameters = [multicall.interface.encodeFunctionData('functionThatRevertsWithError', ['abcdef'])]
+    const parameters = [testMulticall.interface.encodeFunctionData('functionThatRevertsWithError', ['abcdef'])]
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], multicall, parameters)
+    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
     await expect(
-      multicall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
+      testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
     ).to.be.revertedWith('abcdef')
   })
 
   it('return data is properly encoded', async () => {
-    const parameters = [multicall.interface.encodeFunctionData('functionThatReturnsTuple', [1, 2])]
+    const parameters = [testMulticall.interface.encodeFunctionData('functionThatReturnsTuple', [1, 2])]
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], multicall, parameters)
-    const [data] = await multicall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+    const [data] = await testMulticall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
       eat.v,
       eat.r,
       eat.s,
@@ -69,59 +69,59 @@ describe('EATMulticall', async () => {
 
     const {
       tuple: { a, b },
-    } = multicall.interface.decodeFunctionResult('functionThatReturnsTuple', data)
+    } = testMulticall.interface.decodeFunctionResult('functionThatReturnsTuple', data)
     expect(b).to.eq(1)
     expect(a).to.eq(2)
   })
 
   it('direct vanilla multicall without EAT is blocked', async () => {
     await expect(
-      multicall.callStatic['multicall(bytes[])']([
-        multicall.interface.encodeFunctionData('functionThatReturnsTuple', ['1', '2']),
+      testMulticall.callStatic['multicall(bytes[])']([
+        testMulticall.interface.encodeFunctionData('functionThatReturnsTuple', ['1', '2']),
       ])
     ).to.be.revertedWith('non-EAT multicall disallowed')
   })
 
   describe('context is preserved', () => {
     it('msg.value', async () => {
-      const parameters = [multicall.interface.encodeFunctionData('pays')]
+      const parameters = [testMulticall.interface.encodeFunctionData('pays')]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], multicall, parameters)
-      await multicall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+      await testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
         value: 3,
       })
-      expect(await multicall.paid()).to.eq(3)
+      expect(await testMulticall.paid()).to.eq(3)
     })
 
     it('msg.value used twice', async () => {
       const parameters = [
-        multicall.interface.encodeFunctionData('pays'),
-        multicall.interface.encodeFunctionData('pays'),
+        testMulticall.interface.encodeFunctionData('pays'),
+        testMulticall.interface.encodeFunctionData('pays'),
       ]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], multicall, parameters)
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
 
-      await multicall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
+      await testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
         value: 3,
       })
-      expect(await multicall.paid()).to.eq(6)
+      expect(await testMulticall.paid()).to.eq(6)
     })
 
     it('msg.sender', async () => {
-      expect(await multicall.returnSender()).to.eq(wallets[0].address)
+      expect(await testMulticall.returnSender()).to.eq(wallets[0].address)
     })
   })
 
   it('gas cost of pay w/o multicall', async () => {
-    await snapshotGasCost(multicall.pays({ value: 3 }))
+    await snapshotGasCost(testMulticall.pays({ value: 3 }))
   })
 
   it('gas cost of pay w/ multicall', async () => {
-    const parameters = [multicall.interface.encodeFunctionData('pays')]
+    const parameters = [testMulticall.interface.encodeFunctionData('pays')]
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], multicall, parameters)
+    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
     await snapshotGasCost(
-      multicall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
+      testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
         value: 3,
       })
     )
@@ -129,10 +129,10 @@ describe('EATMulticall', async () => {
 
   describe('function only callable from self multicall', async () => {
     it('should succeed with multicall', async () => {
-      const parameters = [multicall.interface.encodeFunctionData('functionThatCanOnlyBeMulticalled')]
+      const parameters = [testMulticall.interface.encodeFunctionData('functionThatCanOnlyBeMulticalled')]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], multicall, parameters)
-      const [data] = await multicall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+      const [data] = await testMulticall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
         eat.s,
@@ -140,12 +140,12 @@ describe('EATMulticall', async () => {
         parameters
       )
 
-      const str = multicall.interface.decodeFunctionResult('functionThatCanOnlyBeMulticalled', data).str
+      const str = testMulticall.interface.decodeFunctionResult('functionThatCanOnlyBeMulticalled', data).str
       expect(str).to.equal('did it workz?')
     })
 
     it('should fail without multicall', async () => {
-      await expect(multicall.functionThatCanOnlyBeMulticalled()).to.be.revertedWith('only callable by self multicall')
+      await expect(testMulticall.functionThatCanOnlyBeMulticalled()).to.be.revertedWith('only callable by self multicall')
     })
   })
 })
