@@ -10,6 +10,7 @@ import {
   TestERC20,
   IUniswapV3Factory,
 } from '../../typechain'
+import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
 
 const completeFixture: Fixture<{
   weth9: IWETH9
@@ -18,6 +19,7 @@ const completeFixture: Fixture<{
   nft: MockTimeNonfungiblePositionManager
   nftDescriptor: NonfungibleTokenPositionDescriptor
   tokens: [TestERC20, TestERC20, TestERC20]
+  createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 }> = async ([wallet], provider) => {
   const { weth9, factory, router } = await v3RouterFixture([wallet], provider)
 
@@ -48,6 +50,8 @@ const completeFixture: Fixture<{
     nftDescriptor.address
   )) as MockTimeNonfungiblePositionManager
 
+  const createAndInitializePoolIfNecessary: CreatePoolIfNecessary = createPoolIfNecessary(factory, wallet)
+
   tokens.sort((a, b) => (a.address.toLowerCase() < b.address.toLowerCase() ? -1 : 1))
 
   return {
@@ -57,6 +61,7 @@ const completeFixture: Fixture<{
     tokens,
     nft,
     nftDescriptor,
+    createAndInitializePoolIfNecessary,
   }
 }
 

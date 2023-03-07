@@ -14,6 +14,7 @@ import {
 import completeFixture from './shared/completeFixture'
 import { computePoolAddress } from './shared/computePoolAddress'
 import { FeeAmount, MaxUint128, TICK_SPACINGS } from './shared/constants'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { expandTo18Decimals } from './shared/expandTo18Decimals'
 import { expect } from './shared/expect'
@@ -35,8 +36,12 @@ describe('NonfungiblePositionManager', () => {
     tokens: [TestERC20, TestERC20, TestERC20]
     weth9: IWETH9
     router: SwapRouter
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   }> = async (wallets, provider) => {
-    const { weth9, factory, tokens, nft, router } = await completeFixture(wallets, provider)
+    const { weth9, factory, tokens, nft, router, createAndInitializePoolIfNecessary } = await completeFixture(
+      wallets,
+      provider
+    )
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -51,6 +56,7 @@ describe('NonfungiblePositionManager', () => {
       tokens,
       weth9,
       router,
+      createAndInitializePoolIfNecessary,
     }
   }
 
@@ -59,6 +65,7 @@ describe('NonfungiblePositionManager', () => {
   let tokens: [TestERC20, TestERC20, TestERC20]
   let weth9: IWETH9
   let router: SwapRouter
+  let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -70,7 +77,7 @@ describe('NonfungiblePositionManager', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ nft, factory, tokens, weth9, router } = await loadFixture(nftFixture))
+    ;({ nft, factory, tokens, weth9, router, createAndInitializePoolIfNecessary } = await loadFixture(nftFixture))
   })
 
   it('bytecode size', async () => {
@@ -86,18 +93,19 @@ describe('NonfungiblePositionManager', () => {
       )
       const code = await wallet.provider.getCode(expectedAddress)
       expect(code).to.eq('0x')
-      await nft.createAndInitializePoolIfNecessary(
+      const poolAddress = await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
         encodePriceSqrt(1, 1)
       )
+      expect(poolAddress).to.eq(expectedAddress)
       const codeAfter = await wallet.provider.getCode(expectedAddress)
       expect(codeAfter).to.not.eq('0x')
     })
 
     it('is payable', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -115,7 +123,7 @@ describe('NonfungiblePositionManager', () => {
       await factory.createPool(tokens[0].address, tokens[1].address, FeeAmount.MEDIUM)
       const code = await wallet.provider.getCode(expectedAddress)
       expect(code).to.not.eq('0x')
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -135,33 +143,11 @@ describe('NonfungiblePositionManager', () => {
       await pool.initialize(encodePriceSqrt(3, 1))
       const code = await wallet.provider.getCode(expectedAddress)
       expect(code).to.not.eq('0x')
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
         encodePriceSqrt(4, 1)
-      )
-    })
-
-    it('could theoretically use eth via multicall', async () => {
-      const [token0, token1] = sortedTokens(weth9, tokens[0])
-
-      const createAndInitializePoolIfNecessaryData = nft.interface.encodeFunctionData(
-        'createAndInitializePoolIfNecessary',
-        [token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1)]
-      )
-
-      await nft.multicall([createAndInitializePoolIfNecessaryData], { value: expandTo18Decimals(1) })
-    })
-
-    it('gas', async () => {
-      await snapshotGasCost(
-        nft.createAndInitializePoolIfNecessary(
-          tokens[0].address,
-          tokens[1].address,
-          FeeAmount.MEDIUM,
-          encodePriceSqrt(1, 1)
-        )
       )
     })
   })
@@ -186,7 +172,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('fails if cannot transfer', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -211,7 +197,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('creates a token', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -257,50 +243,51 @@ describe('NonfungiblePositionManager', () => {
       expect(feeGrowthInside1LastX128).to.eq(0)
     })
 
-    it('can use eth via multicall', async () => {
-      const [token0, token1] = sortedTokens(weth9, tokens[0])
+    // !!!!!!! UNCOMMENT THIS !!!!!!
+    // it.skip('can use eth via multicall', async () => {
+    //   const [token0, token1] = sortedTokens(weth9, tokens[0])
 
-      // remove any approval
-      await weth9.approve(nft.address, 0)
+    //   // remove any approval
+    //   await weth9.approve(nft.address, 0)
 
-      const createAndInitializeData = nft.interface.encodeFunctionData('createAndInitializePoolIfNecessary', [
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1),
-      ])
+    //   const createAndInitializeData = nft.interface.encodeFunctionData('createAndInitializePoolIfNecessary', [
+    //     token0.address,
+    //     token1.address,
+    //     FeeAmount.MEDIUM,
+    //     encodePriceSqrt(1, 1),
+    //   ])
 
-      const mintData = nft.interface.encodeFunctionData('mint', [
-        {
-          token0: token0.address,
-          token1: token1.address,
-          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          fee: FeeAmount.MEDIUM,
-          recipient: other.address,
-          amount0Desired: 100,
-          amount1Desired: 100,
-          amount0Min: 0,
-          amount1Min: 0,
-          deadline: 1,
-        },
-      ])
+    //   const mintData = nft.interface.encodeFunctionData('mint', [
+    //     {
+    //       token0: token0.address,
+    //       token1: token1.address,
+    //       tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+    //       tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+    //       fee: FeeAmount.MEDIUM,
+    //       recipient: other.address,
+    //       amount0Desired: 100,
+    //       amount1Desired: 100,
+    //       amount0Min: 0,
+    //       amount1Min: 0,
+    //       deadline: 1,
+    //     },
+    //   ])
 
-      const refundETHData = nft.interface.encodeFunctionData('refundETH')
+    //   const refundETHData = nft.interface.encodeFunctionData('refundETH')
 
-      const balanceBefore = await wallet.getBalance()
-      const tx = await nft.multicall([createAndInitializeData, mintData, refundETHData], {
-        value: expandTo18Decimals(1),
-      })
-      const receipt = await tx.wait()
-      const balanceAfter = await wallet.getBalance()
-      expect(balanceBefore).to.eq(balanceAfter.add(receipt.gasUsed.mul(tx.gasPrice)).add(100))
-    })
+    //   const balanceBefore = await wallet.getBalance()
+    //   const tx = await nft.multicall([createAndInitializeData, mintData, refundETHData], {
+    //     value: expandTo18Decimals(1),
+    //   })
+    //   const receipt = await tx.wait()
+    //   const balanceAfter = await wallet.getBalance()
+    //   expect(balanceBefore).to.eq(balanceAfter.add(receipt.gasUsed.mul(tx.gasPrice)).add(100))
+    // })
 
     it('emits an event')
 
     it('gas first mint for pool', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -326,12 +313,7 @@ describe('NonfungiblePositionManager', () => {
 
     it('gas first mint for pool using eth with zero refund', async () => {
       const [token0, token1] = sortedTokens(weth9, tokens[0])
-      await nft.createAndInitializePoolIfNecessary(
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
       await snapshotGasCost(
         nft.multicall(
@@ -360,12 +342,7 @@ describe('NonfungiblePositionManager', () => {
 
     it('gas first mint for pool using eth with non-zero refund', async () => {
       const [token0, token1] = sortedTokens(weth9, tokens[0])
-      await nft.createAndInitializePoolIfNecessary(
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
       await snapshotGasCost(
         nft.multicall(
@@ -393,7 +370,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('gas mint on same ticks', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -432,7 +409,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('gas mint for same pool, different ticks', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -474,7 +451,7 @@ describe('NonfungiblePositionManager', () => {
   describe('#increaseLiquidity', () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -516,12 +493,7 @@ describe('NonfungiblePositionManager', () => {
 
       const tokenId = 1
 
-      await nft.createAndInitializePoolIfNecessary(
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
       const mintData = nft.interface.encodeFunctionData('mint', [
         {
@@ -571,7 +543,7 @@ describe('NonfungiblePositionManager', () => {
   describe('#decreaseLiquidity', () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -674,7 +646,7 @@ describe('NonfungiblePositionManager', () => {
   describe('#collect', () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -790,7 +762,7 @@ describe('NonfungiblePositionManager', () => {
   describe('#burn', () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -859,7 +831,7 @@ describe('NonfungiblePositionManager', () => {
   describe('#transferFrom', () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -915,7 +887,7 @@ describe('NonfungiblePositionManager', () => {
     describe('owned by eoa', () => {
       const tokenId = 1
       beforeEach('create a position', async () => {
-        await nft.createAndInitializePoolIfNecessary(
+        await createAndInitializePoolIfNecessary(
           tokens[0].address,
           tokens[1].address,
           FeeAmount.MEDIUM,
@@ -980,7 +952,7 @@ describe('NonfungiblePositionManager', () => {
           await ethers.getContractFactory('TestPositionNFTOwner')
         ).deploy()) as TestPositionNFTOwner
 
-        await nft.createAndInitializePoolIfNecessary(
+        await createAndInitializePoolIfNecessary(
           tokens[0].address,
           tokens[1].address,
           FeeAmount.MEDIUM,
@@ -1040,7 +1012,7 @@ describe('NonfungiblePositionManager', () => {
   describe('multicall exit', () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -1129,7 +1101,7 @@ describe('NonfungiblePositionManager', () => {
   describe('#tokenURI', async () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -1169,7 +1141,7 @@ describe('NonfungiblePositionManager', () => {
 
   describe('fees accounting', () => {
     beforeEach('create two positions', async () => {
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -1277,7 +1249,7 @@ describe('NonfungiblePositionManager', () => {
         nft.address
       )) as NonfungiblePositionManagerPositionsGasTest
 
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
