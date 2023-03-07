@@ -9,6 +9,8 @@ import './Multicall.sol';
 /// @title Ethereum Access Token Multicall
 /// @notice Enables calling multiple methods in a single call to the contract
 abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer {
+    constructor(address _EATVerifier) AccessTokenConsumer(_EATVerifier) {}
+
     function multicall(
         uint8 v,
         bytes32 r,
@@ -17,12 +19,12 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
         bytes[] calldata data
     ) public payable override requiresAuth(v, r, s, expiry) returns (bytes[] memory results) {
         // performs an external call to self for core multicall logic
-        this.multicall(data);
+        return this.multicall{value: msg.value}(data);
     }
 
     /// @inheritdoc IMulticall
     function multicall(bytes[] calldata data) public payable override returns (bytes[] memory results) {
-        require(msg.sender == address(this));
-        super.multicall(data);
+        require(msg.sender == address(this), 'non-EAT multicall disallowed');
+        return super.multicall(data);
     }
 }
