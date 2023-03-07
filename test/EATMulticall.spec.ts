@@ -126,6 +126,28 @@ describe('Multicall', async () => {
       })
     )
   })
+
+  describe('function only callable from self multicall', async () => {
+    it('should succeed with multicall', async () => {
+      const parameters = [multicall.interface.encodeFunctionData('functionThatCanOnlyBeMulticalled')]
+
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], multicall, parameters)
+      const [data] = await multicall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        parameters
+      )
+
+      const str = multicall.interface.decodeFunctionResult('functionThatCanOnlyBeMulticalled', data).str
+      expect(str).to.equal('did it workz?')
+    })
+
+    it('should fail without multicall', async () => {
+      await expect(multicall.functionThatCanOnlyBeMulticalled()).to.be.revertedWith('only callable by self multicall')
+    })
+  })
 })
 
 const generateAccessToken = async (

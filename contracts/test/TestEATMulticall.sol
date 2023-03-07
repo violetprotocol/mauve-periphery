@@ -21,6 +21,10 @@ contract TestEATMulticall is EATMulticall {
         tuple = Tuple({b: a, a: b});
     }
 
+    function functionThatCanOnlyBeMulticalled() external view onlySelfMulticall returns (string memory str) {
+        str = 'did it workz?';
+    }
+
     uint256 public paid;
 
     function pays() external payable {
