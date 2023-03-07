@@ -32,6 +32,7 @@
     "@openzeppelin/contracts": "3.4.2-solc-0.7",
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "1.0.1",
+    "@violetprotocol/ethereum-access-token": "0.2.0-sol07",
     "@violetprotocol/mauve-v3-core": "1.1.1",
     "base64-sol": "1.0.1",
     "hardhat-watcher": "^2.1.1"
@@ -43,8 +44,10 @@
     "@typechain/ethers-v5": "^4.0.0",
     "@types/chai": "^4.2.6",
     "@types/mocha": "^5.2.7",
+    "@violetprotocol/ethereum-access-token-helpers": "^0.2.0",
     "chai": "^4.2.0",
     "decimal.js": "^10.2.1",
+    "dotenv": "^16.0.3",
     "ethereum-waffle": "^3.0.2",
     "ethers": "^5.0.8",
     "hardhat": "^2.6.8",
