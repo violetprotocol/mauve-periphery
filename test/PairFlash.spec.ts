@@ -21,6 +21,7 @@ import snapshotGasCost from './shared/snapshotGasCost'
 import { expect } from './shared/expect'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 
 describe('PairFlash test', () => {
   const provider = waffle.provider
@@ -33,12 +34,13 @@ describe('PairFlash test', () => {
   let token1: TestERC20
   let factory: IUniswapV3Factory
   let quoter: Quoter
+  let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 
   async function createPool(tokenAddressA: string, tokenAddressB: string, fee: FeeAmount, price: BigNumber) {
     if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
       [tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA]
 
-    await nft.createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, fee, price)
+    await createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, fee, price)
 
     const liquidityParams = {
       token0: tokenAddressA,
@@ -58,7 +60,10 @@ describe('PairFlash test', () => {
   }
 
   const flashFixture = async () => {
-    const { router, tokens, factory, weth9, nft } = await completeFixture(wallets, provider)
+    const { router, tokens, factory, weth9, nft, createAndInitializePoolIfNecessary } = await completeFixture(
+      wallets,
+      provider
+    )
     const token0 = tokens[0]
     const token1 = tokens[1]
 
@@ -77,6 +82,7 @@ describe('PairFlash test', () => {
       nft,
       quoter,
       router,
+      createAndInitializePoolIfNecessary,
     }
   }
 
@@ -87,7 +93,9 @@ describe('PairFlash test', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ factory, token0, token1, flash, nft, quoter } = await loadFixture(flashFixture))
+    ;({ factory, token0, token1, flash, nft, quoter, createAndInitializePoolIfNecessary } = await loadFixture(
+      flashFixture
+    ))
 
     await token0.approve(nft.address, MaxUint128)
     await token1.approve(nft.address, MaxUint128)

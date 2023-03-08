@@ -9,6 +9,7 @@ import { expect } from './shared/expect'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 import snapshotGasCost from './shared/snapshotGasCost'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 
 describe('TickLens', () => {
   let wallets: Wallet[]
@@ -17,8 +18,9 @@ describe('TickLens', () => {
     factory: Contract
     nft: MockTimeNonfungiblePositionManager
     tokens: [TestERC20, TestERC20, TestERC20]
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   }> = async (wallets, provider) => {
-    const { factory, tokens, nft } = await completeFixture(wallets, provider)
+    const { factory, tokens, nft, createAndInitializePoolIfNecessary } = await completeFixture(wallets, provider)
 
     for (const token of tokens) {
       await token.approve(nft.address, constants.MaxUint256)
@@ -28,6 +30,7 @@ describe('TickLens', () => {
       factory,
       nft,
       tokens,
+      createAndInitializePoolIfNecessary,
     }
   }
 
@@ -36,6 +39,7 @@ describe('TickLens', () => {
   let tokens: [TestERC20, TestERC20, TestERC20]
   let poolAddress: string
   let tickLens: TickLensTest
+  let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -45,7 +49,7 @@ describe('TickLens', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ factory, tokens, nft } = await loadFixture(nftFixture))
+    ;({ factory, tokens, nft, createAndInitializePoolIfNecessary } = await loadFixture(nftFixture))
   })
 
   describe('#getPopulatedTicksInWord', () => {
@@ -54,12 +58,7 @@ describe('TickLens', () => {
       if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
         [tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA]
 
-      await nft.createAndInitializePoolIfNecessary(
-        tokenAddressA,
-        tokenAddressB,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
       const liquidityParams = {
         token0: tokenAddressA,

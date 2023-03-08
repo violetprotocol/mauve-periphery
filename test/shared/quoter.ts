@@ -1,6 +1,7 @@
 import { Wallet } from 'ethers'
 import { MockTimeNonfungiblePositionManager } from '../../typechain'
 import { FeeAmount, TICK_SPACINGS } from './constants'
+import { CreatePoolIfNecessary } from './createPoolIfNecessary'
 import { encodePriceSqrt } from './encodePriceSqrt'
 import { getMaxTick, getMinTick } from './ticks'
 
@@ -8,12 +9,13 @@ export async function createPool(
   nft: MockTimeNonfungiblePositionManager,
   wallet: Wallet,
   tokenAddressA: string,
-  tokenAddressB: string
+  tokenAddressB: string,
+  createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 ) {
   if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
     [tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA]
 
-  await nft.createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
+  await createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
   const liquidityParams = {
     token0: tokenAddressA,
@@ -36,12 +38,13 @@ export async function createPoolWithMultiplePositions(
   nft: MockTimeNonfungiblePositionManager,
   wallet: Wallet,
   tokenAddressA: string,
-  tokenAddressB: string
+  tokenAddressB: string,
+  createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 ) {
   if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
     [tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA]
 
-  await nft.createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
+  await createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
   const liquidityParams = {
     token0: tokenAddressA,
@@ -96,12 +99,13 @@ export async function createPoolWithZeroTickInitialized(
   nft: MockTimeNonfungiblePositionManager,
   wallet: Wallet,
   tokenAddressA: string,
-  tokenAddressB: string
+  tokenAddressB: string,
+  createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 ) {
   if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
     [tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA]
 
-  await nft.createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
+  await createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
   const liquidityParams = {
     token0: tokenAddressA,

@@ -21,6 +21,7 @@ import snapshotGasCost from './shared/snapshotGasCost'
 import { expect } from './shared/expect'
 
 import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 
 describe('PositionValue', async () => {
   const [...wallets] = waffle.provider.getWallets()
@@ -30,8 +31,12 @@ describe('PositionValue', async () => {
     nft: MockTimeNonfungiblePositionManager
     router: SwapRouter
     factory: IUniswapV3Factory
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   }> = async (wallets, provider) => {
-    const { nft, router, tokens, factory } = await completeFixture(wallets, provider)
+    const { nft, router, tokens, factory, createAndInitializePoolIfNecessary } = await completeFixture(
+      wallets,
+      provider
+    )
     const positionValueFactory = await ethers.getContractFactory('PositionValueTest')
     const positionValue = (await positionValueFactory.deploy()) as PositionValueTest
 
@@ -47,6 +52,7 @@ describe('PositionValue', async () => {
       nft,
       router,
       factory,
+      createAndInitializePoolIfNecessary,
     }
   }
 
@@ -56,7 +62,7 @@ describe('PositionValue', async () => {
   let nft: MockTimeNonfungiblePositionManager
   let router: SwapRouter
   let factory: IUniswapV3Factory
-
+  let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   let amountDesired: BigNumberish
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
@@ -65,8 +71,10 @@ describe('PositionValue', async () => {
   })
 
   beforeEach(async () => {
-    ;({ positionValue, tokens, nft, router, factory } = await loadFixture(positionValueCompleteFixture))
-    await nft.createAndInitializePoolIfNecessary(
+    ;({ positionValue, tokens, nft, router, factory, createAndInitializePoolIfNecessary } = await loadFixture(
+      positionValueCompleteFixture
+    ))
+    await createAndInitializePoolIfNecessary(
       tokens[0].address,
       tokens[1].address,
       FeeAmount.MEDIUM,
