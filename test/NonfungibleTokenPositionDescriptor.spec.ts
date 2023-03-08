@@ -9,6 +9,7 @@ import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
 import { extractJSONFromURI } from './shared/extractJSONFromURI'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 
 const DAI = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
@@ -23,8 +24,12 @@ describe('NonfungibleTokenPositionDescriptor', () => {
     nftPositionDescriptor: NonfungibleTokenPositionDescriptor
     tokens: [TestERC20, TestERC20, TestERC20]
     nft: MockTimeNonfungiblePositionManager
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   }> = async (wallets, provider) => {
-    const { factory, nft, router, nftDescriptor } = await completeFixture(wallets, provider)
+    const { factory, nft, router, nftDescriptor, createAndInitializePoolIfNecessary } = await completeFixture(
+      wallets,
+      provider
+    )
     const tokenFactory = await ethers.getContractFactory('TestERC20')
     const tokens: [TestERC20, TestERC20, TestERC20] = [
       (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20, // do not use maxu256 to avoid overflowing
@@ -37,6 +42,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
       nftPositionDescriptor: nftDescriptor,
       tokens,
       nft,
+      createAndInitializePoolIfNecessary,
     }
   }
 
@@ -44,6 +50,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
   let tokens: [TestERC20, TestERC20, TestERC20]
   let nft: MockTimeNonfungiblePositionManager
   let weth9: TestERC20
+  let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -54,7 +61,9 @@ describe('NonfungibleTokenPositionDescriptor', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ tokens, nft, nftPositionDescriptor } = await loadFixture(nftPositionDescriptorCompleteFixture))
+    ;({ tokens, nft, nftPositionDescriptor, createAndInitializePoolIfNecessary } = await loadFixture(
+      nftPositionDescriptorCompleteFixture
+    ))
     const tokenFactory = await ethers.getContractFactory('TestERC20')
     weth9 = tokenFactory.attach(await nftPositionDescriptor.WETH9()) as TestERC20
   })
@@ -114,12 +123,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
   describe('#tokenURI', () => {
     it('displays ETH as token symbol for WETH token', async () => {
       const [token0, token1] = sortedTokens(weth9, tokens[1])
-      await nft.createAndInitializePoolIfNecessary(
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
       await weth9.approve(nft.address, 100)
       await tokens[1].approve(nft.address, 100)
       await nft.mint({
@@ -144,12 +148,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
 
     it('displays returned token symbols when neither token is WETH ', async () => {
       const [token0, token1] = sortedTokens(tokens[2], tokens[1])
-      await nft.createAndInitializePoolIfNecessary(
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
       await tokens[1].approve(nft.address, 100)
       await tokens[2].approve(nft.address, 100)
       await nft.mint({
@@ -173,12 +172,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
 
     it('can render a different label for native currencies', async () => {
       const [token0, token1] = sortedTokens(weth9, tokens[1])
-      await nft.createAndInitializePoolIfNecessary(
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
       await weth9.approve(nft.address, 100)
       await tokens[1].approve(nft.address, 100)
       await nft.mint({
