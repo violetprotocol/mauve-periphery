@@ -1,5 +1,5 @@
 import { waffle, ethers } from 'hardhat'
-import { constants, BigNumberish, Contract } from 'ethers'
+import { constants, BigNumberish, Contract, Wallet } from 'ethers'
 import { Fixture } from 'ethereum-waffle'
 import {
   PositionValueTest,
@@ -8,6 +8,7 @@ import {
   IUniswapV3Pool,
   TestERC20,
   IUniswapV3Factory,
+  AccessTokenVerifier,
 } from '../typechain'
 import { FeeAmount, MaxUint128, TICK_SPACINGS } from './shared/constants'
 import { getMaxTick, getMinTick } from './shared/ticks'
@@ -15,13 +16,14 @@ import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { expandTo18Decimals } from './shared/expandTo18Decimals'
 import { encodePath } from './shared/path'
 import { computePoolAddress } from './shared/computePoolAddress'
-import completeFixture from './shared/completeFixture'
+import completeFixture, { Domain } from './shared/completeFixture'
 import snapshotGasCost from './shared/snapshotGasCost'
 
 import { expect } from './shared/expect'
 
 import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
+import { generateAccessToken } from './shared/generateAccessToken'
 
 describe('PositionValue', async () => {
   const [...wallets] = waffle.provider.getWallets()
@@ -31,9 +33,12 @@ describe('PositionValue', async () => {
     nft: MockTimeNonfungiblePositionManager
     router: SwapRouter
     factory: IUniswapV3Factory
-    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary,
+    signer: Wallet,
+    domain: Domain,
+    verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { nft, router, tokens, factory, createAndInitializePoolIfNecessary } = await completeFixture(
+    const { nft, router, tokens, factory, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(
       wallets,
       provider
     )
@@ -53,6 +58,9 @@ describe('PositionValue', async () => {
       router,
       factory,
       createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier
     }
   }
 
@@ -63,6 +71,9 @@ describe('PositionValue', async () => {
   let router: SwapRouter
   let factory: IUniswapV3Factory
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+  let signer: Wallet
+  let domain: Domain
+  let verifier: AccessTokenVerifier
   let amountDesired: BigNumberish
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
@@ -71,7 +82,7 @@ describe('PositionValue', async () => {
   })
 
   beforeEach(async () => {
-    ;({ positionValue, tokens, nft, router, factory, createAndInitializePoolIfNecessary } = await loadFixture(
+    ;({ positionValue, tokens, nft, router, factory, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
       positionValueCompleteFixture
     ))
     await createAndInitializePoolIfNecessary(
@@ -334,16 +345,27 @@ describe('PositionValue', async () => {
       })
 
       it('return the correct amount of fees', async () => {
-        const feesFromCollect = await nft.callStatic.collect({
-          tokenId,
+        const collectParameters = {
+          tokenId: tokenId,
           recipient: wallets[0].address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128,
-        })
+          amount1Max: MaxUint128
+        }
+        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
+
+        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          parameters
+        )
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
 
-        expect(feeAmounts[0]).to.equal(feesFromCollect[0])
-        expect(feeAmounts[1]).to.equal(feesFromCollect[1])
+        expect(feeAmounts[0]).to.equal(amount0)
+        expect(feeAmounts[1]).to.equal(amount1)
       })
 
       it('returns the correct amount of fees if tokensOwed fields are greater than 0', async () => {
@@ -368,15 +390,27 @@ describe('PositionValue', async () => {
           amountOutMinimum: 0,
         })
 
-        const feesFromCollect = await nft.callStatic.collect({
-          tokenId,
+        const collectParameters = {
+          tokenId: tokenId,
           recipient: wallets[0].address,
           amount0Max: MaxUint128,
           amount1Max: MaxUint128,
-        })
+        }
+        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
+
+        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          parameters
+        )
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
-        expect(feeAmounts[0]).to.equal(feesFromCollect[0])
-        expect(feeAmounts[1]).to.equal(feesFromCollect[1])
+
+        expect(feeAmounts[0]).to.equal(amount0)
+        expect(feeAmounts[1]).to.equal(amount1)
       })
 
       it('gas', async () => {
@@ -423,16 +457,27 @@ describe('PositionValue', async () => {
       })
 
       it('returns the correct amount of fees', async () => {
-        const feesFromCollect = await nft.callStatic.collect({
-          tokenId,
+        const collectParameters = {
+          tokenId: tokenId,
           recipient: wallets[0].address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128,
-        })
+          amount1Max: MaxUint128
+        }
+        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
+
+        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          parameters
+        )
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
 
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
-        expect(feeAmounts[0]).to.equal(feesFromCollect[0])
-        expect(feeAmounts[1]).to.equal(feesFromCollect[1])
+        expect(feeAmounts[0]).to.equal(amount0)
+        expect(feeAmounts[1]).to.equal(amount1)
       })
 
       it('gas', async () => {
@@ -479,15 +524,26 @@ describe('PositionValue', async () => {
       })
 
       it('returns the correct amount of fees', async () => {
-        const feesFromCollect = await nft.callStatic.collect({
-          tokenId,
+        const collectParameters = {
+          tokenId: tokenId,
           recipient: wallets[0].address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128,
-        })
+          amount1Max: MaxUint128
+        }
+        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
+
+        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          parameters
+        )
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
-        expect(feeAmounts[0]).to.equal(feesFromCollect[0])
-        expect(feeAmounts[1]).to.equal(feesFromCollect[1])
+        expect(feeAmounts[0]).to.equal(amount0)
+        expect(feeAmounts[1]).to.equal(amount1)
       })
 
       it('gas', async () => {
