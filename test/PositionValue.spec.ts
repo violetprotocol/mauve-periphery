@@ -33,15 +33,21 @@ describe('PositionValue', async () => {
     nft: MockTimeNonfungiblePositionManager
     router: SwapRouter
     factory: IUniswapV3Factory
-    createAndInitializePoolIfNecessary: CreatePoolIfNecessary,
-    signer: Wallet,
-    domain: Domain,
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+    signer: Wallet
+    domain: Domain
     verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { nft, router, tokens, factory, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      nft,
+      router,
+      tokens,
+      factory,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
     const positionValueFactory = await ethers.getContractFactory('PositionValueTest')
     const positionValue = (await positionValueFactory.deploy()) as PositionValueTest
 
@@ -60,7 +66,7 @@ describe('PositionValue', async () => {
       createAndInitializePoolIfNecessary,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 
@@ -82,9 +88,17 @@ describe('PositionValue', async () => {
   })
 
   beforeEach(async () => {
-    ;({ positionValue, tokens, nft, router, factory, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
-      positionValueCompleteFixture
-    ))
+    ;({
+      positionValue,
+      tokens,
+      nft,
+      router,
+      factory,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await loadFixture(positionValueCompleteFixture))
     await createAndInitializePoolIfNecessary(
       tokens[0].address,
       tokens[1].address,
@@ -349,19 +363,19 @@ describe('PositionValue', async () => {
           tokenId: tokenId,
           recipient: wallets[0].address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128
+          amount1Max: MaxUint128,
         }
-        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const parameters = [nft.interface.encodeFunctionData('collect', [collectParameters])]
         const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
 
-        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+        const [response] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           eat.v,
           eat.r,
           eat.s,
           expiry,
           parameters
         )
-        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult('collect', response)
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
 
         expect(feeAmounts[0]).to.equal(amount0)
@@ -396,17 +410,17 @@ describe('PositionValue', async () => {
           amount0Max: MaxUint128,
           amount1Max: MaxUint128,
         }
-        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const parameters = [nft.interface.encodeFunctionData('collect', [collectParameters])]
         const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
 
-        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+        const [response] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           eat.v,
           eat.r,
           eat.s,
           expiry,
           parameters
         )
-        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult('collect', response)
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
 
         expect(feeAmounts[0]).to.equal(amount0)
@@ -461,19 +475,19 @@ describe('PositionValue', async () => {
           tokenId: tokenId,
           recipient: wallets[0].address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128
+          amount1Max: MaxUint128,
         }
-        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const parameters = [nft.interface.encodeFunctionData('collect', [collectParameters])]
         const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
 
-        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+        const [response] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           eat.v,
           eat.r,
           eat.s,
           expiry,
           parameters
         )
-        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult('collect', response)
 
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
         expect(feeAmounts[0]).to.equal(amount0)
@@ -528,19 +542,19 @@ describe('PositionValue', async () => {
           tokenId: tokenId,
           recipient: wallets[0].address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128
+          amount1Max: MaxUint128,
         }
-        const parameters = [nft.interface.encodeFunctionData("collect", [collectParameters])]
+        const parameters = [nft.interface.encodeFunctionData('collect', [collectParameters])]
         const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, parameters)
 
-        const [response] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+        const [response] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           eat.v,
           eat.r,
           eat.s,
           expiry,
           parameters
         )
-        const { amount0, amount1 } = nft.interface.decodeFunctionResult("collect", response)
+        const { amount0, amount1 } = nft.interface.decodeFunctionResult('collect', response)
         const feeAmounts = await positionValue.fees(nft.address, tokenId)
         expect(feeAmounts[0]).to.equal(amount0)
         expect(feeAmounts[1]).to.equal(amount1)
