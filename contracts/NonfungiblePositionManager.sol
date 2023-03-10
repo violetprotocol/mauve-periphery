@@ -134,6 +134,7 @@ contract NonfungiblePositionManager is
         external
         payable
         override
+        onlySelfMulticall
         checkDeadline(params.deadline)
         returns (
             uint256 tokenId,
