@@ -989,23 +989,66 @@ describe('NonfungiblePositionManager', () => {
     it('emits an event')
 
     it('cannot be called by other addresses', async () => {
-      await expect(nft.burn(tokenId)).to.be.revertedWith('Not approved')
+      const burnParams = tokenId
+      const multicallParameters = [nft.interface.encodeFunctionData("burn", [burnParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
+      await expect(
+        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          multicallParameters
+        )
+      ).to.be.revertedWith("Not approved")
     })
 
     it('cannot be called while there is still liquidity', async () => {
-      await expect(nft.connect(other).burn(tokenId)).to.be.revertedWith('Not cleared')
+      const burnParams = tokenId
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
+      await expect(
+        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          multicallParameters
+        )
+      ).to.be.revertedWith("Not cleared")
+      // await expect(nft.connect(other).burn(tokenId)).to.be.revertedWith('Not cleared')
     })
 
     it('cannot be called while there is still partial liquidity', async () => {
       await nft.connect(other).decreaseLiquidity({ tokenId, liquidity: 50, amount0Min: 0, amount1Min: 0, deadline: 1 })
-      await expect(nft.connect(other).burn(tokenId)).to.be.revertedWith('Not cleared')
+      const burnParams = tokenId
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
+      await expect(
+        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          multicallParameters
+        )
+      ).to.be.revertedWith("Not cleared")
     })
 
     it('cannot be called while there is still tokens owed', async () => {
       await nft.connect(other).decreaseLiquidity({ tokenId, liquidity: 100, amount0Min: 0, amount1Min: 0, deadline: 1 })
+      const burnParams = tokenId
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
       await expect(
-        nft.connect(other).burn(tokenId)
-      ).to.be.revertedWith('Not cleared')
+        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          multicallParameters
+        )
+      ).to.be.revertedWith("Not cleared")
     })
 
     it('deletes the token', async () => {
@@ -1027,7 +1070,16 @@ describe('NonfungiblePositionManager', () => {
         parameters
       )
 
-      await nft.connect(other).burn(tokenId)
+      const burnParams = tokenId
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const { eat: burnEat, expiry: burnExpiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
+      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+          burnEat.v,
+          burnEat.r,
+          burnEat.s,
+          burnExpiry,
+          multicallParameters
+        )
       await expect(nft.positions(tokenId)).to.be.revertedWith('Invalid token ID')
     })
 
@@ -1049,8 +1101,18 @@ describe('NonfungiblePositionManager', () => {
         expiry,
         parameters
       )
-
-      await snapshotGasCost(nft.connect(other).burn(tokenId))
+      const burnParams = tokenId
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const { eat: burnEat, expiry: burnExpiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
+      await snapshotGasCost(
+        await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+            burnEat.v,
+            burnEat.r,
+            burnEat.s,
+            burnExpiry,
+            multicallParameters
+          )
+      )
     })
   })
 
