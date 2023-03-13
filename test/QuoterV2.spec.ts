@@ -4,6 +4,7 @@ import { ethers, waffle } from 'hardhat'
 import { MockTimeNonfungiblePositionManager, QuoterV2, TestERC20 } from '../typechain'
 import completeFixture from './shared/completeFixture'
 import { FeeAmount, MaxUint128 } from './shared/constants'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { expandTo18Decimals } from './shared/expandTo18Decimals'
 import { expect } from './shared/expect'
@@ -20,8 +21,12 @@ describe('QuoterV2', function () {
     nft: MockTimeNonfungiblePositionManager
     tokens: [TestERC20, TestERC20, TestERC20]
     quoter: QuoterV2
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft } = await completeFixture(wallets, provider)
+    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary } = await completeFixture(
+      wallets,
+      provider
+    )
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -38,12 +43,14 @@ describe('QuoterV2', function () {
       tokens,
       nft,
       quoter,
+      createAndInitializePoolIfNecessary,
     }
   }
 
   let nft: MockTimeNonfungiblePositionManager
   let tokens: [TestERC20, TestERC20, TestERC20]
   let quoter: QuoterV2
+  let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -55,14 +62,20 @@ describe('QuoterV2', function () {
 
   // helper for getting weth and token balances
   beforeEach('load fixture', async () => {
-    ;({ tokens, nft, quoter } = await loadFixture(swapRouterFixture))
+    ;({ tokens, nft, quoter, createAndInitializePoolIfNecessary } = await loadFixture(swapRouterFixture))
   })
 
   describe('quotes', () => {
     beforeEach(async () => {
-      await createPool(nft, wallet, tokens[0].address, tokens[1].address)
-      await createPool(nft, wallet, tokens[1].address, tokens[2].address)
-      await createPoolWithMultiplePositions(nft, wallet, tokens[0].address, tokens[2].address)
+      await createPool(nft, wallet, tokens[0].address, tokens[1].address, createAndInitializePoolIfNecessary)
+      await createPool(nft, wallet, tokens[1].address, tokens[2].address, createAndInitializePoolIfNecessary)
+      await createPoolWithMultiplePositions(
+        nft,
+        wallet,
+        tokens[0].address,
+        tokens[2].address,
+        createAndInitializePoolIfNecessary
+      )
     })
 
     describe('#quoteExactInput', () => {
@@ -144,7 +157,13 @@ describe('QuoterV2', function () {
 
       it('0 -> 2 cross 0 tick, starting tick initialized', async () => {
         // Tick before 0, tick after -1. Tick 0 initialized.
-        await createPoolWithZeroTickInitialized(nft, wallet, tokens[0].address, tokens[2].address)
+        await createPoolWithZeroTickInitialized(
+          nft,
+          wallet,
+          tokens[0].address,
+          tokens[2].address,
+          createAndInitializePoolIfNecessary
+        )
 
         const {
           amountOut,
@@ -205,7 +224,13 @@ describe('QuoterV2', function () {
 
       it('2 -> 0 cross 0 tick, starting tick initialized', async () => {
         // Tick 0 initialized. Tick after = 1
-        await createPoolWithZeroTickInitialized(nft, wallet, tokens[0].address, tokens[2].address)
+        await createPoolWithZeroTickInitialized(
+          nft,
+          wallet,
+          tokens[0].address,
+          tokens[2].address,
+          createAndInitializePoolIfNecessary
+        )
 
         const {
           amountOut,
@@ -392,7 +417,13 @@ describe('QuoterV2', function () {
 
       it('0 -> 2 cross 0 tick starting tick initialized', async () => {
         // Tick before 0, tick after 1. Tick 0 initialized.
-        await createPoolWithZeroTickInitialized(nft, wallet, tokens[0].address, tokens[2].address)
+        await createPoolWithZeroTickInitialized(
+          nft,
+          wallet,
+          tokens[0].address,
+          tokens[2].address,
+          createAndInitializePoolIfNecessary
+        )
         const {
           amountIn,
           sqrtPriceX96AfterList,

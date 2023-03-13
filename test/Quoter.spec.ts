@@ -4,6 +4,7 @@ import { ethers, waffle } from 'hardhat'
 import { MockTimeNonfungiblePositionManager, Quoter, TestERC20 } from '../typechain'
 import completeFixture from './shared/completeFixture'
 import { FeeAmount, MaxUint128, TICK_SPACINGS } from './shared/constants'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { expandTo18Decimals } from './shared/expandTo18Decimals'
 import { expect } from './shared/expect'
@@ -18,8 +19,12 @@ describe('Quoter', () => {
     nft: MockTimeNonfungiblePositionManager
     tokens: [TestERC20, TestERC20, TestERC20]
     quoter: Quoter
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft } = await completeFixture(wallets, provider)
+    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary } = await completeFixture(
+      wallets,
+      provider
+    )
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -36,12 +41,14 @@ describe('Quoter', () => {
       tokens,
       nft,
       quoter,
+      createAndInitializePoolIfNecessary,
     }
   }
 
   let nft: MockTimeNonfungiblePositionManager
   let tokens: [TestERC20, TestERC20, TestERC20]
   let quoter: Quoter
+  let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -53,13 +60,13 @@ describe('Quoter', () => {
 
   // helper for getting weth and token balances
   beforeEach('load fixture', async () => {
-    ;({ tokens, nft, quoter } = await loadFixture(swapRouterFixture))
+    ;({ tokens, nft, quoter, createAndInitializePoolIfNecessary } = await loadFixture(swapRouterFixture))
   })
 
   describe('quotes', () => {
     beforeEach(async () => {
-      await createPool(nft, wallet, tokens[0].address, tokens[1].address)
-      await createPool(nft, wallet, tokens[1].address, tokens[2].address)
+      await createPool(nft, wallet, tokens[0].address, tokens[1].address, createAndInitializePoolIfNecessary)
+      await createPool(nft, wallet, tokens[1].address, tokens[2].address, createAndInitializePoolIfNecessary)
     })
 
     describe('#quoteExactInput', () => {

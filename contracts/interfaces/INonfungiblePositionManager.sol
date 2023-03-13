@@ -5,7 +5,7 @@ pragma abicoder v2;
 import '@openzeppelin/contracts/token/ERC721/IERC721Metadata.sol';
 import '@openzeppelin/contracts/token/ERC721/IERC721Enumerable.sol';
 
-import './IPoolInitializer.sol';
+// import './IPoolInitializer.sol';
 import './IERC721Permit.sol';
 import './IPeripheryPayments.sol';
 import './IPeripheryImmutableState.sol';
@@ -14,8 +14,8 @@ import '../libraries/PoolAddress.sol';
 /// @title Non-fungible token for positions
 /// @notice Wraps Uniswap V3 positions in a non-fungible token interface which allows for them to be transferred
 /// and authorized.
+// IPoolInitializer,
 interface INonfungiblePositionManager is
-    IPoolInitializer,
     IPeripheryPayments,
     IPeripheryImmutableState,
     IERC721Metadata,

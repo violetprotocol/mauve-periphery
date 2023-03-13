@@ -25,6 +25,7 @@ describe('EATMulticall', async () => {
     wallets = await (ethers as any).getSigners()
     signer = new ethers.Wallet(EAT_ISSUER_PK, wallets[0].provider)
 
+    //We need to fund the signer address to broadcast the rotate/activateIssuers transactions
     await wallets[0].sendTransaction({ to: signer.address, value: parseEther('1') })
 
     const verifierFactory = await ethers.getContractFactory('AccessTokenVerifier')

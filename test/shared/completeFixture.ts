@@ -1,7 +1,7 @@
 import { Fixture } from 'ethereum-waffle'
 import { ethers } from 'hardhat'
 import { v3RouterFixture } from './externalFixtures'
-import { constants } from 'ethers'
+import { constants, Wallet } from 'ethers'
 import {
   IWETH9,
   MockTimeNonfungiblePositionManager,
@@ -9,7 +9,19 @@ import {
   NonfungibleTokenPositionDescriptor,
   TestERC20,
   IUniswapV3Factory,
+  AccessTokenVerifier,
 } from '../../typechain'
+import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
+import { parseEther } from 'ethers/lib/utils'
+
+const EAT_ISSUER_PK = '18eaafaa63636879094c86a953e6fcba4abaefae3baec1d4e5b952c10828d4c2'
+
+export type Domain = {
+  name: string
+  version: string
+  chainId: number
+  verifyingContract: string
+}
 
 const completeFixture: Fixture<{
   weth9: IWETH9
@@ -18,8 +30,26 @@ const completeFixture: Fixture<{
   nft: MockTimeNonfungiblePositionManager
   nftDescriptor: NonfungibleTokenPositionDescriptor
   tokens: [TestERC20, TestERC20, TestERC20]
+  createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+  signer: Wallet
+  domain: Domain
+  verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {
   const { weth9, factory, router } = await v3RouterFixture([wallet], provider)
+
+  // ETHEREUM ACCESS TOKEN SETUP
+  const signer = new ethers.Wallet(EAT_ISSUER_PK, provider)
+  await wallet.sendTransaction({ to: signer.address, value: parseEther('1') })
+  const verifierFactory = await ethers.getContractFactory('AccessTokenVerifier')
+  const verifier = <AccessTokenVerifier>await verifierFactory.deploy(signer.address)
+  await verifier.connect(signer).rotateIntermediate(signer.address)
+  await verifier.connect(signer).activateIssuers([signer.address])
+  const domain = {
+    name: 'Ethereum Access Token',
+    version: '1',
+    chainId: await wallet.getChainId(),
+    verifyingContract: verifier.address,
+  }
 
   const tokenFactory = await ethers.getContractFactory('TestERC20')
   const tokens: [TestERC20, TestERC20, TestERC20] = [
@@ -41,12 +71,16 @@ const completeFixture: Fixture<{
     '0x4554480000000000000000000000000000000000000000000000000000000000'
   )) as NonfungibleTokenPositionDescriptor
 
+  //NONFUNGIBLEPOSITIONMANAGER SETUP
   const positionManagerFactory = await ethers.getContractFactory('MockTimeNonfungiblePositionManager')
   const nft = (await positionManagerFactory.deploy(
     factory.address,
     weth9.address,
-    nftDescriptor.address
+    nftDescriptor.address,
+    verifier.address
   )) as MockTimeNonfungiblePositionManager
+
+  const createAndInitializePoolIfNecessary: CreatePoolIfNecessary = createPoolIfNecessary(factory, wallet)
 
   tokens.sort((a, b) => (a.address.toLowerCase() < b.address.toLowerCase() ? -1 : 1))
 
@@ -57,6 +91,10 @@ const completeFixture: Fixture<{
     tokens,
     nft,
     nftDescriptor,
+    createAndInitializePoolIfNecessary,
+    signer,
+    verifier,
+    domain,
   }
 }
 

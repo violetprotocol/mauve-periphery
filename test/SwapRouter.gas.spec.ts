@@ -5,6 +5,7 @@ import { ethers, waffle } from 'hardhat'
 import { IUniswapV3Pool, IWETH9, MockTimeSwapRouter, TestERC20 } from '../typechain'
 import completeFixture from './shared/completeFixture'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
+import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { expandTo18Decimals } from './shared/expandTo18Decimals'
 import { expect } from './shared/expect'
@@ -23,7 +24,10 @@ describe('SwapRouter gas tests', function () {
     tokens: [TestERC20, TestERC20, TestERC20]
     pools: [IUniswapV3Pool, IUniswapV3Pool, IUniswapV3Pool]
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft } = await completeFixture(wallets, provider)
+    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary } = await completeFixture(
+      wallets,
+      provider
+    )
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -38,7 +42,7 @@ describe('SwapRouter gas tests', function () {
       if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
         [tokenAddressA, tokenAddressB] = [tokenAddressB, tokenAddressA]
 
-      await nft.createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokenAddressA,
         tokenAddressB,
         FeeAmount.MEDIUM,
