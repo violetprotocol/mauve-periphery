@@ -297,12 +297,7 @@ describe('NonfungiblePositionManager', () => {
       // remove any approval
       await weth9.approve(nft.address, 0)
 
-      await createAndInitializePoolIfNecessary(
-        token0.address,
-        token1.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1),
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
       const mintData = nft.interface.encodeFunctionData('mint', [
         {
@@ -333,7 +328,7 @@ describe('NonfungiblePositionManager', () => {
         eat.s,
         expiry,
         mintMulticallParameters,
-        {value: expandTo18Decimals(1)}
+        { value: expandTo18Decimals(1) }
       )
 
       const receipt = await tx.wait()
