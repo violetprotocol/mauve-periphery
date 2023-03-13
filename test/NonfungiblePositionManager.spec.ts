@@ -291,6 +291,55 @@ describe('NonfungiblePositionManager', () => {
       expect(feeGrowthInside0LastX128).to.eq(0)
       expect(feeGrowthInside1LastX128).to.eq(0)
     })
+    it('can use eth via multicall', async () => {
+      const [token0, token1] = sortedTokens(weth9, tokens[0])
+
+      // remove any approval
+      await weth9.approve(nft.address, 0)
+
+      await createAndInitializePoolIfNecessary(
+        token0.address,
+        token1.address,
+        FeeAmount.MEDIUM,
+        encodePriceSqrt(1, 1),
+      )
+
+      const mintData = nft.interface.encodeFunctionData('mint', [
+        {
+          token0: token0.address,
+          token1: token1.address,
+          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+          fee: FeeAmount.MEDIUM,
+          recipient: other.address,
+          amount0Desired: 100,
+          amount1Desired: 100,
+          amount0Min: 0,
+          amount1Min: 0,
+          deadline: 1,
+        },
+      ])
+
+      const refundETHData = nft.interface.encodeFunctionData('refundETH')
+
+      const mintMulticallParameters = [mintData, refundETHData]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
+
+      const balanceBefore = await wallet.getBalance()
+
+      const tx = await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters,
+        {value: expandTo18Decimals(1)}
+      )
+
+      const receipt = await tx.wait()
+      const balanceAfter = await wallet.getBalance()
+      expect(balanceBefore).to.eq(balanceAfter.add(receipt.gasUsed.mul(tx.gasPrice)).add(100))
+    })
 
     it('emits an event')
 
