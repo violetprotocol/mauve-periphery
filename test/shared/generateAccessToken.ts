@@ -1,7 +1,7 @@
-import { Wallet, BigNumber } from "ethers"
-import { messages, utils } from "@violetprotocol/ethereum-access-token-helpers"
-import { MockTimeNonfungiblePositionManager, TestEATMulticall } from "../../typechain"
-import { splitSignature } from "ethers/lib/utils"
+import { Wallet, BigNumber } from 'ethers'
+import { messages, utils } from '@violetprotocol/ethereum-access-token-helpers'
+import { MockTimeNonfungiblePositionManager, TestEATMulticall } from '../../typechain'
+import { splitSignature } from 'ethers/lib/utils'
 
 export const generateAccessToken = async (
   signer: Wallet,

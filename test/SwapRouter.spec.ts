@@ -1,7 +1,13 @@
 import { Fixture } from 'ethereum-waffle'
 import { BigNumber, constants, Contract, ContractTransaction, Wallet } from 'ethers'
 import { waffle, ethers } from 'hardhat'
-import { IWETH9, MockTimeNonfungiblePositionManager, MockTimeSwapRouter, TestERC20, AccessTokenVerifier } from '../typechain'
+import {
+  IWETH9,
+  MockTimeNonfungiblePositionManager,
+  MockTimeSwapRouter,
+  TestERC20,
+  AccessTokenVerifier,
+} from '../typechain'
 import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
@@ -29,10 +35,17 @@ describe('SwapRouter', function () {
     domain: Domain
     verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      weth9,
+      factory,
+      router,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -51,7 +64,7 @@ describe('SwapRouter', function () {
       createAndInitializePoolIfNecessary,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 
@@ -82,9 +95,17 @@ describe('SwapRouter', function () {
 
   // helper for getting weth and token balances
   beforeEach('load fixture', async () => {
-    ;({ router, weth9, factory, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
-      swapRouterFixture
-    ))
+    ;({
+      router,
+      weth9,
+      factory,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await loadFixture(swapRouterFixture))
 
     getBalances = async (who: string) => {
       const balances = await Promise.all([
@@ -135,17 +156,16 @@ describe('SwapRouter', function () {
         amount1Min: 0,
         deadline: 1,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
         eat.s,
         expiry,
         mintMulticallParameters
       )
-
     }
 
     async function createPoolWETH9(tokenAddress: string) {

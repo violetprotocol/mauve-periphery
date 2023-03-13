@@ -26,10 +26,17 @@ describe.skip('QuoterV2', function () {
     domain: Domain
     verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      weth9,
+      factory,
+      router,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -49,7 +56,7 @@ describe.skip('QuoterV2', function () {
       createAndInitializePoolIfNecessary,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 
@@ -71,13 +78,31 @@ describe.skip('QuoterV2', function () {
 
   // helper for getting weth and token balances
   beforeEach('load fixture', async () => {
-    ;({ tokens, nft, quoter, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(swapRouterFixture))
+    ;({ tokens, nft, quoter, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
+      swapRouterFixture
+    ))
   })
 
   describe('quotes', () => {
     beforeEach(async () => {
-      await createPool(nft, wallet, tokens[0].address, tokens[1].address, createAndInitializePoolIfNecessary, signer, domain)
-      await createPool(nft, wallet, tokens[1].address, tokens[2].address, createAndInitializePoolIfNecessary, signer, domain)
+      await createPool(
+        nft,
+        wallet,
+        tokens[0].address,
+        tokens[1].address,
+        createAndInitializePoolIfNecessary,
+        signer,
+        domain
+      )
+      await createPool(
+        nft,
+        wallet,
+        tokens[1].address,
+        tokens[2].address,
+        createAndInitializePoolIfNecessary,
+        signer,
+        domain
+      )
       await createPoolWithMultiplePositions(
         nft,
         wallet,

@@ -24,7 +24,15 @@ describe('TickLens', () => {
     domain: Domain
     verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { factory, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(wallets, provider)
+    const {
+      factory,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     for (const token of tokens) {
       await token.approve(nft.address, constants.MaxUint256)
@@ -37,7 +45,7 @@ describe('TickLens', () => {
       createAndInitializePoolIfNecessary,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 
@@ -59,7 +67,9 @@ describe('TickLens', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ factory, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(nftFixture))
+    ;({ factory, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
+      nftFixture
+    ))
   })
 
   describe('#getPopulatedTicksInWord', () => {
@@ -83,17 +93,16 @@ describe('TickLens', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
         eat.s,
         expiry,
         mintMulticallParameters
       )
-
     }
 
     async function mint(tickLower: number, tickUpper: number, amountBothDesired: BigNumberish): Promise<number> {
@@ -110,19 +119,19 @@ describe('TickLens', () => {
         recipient: wallets[0].address,
         deadline: 1,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
 
-      const [mintResponse] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      const [mintResponse] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
         eat.s,
         expiry,
         mintMulticallParameters
       )
-      const { liquidity } = nft.interface.decodeFunctionResult("mint", mintResponse);
+      const { liquidity } = nft.interface.decodeFunctionResult('mint', mintResponse)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
         eat.s,

@@ -60,23 +60,24 @@ describe('PairFlash test', () => {
       amount1Min: 0,
       deadline: 1,
     }
-    const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+    const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
     const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
 
-    return nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        mintMulticallParameters
-      )
+    return nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintMulticallParameters)
   }
 
   const flashFixture = async () => {
-    const { router, tokens, factory, weth9, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      router,
+      tokens,
+      factory,
+      weth9,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
     const token0 = tokens[0]
     const token1 = tokens[1]
 
@@ -98,7 +99,7 @@ describe('PairFlash test', () => {
       createAndInitializePoolIfNecessary,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 
@@ -109,9 +110,18 @@ describe('PairFlash test', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ factory, token0, token1, flash, nft, quoter, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
-      flashFixture
-    ))
+    ;({
+      factory,
+      token0,
+      token1,
+      flash,
+      nft,
+      quoter,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await loadFixture(flashFixture))
 
     await token0.approve(nft.address, MaxUint128)
     await token1.approve(nft.address, MaxUint128)

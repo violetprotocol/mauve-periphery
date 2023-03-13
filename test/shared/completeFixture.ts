@@ -17,10 +17,10 @@ import { parseEther } from 'ethers/lib/utils'
 const EAT_ISSUER_PK = '18eaafaa63636879094c86a953e6fcba4abaefae3baec1d4e5b952c10828d4c2'
 
 export type Domain = {
-  name: string;
-  version: string;
-  chainId: number;
-  verifyingContract: string;
+  name: string
+  version: string
+  chainId: number
+  verifyingContract: string
 }
 
 const completeFixture: Fixture<{
@@ -30,9 +30,9 @@ const completeFixture: Fixture<{
   nft: MockTimeNonfungiblePositionManager
   nftDescriptor: NonfungibleTokenPositionDescriptor
   tokens: [TestERC20, TestERC20, TestERC20]
-  createAndInitializePoolIfNecessary: CreatePoolIfNecessary,
-  signer: Wallet,
-  domain: Domain,
+  createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+  signer: Wallet
+  domain: Domain
   verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {
   const { weth9, factory, router } = await v3RouterFixture([wallet], provider)
@@ -45,11 +45,11 @@ const completeFixture: Fixture<{
   await verifier.connect(signer).rotateIntermediate(signer.address)
   await verifier.connect(signer).activateIssuers([signer.address])
   const domain = {
-      name: 'Ethereum Access Token',
-      version: '1',
-      chainId: await wallet.getChainId(),
-      verifyingContract: verifier.address,
-    }
+    name: 'Ethereum Access Token',
+    version: '1',
+    chainId: await wallet.getChainId(),
+    verifyingContract: verifier.address,
+  }
 
   const tokenFactory = await ethers.getContractFactory('TestERC20')
   const tokens: [TestERC20, TestERC20, TestERC20] = [
@@ -94,7 +94,7 @@ const completeFixture: Fixture<{
     createAndInitializePoolIfNecessary,
     signer,
     verifier,
-    domain
+    domain,
   }
 }
 

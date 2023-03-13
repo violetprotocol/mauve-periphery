@@ -30,7 +30,6 @@ import { sortedTokens } from './shared/tokenSort'
 import { messages, utils } from '@violetprotocol/ethereum-access-token-helpers'
 import { splitSignature } from 'ethers/lib/utils'
 
-
 describe('NonfungiblePositionManager', () => {
   let wallets: Wallet[]
   let wallet: Wallet, other: Wallet
@@ -41,15 +40,22 @@ describe('NonfungiblePositionManager', () => {
     tokens: [TestERC20, TestERC20, TestERC20]
     weth9: IWETH9
     router: SwapRouter
-    createAndInitializePoolIfNecessary: CreatePoolIfNecessary,
-    signer: Wallet,
-    domain: Domain,
-    verifier: AccessTokenVerifier,
+    createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+    signer: Wallet
+    domain: Domain
+    verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { weth9, factory, tokens, nft, router, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      weth9,
+      factory,
+      tokens,
+      nft,
+      router,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -67,7 +73,7 @@ describe('NonfungiblePositionManager', () => {
       createAndInitializePoolIfNecessary,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 
@@ -91,7 +97,17 @@ describe('NonfungiblePositionManager', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ nft, factory, tokens, weth9, router, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(nftFixture))
+    ;({
+      nft,
+      factory,
+      tokens,
+      weth9,
+      router,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await loadFixture(nftFixture))
   })
 
   it('bytecode size', async () => {
@@ -169,29 +185,23 @@ describe('NonfungiblePositionManager', () => {
   describe('#mint', () => {
     it('fails if pool does not exist', async () => {
       const mintParams = {
-          token0: tokens[0].address,
-          token1: tokens[1].address,
-          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          amount0Desired: 100,
-          amount1Desired: 100,
-          amount0Min: 0,
-          amount1Min: 0,
-          recipient: wallet.address,
-          deadline: 1,
-          fee: FeeAmount.MEDIUM,
+        token0: tokens[0].address,
+        token1: tokens[1].address,
+        tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        amount0Desired: 100,
+        amount1Desired: 100,
+        amount0Min: 0,
+        amount1Min: 0,
+        recipient: wallet.address,
+        deadline: 1,
+        fee: FeeAmount.MEDIUM,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
       await expect(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          mintMulticallParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintMulticallParameters)
       ).to.be.reverted
     })
 
@@ -205,29 +215,23 @@ describe('NonfungiblePositionManager', () => {
       await tokens[0].approve(nft.address, 0)
 
       const mintParams = {
-          token0: tokens[0].address,
-          token1: tokens[1].address,
-          fee: FeeAmount.MEDIUM,
-          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          amount0Desired: 100,
-          amount1Desired: 100,
-          amount0Min: 0,
-          amount1Min: 0,
-          recipient: wallet.address,
-          deadline: 1,
+        token0: tokens[0].address,
+        token1: tokens[1].address,
+        fee: FeeAmount.MEDIUM,
+        tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        amount0Desired: 100,
+        amount1Desired: 100,
+        amount0Min: 0,
+        amount1Min: 0,
+        recipient: wallet.address,
+        deadline: 1,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
       await expect(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          mintMulticallParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintMulticallParameters)
       ).to.be.revertedWith('STF')
     })
 
@@ -252,11 +256,10 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 10,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
-
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
         eat.s,
@@ -299,65 +302,52 @@ describe('NonfungiblePositionManager', () => {
         encodePriceSqrt(1, 1)
       )
       const mintParams = {
-          token0: tokens[0].address,
-          token1: tokens[1].address,
-          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          fee: FeeAmount.MEDIUM,
-          recipient: wallet.address,
-          amount0Desired: 100,
-          amount1Desired: 100,
-          amount0Min: 0,
-          amount1Min: 0,
-          deadline: 10,
+        token0: tokens[0].address,
+        token1: tokens[1].address,
+        tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        fee: FeeAmount.MEDIUM,
+        recipient: wallet.address,
+        amount0Desired: 100,
+        amount1Desired: 100,
+        amount0Min: 0,
+        amount1Min: 0,
+        deadline: 10,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
       await snapshotGasCost(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          mintMulticallParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintMulticallParameters)
       )
     })
 
     it('gas first mint for pool using eth with zero refund', async () => {
       const [token0, token1] = sortedTokens(weth9, tokens[0])
       await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
-      
+
       const parameters = [
-        nft.interface.encodeFunctionData("mint", [
-              {
-                token0: token0.address,
-                token1: token1.address,
-                tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-                tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-                fee: FeeAmount.MEDIUM,
-                recipient: wallet.address,
-                amount0Desired: 100,
-                amount1Desired: 100,
-                amount0Min: 0,
-                amount1Min: 0,
-                deadline: 10,
-              },
-      ]),
+        nft.interface.encodeFunctionData('mint', [
+          {
+            token0: token0.address,
+            token1: token1.address,
+            tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+            tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+            fee: FeeAmount.MEDIUM,
+            recipient: wallet.address,
+            amount0Desired: 100,
+            amount1Desired: 100,
+            amount0Min: 0,
+            amount1Min: 0,
+            deadline: 10,
+          },
+        ]),
         nft.interface.encodeFunctionData('refundETH'),
       ]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, parameters)
 
       await snapshotGasCost(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters,
-          { value: 100 }
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, { value: 100 })
       )
     })
 
@@ -366,34 +356,29 @@ describe('NonfungiblePositionManager', () => {
       await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
       const parameters = [
-        nft.interface.encodeFunctionData("mint", [
-              {
-                token0: token0.address,
-                token1: token1.address,
-                tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-                tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-                fee: FeeAmount.MEDIUM,
-                recipient: wallet.address,
-                amount0Desired: 100,
-                amount1Desired: 100,
-                amount0Min: 0,
-                amount1Min: 0,
-                deadline: 10,
-              },
+        nft.interface.encodeFunctionData('mint', [
+          {
+            token0: token0.address,
+            token1: token1.address,
+            tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+            tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+            fee: FeeAmount.MEDIUM,
+            recipient: wallet.address,
+            amount0Desired: 100,
+            amount1Desired: 100,
+            amount0Min: 0,
+            amount1Min: 0,
+            deadline: 10,
+          },
         ]),
         nft.interface.encodeFunctionData('refundETH'),
       ]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, parameters)
 
       await snapshotGasCost(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters,
-          { value: 1000 }
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
+          value: 1000,
+        })
       )
     })
 
@@ -419,43 +404,46 @@ describe('NonfungiblePositionManager', () => {
         deadline: 10,
       }
 
-      const mintMulticallParametersFromOtherWallet = [nft.connect(other).interface.encodeFunctionData("mint", [mintParamsFromOtherWallet])]
-      const { eat: eatOtherWallet, expiry: expiryOtherWallet } = await generateAccessToken(signer, domain, other, nft, mintMulticallParametersFromOtherWallet)
-
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eatOtherWallet.v,
-        eatOtherWallet.r,
-        eatOtherWallet.s,
-        expiryOtherWallet,
+      const mintMulticallParametersFromOtherWallet = [
+        nft.connect(other).interface.encodeFunctionData('mint', [mintParamsFromOtherWallet]),
+      ]
+      const { eat: eatOtherWallet, expiry: expiryOtherWallet } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
         mintMulticallParametersFromOtherWallet
       )
 
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          eatOtherWallet.v,
+          eatOtherWallet.r,
+          eatOtherWallet.s,
+          expiryOtherWallet,
+          mintMulticallParametersFromOtherWallet
+        )
+
       const mintParams = {
-          token0: tokens[0].address,
-          token1: tokens[1].address,
-          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-          fee: FeeAmount.MEDIUM,
-          recipient: wallet.address,
-          amount0Desired: 100,
-          amount1Desired: 100,
-          amount0Min: 0,
-          amount1Min: 0,
-          deadline: 10,
+        token0: tokens[0].address,
+        token1: tokens[1].address,
+        tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        fee: FeeAmount.MEDIUM,
+        recipient: wallet.address,
+        amount0Desired: 100,
+        amount1Desired: 100,
+        amount0Min: 0,
+        amount1Min: 0,
+        deadline: 10,
       }
 
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
-
       await snapshotGasCost(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          mintMulticallParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintMulticallParameters)
       )
     })
 
@@ -480,42 +468,44 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 10,
       }
-      const mintToOtherWalletParameters = [nft.interface.encodeFunctionData("mint", [mintToOtherWalletParams])]
-      const { eat: eatToOtherWallet, expiry: expiryOtherWallet} = await generateAccessToken(signer, domain, other, nft, mintToOtherWalletParameters)
-
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eatToOtherWallet.v,
-        eatToOtherWallet.r,
-        eatToOtherWallet.s,
-        expiryOtherWallet,
+      const mintToOtherWalletParameters = [nft.interface.encodeFunctionData('mint', [mintToOtherWalletParams])]
+      const { eat: eatToOtherWallet, expiry: expiryOtherWallet } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
         mintToOtherWalletParameters
       )
 
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          eatToOtherWallet.v,
+          eatToOtherWallet.r,
+          eatToOtherWallet.s,
+          expiryOtherWallet,
+          mintToOtherWalletParameters
+        )
+
       const mintParams = {
-          token0: tokens[0].address,
-          token1: tokens[1].address,
-          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]) + TICK_SPACINGS[FeeAmount.MEDIUM],
-          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]) - TICK_SPACINGS[FeeAmount.MEDIUM],
-          fee: FeeAmount.MEDIUM,
-          recipient: wallet.address,
-          amount0Desired: 100,
-          amount1Desired: 100,
-          amount0Min: 0,
-          amount1Min: 0,
-          deadline: 10,
+        token0: tokens[0].address,
+        token1: tokens[1].address,
+        tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]) + TICK_SPACINGS[FeeAmount.MEDIUM],
+        tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]) - TICK_SPACINGS[FeeAmount.MEDIUM],
+        fee: FeeAmount.MEDIUM,
+        recipient: wallet.address,
+        amount0Desired: 100,
+        amount1Desired: 100,
+        amount0Min: 0,
+        amount1Min: 0,
+        deadline: 10,
       }
 
-      const mintParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintParameters)
 
       await snapshotGasCost(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          mintParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintParameters)
       )
     })
   })
@@ -544,20 +534,13 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
     it('increases position liquidity', async () => {
-
       const increasesLiquidityParams = {
         tokenId: tokenId,
         amount0Desired: 100,
@@ -566,16 +549,10 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("increaseLiquidity", [increasesLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('increaseLiquidity', [increasesLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       const { liquidity } = await nft.positions(tokenId)
       expect(liquidity).to.eq(1100)
     })
@@ -606,9 +583,15 @@ describe('NonfungiblePositionManager', () => {
       ])
       const refundETHData = nft.interface.encodeFunctionData('unwrapWETH9', [0, other.address])
       const mintParameters = [mintData, refundETHData]
-      const { eat: mintEat, expiry: mintExpiry } = await generateAccessToken(signer, domain, wallet, nft, mintParameters)
+      const { eat: mintEat, expiry: mintExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        wallet,
+        nft,
+        mintParameters
+      )
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         mintEat.v,
         mintEat.r,
         mintEat.s,
@@ -628,9 +611,15 @@ describe('NonfungiblePositionManager', () => {
         },
       ])
       const increaseLiquidityParameters = [increaseLiquidityData, refundETHData]
-      const { eat: increaseLiquidityEat, expiry: increaseLiquidityExpiry } = await generateAccessToken(signer, domain, wallet, nft, increaseLiquidityParameters)
+      const { eat: increaseLiquidityEat, expiry: increaseLiquidityExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        wallet,
+        nft,
+        increaseLiquidityParameters
+      )
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         increaseLiquidityEat.v,
         increaseLiquidityEat.r,
         increaseLiquidityEat.s,
@@ -649,17 +638,11 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("increaseLiquidity", [increasesLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('increaseLiquidity', [increasesLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
       await snapshotGasCost(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       )
     })
   })
@@ -688,15 +671,9 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
     it('emits an event')
@@ -709,19 +686,15 @@ describe('NonfungiblePositionManager', () => {
         liquidity: 50,
         amount0Min: 0,
         amount1Min: 0,
-        deadline: 1 
+        deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
 
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       ).to.be.revertedWith('Transaction too old')
     })
 
@@ -731,19 +704,13 @@ describe('NonfungiblePositionManager', () => {
         liquidity: 50,
         amount0Min: 0,
         amount1Min: 0,
-        deadline: 1 
+        deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
       await expect(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       ).to.be.revertedWith('Not approved')
     })
 
@@ -753,18 +720,14 @@ describe('NonfungiblePositionManager', () => {
         liquidity: 25,
         amount0Min: 0,
         amount1Min: 0,
-        deadline: 1 
+        deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
 
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       const { liquidity } = await nft.positions(tokenId)
       expect(liquidity).to.eq(75)
     })
@@ -778,17 +741,14 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
 
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters,
-        {value: 1}
-      )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters, {
+          value: 1,
+        })
     })
 
     it('accounts for tokens owed', async () => {
@@ -799,16 +759,12 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
 
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters,
-      )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       const { tokensOwed0, tokensOwed1 } = await nft.positions(tokenId)
       expect(tokensOwed0).to.eq(24)
       expect(tokensOwed1).to.eq(24)
@@ -822,16 +778,12 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
 
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters,
-      )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       const { liquidity } = await nft.positions(tokenId)
       expect(liquidity).to.eq(0)
     })
@@ -844,17 +796,13 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
 
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters,
-        )
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       ).to.be.reverted
     })
 
@@ -872,16 +820,10 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
 
       const decreaseLiquidityParams = {
         tokenId: tokenId,
@@ -890,17 +832,27 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const multicallParametersDecrease = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, multicallParametersDecrease)
+      const multicallParametersDecrease = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        multicallParametersDecrease
+      )
 
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          decreaseEat.v,
-          decreaseEat.r,
-          decreaseEat.s,
-          decreaseExpiry,
-          multicallParametersDecrease,
-        )
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+            decreaseEat.v,
+            decreaseEat.r,
+            decreaseEat.s,
+            decreaseExpiry,
+            multicallParametersDecrease
+          )
       ).to.be.reverted
     })
 
@@ -910,18 +862,14 @@ describe('NonfungiblePositionManager', () => {
         liquidity: 50,
         amount0Min: 0,
         amount1Min: 0,
-        deadline: 1 
+        deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
       await snapshotGasCost(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters,
-        )
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       )
     })
 
@@ -931,18 +879,14 @@ describe('NonfungiblePositionManager', () => {
         liquidity: 100,
         amount0Min: 0,
         amount1Min: 0,
-        deadline: 1 
+        deadline: 1,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
       await snapshotGasCost(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters,
-        )
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       )
     })
   })
@@ -971,17 +915,10 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
     it('emits an event')
@@ -1002,19 +939,13 @@ describe('NonfungiblePositionManager', () => {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: 0,
-        amount1Max: 0
+        amount1Max: 0,
       }
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
 
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters
-        )
+        nft.connect(other)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
       ).to.be.reverted
     })
 
@@ -1023,19 +954,13 @@ describe('NonfungiblePositionManager', () => {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: MaxUint128,
-        amount1Max: MaxUint128
+        amount1Max: MaxUint128,
       }
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
 
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters
-        )
+        nft.connect(other)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
       )
         .to.not.emit(tokens[0], 'Transfer')
         .to.not.emit(tokens[1], 'Transfer')
@@ -1046,7 +971,7 @@ describe('NonfungiblePositionManager', () => {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: MaxUint128,
-        amount1Max: MaxUint128
+        amount1Max: MaxUint128,
       }
       const decreaseLiquidityParams = {
         tokenId: tokenId,
@@ -1055,28 +980,33 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
 
       const poolAddress = computePoolAddress(factory.address, [tokens[0].address, tokens[1].address], FeeAmount.MEDIUM)
 
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters
-      ))
+        nft.connect(other)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
+      )
         .to.emit(tokens[0], 'Transfer')
         .withArgs(poolAddress, wallet.address, 49)
         .to.emit(tokens[1], 'Transfer')
@@ -1091,32 +1021,36 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
 
       const collectParams = {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: MaxUint128,
-        amount1Max: MaxUint128
+        amount1Max: MaxUint128,
       }
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
       await snapshotGasCost(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters
-        )
+        nft.connect(other)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
       )
     })
 
@@ -1128,31 +1062,35 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
       const collectParams = {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: MaxUint128,
-        amount1Max: 0
+        amount1Max: 0,
       }
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
       await snapshotGasCost(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters
-        )
+        nft.connect(other)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
       )
     })
 
@@ -1164,32 +1102,36 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
 
       const collectParams = {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: 0,
-        amount1Max: MaxUint128
+        amount1Max: MaxUint128,
       }
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
       await snapshotGasCost(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          parameters
-        )
+        nft.connect(other)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
       )
     })
   })
@@ -1218,48 +1160,32 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
     it('emits an event')
 
     it('cannot be called by other addresses', async () => {
       const burnParams = tokenId
-      const multicallParameters = [nft.interface.encodeFunctionData("burn", [burnParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('burn', [burnParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
       await expect(
-        nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
-      ).to.be.revertedWith("Not approved")
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
+      ).to.be.revertedWith('Not approved')
     })
 
     it('cannot be called while there is still liquidity', async () => {
       const burnParams = tokenId
-      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData('burn', [burnParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
-      ).to.be.revertedWith("Not cleared")
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
+      ).to.be.revertedWith('Not cleared')
     })
 
     it('cannot be called while there is still partial liquidity', async () => {
@@ -1270,28 +1196,34 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
 
       const burnParams = tokenId
-      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData('burn', [burnParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
-      ).to.be.revertedWith("Not cleared")
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
+      ).to.be.revertedWith('Not cleared')
     })
 
     it('cannot be called while there is still tokens owed', async () => {
@@ -1302,28 +1234,34 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
 
       const burnParams = tokenId
-      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData('burn', [burnParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
       await expect(
-        nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
-      ).to.be.revertedWith("Not cleared")
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
+      ).to.be.revertedWith('Not cleared')
     })
 
     it('deletes the token', async () => {
@@ -1334,36 +1272,50 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
 
       const collectParams = {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: MaxUint128,
-        amount1Max: MaxUint128
+        amount1Max: MaxUint128,
       }
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        parameters
-      )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
 
       const burnParams = tokenId
-      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
-      const { eat: burnEat, expiry: burnExpiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData('burn', [burnParams])]
+      const { eat: burnEat, expiry: burnExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        multicallParameters
+      )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           burnEat.v,
           burnEat.r,
           burnEat.s,
@@ -1381,36 +1333,50 @@ describe('NonfungiblePositionManager', () => {
         amount1Min: 0,
         deadline: 1,
       }
-      const decreaseMulticallParameters = [nft.interface.encodeFunctionData("decreaseLiquidity", [decreaseLiquidityParams])]
-      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(signer, domain, other, nft, decreaseMulticallParameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        decreaseEat.v,
-        decreaseEat.r,
-        decreaseEat.s,
-        decreaseExpiry,
-        decreaseMulticallParameters,
+      const decreaseMulticallParameters = [
+        nft.interface.encodeFunctionData('decreaseLiquidity', [decreaseLiquidityParams]),
+      ]
+      const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        decreaseMulticallParameters
       )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          decreaseEat.v,
+          decreaseEat.r,
+          decreaseEat.s,
+          decreaseExpiry,
+          decreaseMulticallParameters
+        )
 
       const collectParams = {
         tokenId: tokenId,
         recipient: wallet.address,
         amount0Max: MaxUint128,
-        amount1Max: MaxUint128
+        amount1Max: MaxUint128,
       }
-      const parameters = [nft.connect(other).interface.encodeFunctionData("collect", [collectParams])]
+      const parameters = [nft.connect(other).interface.encodeFunctionData('collect', [collectParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
-      await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        parameters
-      )
+      await nft
+        .connect(other)
+        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
       const burnParams = tokenId
-      const multicallParameters = [nft.connect(other).interface.encodeFunctionData("burn", [burnParams])]
-      const { eat: burnEat, expiry: burnExpiry } = await generateAccessToken(signer, domain, other, nft, multicallParameters)
+      const multicallParameters = [nft.connect(other).interface.encodeFunctionData('burn', [burnParams])]
+      const { eat: burnEat, expiry: burnExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        other,
+        nft,
+        multicallParameters
+      )
       await snapshotGasCost(
-        await nft.connect(other)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+        await nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
             burnEat.v,
             burnEat.r,
             burnEat.s,
@@ -1445,16 +1411,10 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
     it('can only be called by authorized or owner', async () => {
@@ -1498,30 +1458,24 @@ describe('NonfungiblePositionManager', () => {
           encodePriceSqrt(1, 1)
         )
 
-      const mintParams = {
-        token0: tokens[0].address,
-        token1: tokens[1].address,
-        fee: FeeAmount.MEDIUM,
-        tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-        tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
-        recipient: other.address,
-        amount0Desired: 100,
-        amount1Desired: 100,
-        amount0Min: 0,
-        amount1Min: 0,
-        deadline: 1,
-      }
+        const mintParams = {
+          token0: tokens[0].address,
+          token1: tokens[1].address,
+          fee: FeeAmount.MEDIUM,
+          tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+          tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+          recipient: other.address,
+          amount0Desired: 100,
+          amount1Desired: 100,
+          amount0Min: 0,
+          amount1Min: 0,
+          deadline: 1,
+        }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
+        const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+        const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+        await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       })
 
       it('changes the operator of the position and increments the nonce', async () => {
@@ -1588,16 +1542,10 @@ describe('NonfungiblePositionManager', () => {
           deadline: 1,
         }
 
-        const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+        const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
         const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-        await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          multicallParameters
-        )
+        await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       })
 
       it('changes the operator of the position and increments the nonce', async () => {
@@ -1659,16 +1607,10 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
     async function exit({
@@ -1686,7 +1628,6 @@ describe('NonfungiblePositionManager', () => {
       amount1Min: BigNumberish
       recipient: string
     }) {
-
       const decreaseLiquidityData = nft.interface.encodeFunctionData('decreaseLiquidity', [
         { tokenId, liquidity, amount0Min, amount1Min, deadline: 1 },
       ])
@@ -1700,20 +1641,10 @@ describe('NonfungiblePositionManager', () => {
       ])
       const burnData = nft.interface.encodeFunctionData('burn', [tokenId])
 
-      const parameters = [
-        decreaseLiquidityData,
-        collectData,
-        burnData
-      ]
+      const parameters = [decreaseLiquidityData, collectData, burnData]
       const { eat, expiry } = await generateAccessToken(signer, domain, other, nft, parameters)
 
-      return nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        parameters
-      )
+      return nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
     }
 
     it('executes all the actions', async () => {
@@ -1773,16 +1704,10 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
     it('reverts for invalid token id', async () => {
@@ -1823,16 +1748,10 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
         recipient: wallet.address,
       }
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
 
       // nft 2 earns 75% of fees
       const mintParams2 = {
@@ -1848,10 +1767,16 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
         recipient: wallet.address,
       }
-      const multicallParameters2 = [nft.interface.encodeFunctionData("mint", [mintParams2])]
-      const { eat: eat2, expiry: expiry2 } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters2)
+      const multicallParameters2 = [nft.interface.encodeFunctionData('mint', [mintParams2])]
+      const { eat: eat2, expiry: expiry2 } = await generateAccessToken(
+        signer,
+        domain,
+        wallet,
+        nft,
+        multicallParameters2
+      )
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat2.v,
         eat2.r,
         eat2.s,
@@ -1879,17 +1804,17 @@ describe('NonfungiblePositionManager', () => {
           amount0Max: MaxUint128,
           amount1Max: MaxUint128,
         }
-        const parameters1 = [nft.interface.encodeFunctionData("collect", [collectParams1])]
+        const parameters1 = [nft.interface.encodeFunctionData('collect', [collectParams1])]
         const { eat: eat1, expiry: expiry1 } = await generateAccessToken(signer, domain, wallet, nft, parameters1)
 
-        const [response1] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+        const [response1] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           eat1.v,
           eat1.r,
           eat1.s,
           expiry1,
           parameters1
         )
-        const { amount0: nft1Amount0, amount1: nft1Amount1 } = nft.interface.decodeFunctionResult("collect", response1);
+        const { amount0: nft1Amount0, amount1: nft1Amount1 } = nft.interface.decodeFunctionResult('collect', response1)
         expect(nft1Amount0).to.eq(2501)
         expect(nft1Amount1).to.eq(0)
 
@@ -1897,22 +1822,21 @@ describe('NonfungiblePositionManager', () => {
           tokenId: 2,
           recipient: wallet.address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128
+          amount1Max: MaxUint128,
         }
-        const parameters2 = [nft.interface.encodeFunctionData("collect", [collectParams2])]
+        const parameters2 = [nft.interface.encodeFunctionData('collect', [collectParams2])]
         const { eat: eat2, expiry: expiry2 } = await generateAccessToken(signer, domain, wallet, nft, parameters2)
-        
-        const [response2] = await nft.callStatic["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+
+        const [response2] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           eat2.v,
           eat2.r,
           eat2.s,
           expiry2,
           parameters2
         )
-        const { amount0: nft2Amount0, amount1: nft2Amount1} = nft.interface.decodeFunctionResult("collect", response2)
+        const { amount0: nft2Amount0, amount1: nft2Amount1 } = nft.interface.decodeFunctionResult('collect', response2)
         expect(nft2Amount0).to.eq(7503)
         expect(nft2Amount1).to.eq(0)
-
       })
 
       it('actually collected', async () => {
@@ -1926,19 +1850,15 @@ describe('NonfungiblePositionManager', () => {
           tokenId: 1,
           recipient: wallet.address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128
+          amount1Max: MaxUint128,
         }
-        const parameters = [nft.connect(wallet).interface.encodeFunctionData("collect", [collectParams])]
+        const parameters = [nft.connect(wallet).interface.encodeFunctionData('collect', [collectParams])]
         const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, parameters)
 
         await expect(
-          nft.connect(wallet)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-            eat.v,
-            eat.r,
-            eat.s,
-            expiry,
-            parameters
-          )
+          nft
+            .connect(wallet)
+            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
         )
           .to.emit(tokens[0], 'Transfer')
           .withArgs(poolAddress, wallet.address, 2501)
@@ -1948,19 +1868,15 @@ describe('NonfungiblePositionManager', () => {
           tokenId: 2,
           recipient: wallet.address,
           amount0Max: MaxUint128,
-          amount1Max: MaxUint128
+          amount1Max: MaxUint128,
         }
-        const parameters2 = [nft.connect(wallet).interface.encodeFunctionData("collect", [collectParams2])]
+        const parameters2 = [nft.connect(wallet).interface.encodeFunctionData('collect', [collectParams2])]
         const { eat: eat2, expiry: expiry2 } = await generateAccessToken(signer, domain, wallet, nft, parameters2)
 
         await expect(
-          nft.connect(wallet)["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-            eat2.v,
-            eat2.r,
-            eat2.s,
-            expiry2,
-            parameters2
-          )
+          nft
+            .connect(wallet)
+            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat2.v, eat2.r, eat2.s, expiry2, parameters2)
         )
           .to.emit(tokens[0], 'Transfer')
           .withArgs(poolAddress, wallet.address, 7503)
@@ -1997,16 +1913,10 @@ describe('NonfungiblePositionManager', () => {
         deadline: 10,
       }
 
-      const multicallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
-        eat.v,
-        eat.r,
-        eat.s,
-        expiry,
-        multicallParameters
-      )
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
 
       await snapshotGasCost(positionsGasTest.getGasCostOfPositions(1))
     })

@@ -28,10 +28,17 @@ describe('SwapRouter gas tests', function () {
     domain: Domain
     verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      weth9,
+      factory,
+      router,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -66,10 +73,10 @@ describe('SwapRouter gas tests', function () {
         amount1Min: 0,
         deadline: 1,
       }
-      const mintMulticallParameters = [nft.interface.encodeFunctionData("mint", [mintParams])]
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
       const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
-      await nft["multicall(uint8,bytes32,bytes32,uint256,bytes[])"](
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
         eat.s,
@@ -108,7 +115,7 @@ describe('SwapRouter gas tests', function () {
       pools,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 

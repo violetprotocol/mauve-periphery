@@ -60,7 +60,7 @@ describe.skip('V3Migrator', () => {
       migrator,
       signer,
       domain,
-      verifier
+      verifier,
     }
   }
 
@@ -87,7 +87,9 @@ describe.skip('V3Migrator', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ factoryV2, factoryV3, token, weth9, nft, migrator, signer, domain, verifier } = await loadFixture(migratorFixture))
+    ;({ factoryV2, factoryV3, token, weth9, nft, migrator, signer, domain, verifier } = await loadFixture(
+      migratorFixture
+    ))
   })
 
   beforeEach('add V2 liquidity', async () => {
