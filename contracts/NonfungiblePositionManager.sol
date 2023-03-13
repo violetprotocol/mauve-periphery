@@ -133,6 +133,7 @@ contract NonfungiblePositionManager is
         external
         payable
         override
+        onlySelfMulticall
         checkDeadline(params.deadline)
         returns (
             uint256 tokenId,
@@ -203,6 +204,7 @@ contract NonfungiblePositionManager is
         external
         payable
         override
+        onlySelfMulticall
         checkDeadline(params.deadline)
         returns (
             uint128 liquidity,
@@ -262,6 +264,7 @@ contract NonfungiblePositionManager is
         external
         payable
         override
+        onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
         checkDeadline(params.deadline)
         returns (uint256 amount0, uint256 amount1)
@@ -379,7 +382,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) {
+    function burn(uint256 tokenId) external payable override onlySelfMulticall isAuthorizedForToken(tokenId) {
         Position storage position = _positions[tokenId];
         require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'Not cleared');
         delete _positions[tokenId];

@@ -2,14 +2,20 @@ import { constants, Wallet } from 'ethers'
 import { waffle, ethers } from 'hardhat'
 import { expect } from './shared/expect'
 import { Fixture } from 'ethereum-waffle'
-import { NonfungibleTokenPositionDescriptor, MockTimeNonfungiblePositionManager, TestERC20 } from '../typechain'
-import completeFixture from './shared/completeFixture'
+import {
+  NonfungibleTokenPositionDescriptor,
+  MockTimeNonfungiblePositionManager,
+  TestERC20,
+  AccessTokenVerifier,
+} from '../typechain'
+import completeFixture, { Domain } from './shared/completeFixture'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
 import { extractJSONFromURI } from './shared/extractJSONFromURI'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
+import { generateAccessToken } from './shared/generateAccessToken'
 
 const DAI = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
@@ -25,11 +31,20 @@ describe('NonfungibleTokenPositionDescriptor', () => {
     tokens: [TestERC20, TestERC20, TestERC20]
     nft: MockTimeNonfungiblePositionManager
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+    signer: Wallet
+    domain: Domain
+    verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { factory, nft, router, nftDescriptor, createAndInitializePoolIfNecessary } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      factory,
+      nft,
+      router,
+      nftDescriptor,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
     const tokenFactory = await ethers.getContractFactory('TestERC20')
     const tokens: [TestERC20, TestERC20, TestERC20] = [
       (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20, // do not use maxu256 to avoid overflowing
@@ -43,6 +58,9 @@ describe('NonfungibleTokenPositionDescriptor', () => {
       tokens,
       nft,
       createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
     }
   }
 
@@ -51,6 +69,9 @@ describe('NonfungibleTokenPositionDescriptor', () => {
   let nft: MockTimeNonfungiblePositionManager
   let weth9: TestERC20
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+  let signer: Wallet
+  let domain: Domain
+  let verifier: AccessTokenVerifier
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -61,9 +82,15 @@ describe('NonfungibleTokenPositionDescriptor', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ tokens, nft, nftPositionDescriptor, createAndInitializePoolIfNecessary } = await loadFixture(
-      nftPositionDescriptorCompleteFixture
-    ))
+    ;({
+      tokens,
+      nft,
+      nftPositionDescriptor,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await loadFixture(nftPositionDescriptorCompleteFixture))
     const tokenFactory = await ethers.getContractFactory('TestERC20')
     weth9 = tokenFactory.attach(await nftPositionDescriptor.WETH9()) as TestERC20
   })
@@ -126,7 +153,8 @@ describe('NonfungibleTokenPositionDescriptor', () => {
       await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
       await weth9.approve(nft.address, 100)
       await tokens[1].approve(nft.address, 100)
-      await nft.mint({
+
+      const mintParams = {
         token0: token0.address,
         token1: token1.address,
         fee: FeeAmount.MEDIUM,
@@ -138,7 +166,17 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-      })
+      }
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters
+      )
 
       const metadata = extractJSONFromURI(await nft.tokenURI(1))
       expect(metadata.name).to.match(/(\sETH\/TEST|TEST\/ETH)/)
@@ -151,7 +189,8 @@ describe('NonfungibleTokenPositionDescriptor', () => {
       await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
       await tokens[1].approve(nft.address, 100)
       await tokens[2].approve(nft.address, 100)
-      await nft.mint({
+
+      const mintParams = {
         token0: token0.address,
         token1: token1.address,
         fee: FeeAmount.MEDIUM,
@@ -163,7 +202,17 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-      })
+      }
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters
+      )
 
       const metadata = extractJSONFromURI(await nft.tokenURI(1))
       expect(metadata.name).to.match(/TEST\/TEST/)
@@ -175,7 +224,7 @@ describe('NonfungibleTokenPositionDescriptor', () => {
       await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
       await weth9.approve(nft.address, 100)
       await tokens[1].approve(nft.address, 100)
-      await nft.mint({
+      const mintParams = {
         token0: token0.address,
         token1: token1.address,
         fee: FeeAmount.MEDIUM,
@@ -187,7 +236,17 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
-      })
+      }
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters
+      )
 
       const nftDescriptorLibraryFactory = await ethers.getContractFactory('NFTDescriptor')
       const nftDescriptorLibrary = await nftDescriptorLibraryFactory.deploy()

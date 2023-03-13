@@ -1,8 +1,8 @@
 import { Fixture } from 'ethereum-waffle'
 import { BigNumber, BigNumberish, constants, Contract, ContractTransaction, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
-import { MockTimeNonfungiblePositionManager, TestERC20, TickLensTest } from '../typechain'
-import completeFixture from './shared/completeFixture'
+import { MockTimeNonfungiblePositionManager, TestERC20, TickLensTest, AccessTokenVerifier } from '../typechain'
+import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { expect } from './shared/expect'
@@ -10,6 +10,7 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
+import { generateAccessToken } from './shared/generateAccessToken'
 
 describe('TickLens', () => {
   let wallets: Wallet[]
@@ -19,8 +20,19 @@ describe('TickLens', () => {
     nft: MockTimeNonfungiblePositionManager
     tokens: [TestERC20, TestERC20, TestERC20]
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+    signer: Wallet
+    domain: Domain
+    verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { factory, tokens, nft, createAndInitializePoolIfNecessary } = await completeFixture(wallets, provider)
+    const {
+      factory,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     for (const token of tokens) {
       await token.approve(nft.address, constants.MaxUint256)
@@ -31,6 +43,9 @@ describe('TickLens', () => {
       nft,
       tokens,
       createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
     }
   }
 
@@ -40,6 +55,9 @@ describe('TickLens', () => {
   let poolAddress: string
   let tickLens: TickLensTest
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+  let signer: Wallet
+  let domain: Domain
+  let verifier: AccessTokenVerifier
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -49,7 +67,9 @@ describe('TickLens', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ factory, tokens, nft, createAndInitializePoolIfNecessary } = await loadFixture(nftFixture))
+    ;({ factory, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
+      nftFixture
+    ))
   })
 
   describe('#getPopulatedTicksInWord', () => {
@@ -60,7 +80,7 @@ describe('TickLens', () => {
 
       await createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
 
-      const liquidityParams = {
+      const mintParams = {
         token0: tokenAddressA,
         token1: tokenAddressB,
         fee: FeeAmount.MEDIUM,
@@ -73,8 +93,16 @@ describe('TickLens', () => {
         amount1Min: 0,
         deadline: 1,
       }
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
 
-      return nft.mint(liquidityParams)
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters
+      )
     }
 
     async function mint(tickLower: number, tickUpper: number, amountBothDesired: BigNumberish): Promise<number> {
@@ -91,10 +119,25 @@ describe('TickLens', () => {
         recipient: wallets[0].address,
         deadline: 1,
       }
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
 
-      const { liquidity } = await nft.callStatic.mint(mintParams)
+      const [mintResponse] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters
+      )
+      const { liquidity } = nft.interface.decodeFunctionResult('mint', mintResponse)
 
-      await nft.mint(mintParams)
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters
+      )
       return liquidity.toNumber()
     }
 

@@ -1,8 +1,8 @@
 import { Fixture } from 'ethereum-waffle'
 import { constants, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
-import { MockTimeNonfungiblePositionManager, Quoter, TestERC20 } from '../typechain'
-import completeFixture from './shared/completeFixture'
+import { MockTimeNonfungiblePositionManager, Quoter, TestERC20, AccessTokenVerifier } from '../typechain'
+import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, MaxUint128, TICK_SPACINGS } from './shared/constants'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
@@ -20,11 +20,21 @@ describe('Quoter', () => {
     tokens: [TestERC20, TestERC20, TestERC20]
     quoter: Quoter
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+    signer: Wallet
+    domain: Domain
+    verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      weth9,
+      factory,
+      router,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -42,6 +52,9 @@ describe('Quoter', () => {
       nft,
       quoter,
       createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
     }
   }
 
@@ -49,6 +62,9 @@ describe('Quoter', () => {
   let tokens: [TestERC20, TestERC20, TestERC20]
   let quoter: Quoter
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+  let signer: Wallet
+  let domain: Domain
+  let verifier: AccessTokenVerifier
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -60,13 +76,31 @@ describe('Quoter', () => {
 
   // helper for getting weth and token balances
   beforeEach('load fixture', async () => {
-    ;({ tokens, nft, quoter, createAndInitializePoolIfNecessary } = await loadFixture(swapRouterFixture))
+    ;({ tokens, nft, quoter, createAndInitializePoolIfNecessary, signer, domain, verifier } = await loadFixture(
+      swapRouterFixture
+    ))
   })
 
   describe('quotes', () => {
     beforeEach(async () => {
-      await createPool(nft, wallet, tokens[0].address, tokens[1].address, createAndInitializePoolIfNecessary)
-      await createPool(nft, wallet, tokens[1].address, tokens[2].address, createAndInitializePoolIfNecessary)
+      await createPool(
+        nft,
+        wallet,
+        tokens[0].address,
+        tokens[1].address,
+        createAndInitializePoolIfNecessary,
+        signer,
+        domain
+      )
+      await createPool(
+        nft,
+        wallet,
+        tokens[1].address,
+        tokens[2].address,
+        createAndInitializePoolIfNecessary,
+        signer,
+        domain
+      )
     })
 
     describe('#quoteExactInput', () => {

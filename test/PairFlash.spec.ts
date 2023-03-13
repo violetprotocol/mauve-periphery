@@ -1,5 +1,5 @@
 import { ethers, waffle } from 'hardhat'
-import { BigNumber, constants, Contract, ContractTransaction } from 'ethers'
+import { BigNumber, constants, Contract, ContractTransaction, Wallet } from 'ethers'
 import {
   IWETH9,
   MockTimeNonfungiblePositionManager,
@@ -12,8 +12,9 @@ import {
   NFTDescriptor,
   Quoter,
   SwapRouter,
+  AccessTokenVerifier,
 } from '../typechain'
-import completeFixture from './shared/completeFixture'
+import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, MaxUint128, TICK_SPACINGS } from './shared/constants'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import snapshotGasCost from './shared/snapshotGasCost'
@@ -22,6 +23,7 @@ import { expect } from './shared/expect'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
+import { generateAccessToken } from './shared/generateAccessToken'
 
 describe('PairFlash test', () => {
   const provider = waffle.provider
@@ -35,6 +37,9 @@ describe('PairFlash test', () => {
   let factory: IUniswapV3Factory
   let quoter: Quoter
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
+  let signer: Wallet
+  let domain: Domain
+  let verifier: AccessTokenVerifier
 
   async function createPool(tokenAddressA: string, tokenAddressB: string, fee: FeeAmount, price: BigNumber) {
     if (tokenAddressA.toLowerCase() > tokenAddressB.toLowerCase())
@@ -42,7 +47,7 @@ describe('PairFlash test', () => {
 
     await createAndInitializePoolIfNecessary(tokenAddressA, tokenAddressB, fee, price)
 
-    const liquidityParams = {
+    const mintParams = {
       token0: tokenAddressA,
       token1: tokenAddressB,
       fee: fee,
@@ -55,15 +60,24 @@ describe('PairFlash test', () => {
       amount1Min: 0,
       deadline: 1,
     }
+    const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
 
-    return nft.mint(liquidityParams)
+    return nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintMulticallParameters)
   }
 
   const flashFixture = async () => {
-    const { router, tokens, factory, weth9, nft, createAndInitializePoolIfNecessary } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      router,
+      tokens,
+      factory,
+      weth9,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
     const token0 = tokens[0]
     const token1 = tokens[1]
 
@@ -83,6 +97,9 @@ describe('PairFlash test', () => {
       quoter,
       router,
       createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
     }
   }
 
@@ -93,9 +110,18 @@ describe('PairFlash test', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ factory, token0, token1, flash, nft, quoter, createAndInitializePoolIfNecessary } = await loadFixture(
-      flashFixture
-    ))
+    ;({
+      factory,
+      token0,
+      token1,
+      flash,
+      nft,
+      quoter,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await loadFixture(flashFixture))
 
     await token0.approve(nft.address, MaxUint128)
     await token1.approve(nft.address, MaxUint128)

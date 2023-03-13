@@ -2,8 +2,8 @@ import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifact
 import { Fixture } from 'ethereum-waffle'
 import { BigNumber, constants, ContractTransaction, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
-import { IUniswapV3Pool, IWETH9, MockTimeSwapRouter, TestERC20 } from '../typechain'
-import completeFixture from './shared/completeFixture'
+import { IUniswapV3Pool, IWETH9, MockTimeSwapRouter, TestERC20, AccessTokenVerifier } from '../typechain'
+import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
@@ -12,6 +12,7 @@ import { expect } from './shared/expect'
 import { encodePath } from './shared/path'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
+import { generateAccessToken } from './shared/generateAccessToken'
 
 describe('SwapRouter gas tests', function () {
   this.timeout(40000)
@@ -23,11 +24,21 @@ describe('SwapRouter gas tests', function () {
     router: MockTimeSwapRouter
     tokens: [TestERC20, TestERC20, TestERC20]
     pools: [IUniswapV3Pool, IUniswapV3Pool, IUniswapV3Pool]
+    signer: Wallet
+    domain: Domain
+    verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary } = await completeFixture(
-      wallets,
-      provider
-    )
+    const {
+      weth9,
+      factory,
+      router,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -49,7 +60,7 @@ describe('SwapRouter gas tests', function () {
         encodePriceSqrt(100005, 100000) // we don't want to cross any ticks
       )
 
-      const liquidityParams = {
+      const mintParams = {
         token0: tokenAddressA,
         token1: tokenAddressB,
         fee: FeeAmount.MEDIUM,
@@ -62,8 +73,16 @@ describe('SwapRouter gas tests', function () {
         amount1Min: 0,
         deadline: 1,
       }
+      const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+      const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
 
-      return nft.mint(liquidityParams)
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        mintMulticallParameters
+      )
     }
 
     async function createPoolWETH9(tokenAddress: string) {
@@ -94,6 +113,9 @@ describe('SwapRouter gas tests', function () {
       router,
       tokens,
       pools,
+      signer,
+      domain,
+      verifier,
     }
   }
 
@@ -101,6 +123,9 @@ describe('SwapRouter gas tests', function () {
   let router: MockTimeSwapRouter
   let tokens: [TestERC20, TestERC20, TestERC20]
   let pools: [IUniswapV3Pool, IUniswapV3Pool, IUniswapV3Pool]
+  let signer: Wallet
+  let domain: Domain
+  let verifier: AccessTokenVerifier
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -112,7 +137,7 @@ describe('SwapRouter gas tests', function () {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ router, weth9, tokens, pools } = await loadFixture(swapRouterFixture))
+    ;({ router, weth9, tokens, pools, signer, domain, verifier } = await loadFixture(swapRouterFixture))
   })
 
   async function exactInput(
