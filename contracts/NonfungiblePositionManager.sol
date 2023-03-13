@@ -205,6 +205,7 @@ contract NonfungiblePositionManager is
         external
         payable
         override
+        onlySelfMulticall
         checkDeadline(params.deadline)
         returns (
             uint128 liquidity,
@@ -264,6 +265,7 @@ contract NonfungiblePositionManager is
         external
         payable
         override
+        onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
         checkDeadline(params.deadline)
         returns (uint256 amount0, uint256 amount1)
