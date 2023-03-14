@@ -11,7 +11,7 @@ import './Multicall.sol';
 abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer {
     constructor(address _EATVerifier) AccessTokenConsumer(_EATVerifier) {}
 
-    bool isMulticalling;
+    bool private isMulticalling;
     modifier multicalling {
         isMulticalling = true;
         _;
