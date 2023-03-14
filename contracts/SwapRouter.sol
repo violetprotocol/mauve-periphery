@@ -119,6 +119,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountOut)
     {
         amountOut = exactInputInternal(
@@ -136,6 +137,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountOut)
     {
         address payer = msg.sender; // msg.sender pays for the first hop
@@ -207,6 +209,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountIn)
     {
         // avoid an SLOAD by using the swap return data
@@ -228,6 +231,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountIn)
     {
         // it's okay that the payer is fixed to msg.sender here, as they're only paying for the "final" exact output
