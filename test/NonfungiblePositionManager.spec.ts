@@ -12,6 +12,8 @@ import {
   TestPositionNFTOwner,
   AccessTokenVerifier,
   TestEATMulticall,
+  MockTimeSwapRouter,
+  EATMulticall,
 } from '../typechain'
 import completeFixture, { Domain } from './shared/completeFixture'
 import { computePoolAddress } from './shared/computePoolAddress'
@@ -39,7 +41,7 @@ describe('NonfungiblePositionManager', () => {
     factory: IUniswapV3Factory
     tokens: [TestERC20, TestERC20, TestERC20]
     weth9: IWETH9
-    router: SwapRouter
+    router: MockTimeSwapRouter
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
     signer: Wallet
     domain: Domain
@@ -81,7 +83,7 @@ describe('NonfungiblePositionManager', () => {
   let nft: MockTimeNonfungiblePositionManager
   let tokens: [TestERC20, TestERC20, TestERC20]
   let weth9: IWETH9
-  let router: SwapRouter
+  let router: MockTimeSwapRouter
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   let signer: Wallet
   let domain: Domain
@@ -1833,13 +1835,30 @@ describe('NonfungiblePositionManager', () => {
       beforeEach('swap for ~10k of fees', async () => {
         const swapAmount = 3_333_333
         await tokens[0].approve(router.address, swapAmount)
-        await router.exactInput({
+
+        const exactInputParams = {
           recipient: wallet.address,
           deadline: 1,
           path: encodePath([tokens[0].address, tokens[1].address], [FeeAmount.MEDIUM]),
           amountIn: swapAmount,
           amountOutMinimum: 0,
-        })
+        }
+        const exactInputParamsEncoded = [router.interface.encodeFunctionData('exactInput', [exactInputParams])]
+        const { eat: eat, expiry: expiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallet,
+          router,
+          exactInputParamsEncoded
+        )
+
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          exactInputParamsEncoded
+        )
       })
       it('expected amounts', async () => {
         const collectParams1 = {
@@ -1971,7 +1990,7 @@ const generateAccessToken = async (
   signer: Wallet,
   domain: messages.Domain,
   caller: Wallet,
-  contract: MockTimeNonfungiblePositionManager | TestEATMulticall,
+  contract: EATMulticall,
   parameters: any[]
 ) => {
   const token = {

@@ -13,8 +13,7 @@ import {
 } from '../../typechain'
 import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
 import { parseEther } from 'ethers/lib/utils'
-
-const EAT_ISSUER_PK = '18eaafaa63636879094c86a953e6fcba4abaefae3baec1d4e5b952c10828d4c2'
+import { EAT_ISSUER_PK } from './eatSigner'
 
 export type Domain = {
   name: string
@@ -35,13 +34,10 @@ const completeFixture: Fixture<{
   domain: Domain
   verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {
-  const { weth9, factory, router } = await v3RouterFixture([wallet], provider)
+  const { weth9, factory, router, verifier } = await v3RouterFixture([wallet], provider)
 
-  // ETHEREUM ACCESS TOKEN SETUP
   const signer = new ethers.Wallet(EAT_ISSUER_PK, provider)
   await wallet.sendTransaction({ to: signer.address, value: parseEther('1') })
-  const verifierFactory = await ethers.getContractFactory('AccessTokenVerifier')
-  const verifier = <AccessTokenVerifier>await verifierFactory.deploy(signer.address)
   await verifier.connect(signer).rotateIntermediate(signer.address)
   await verifier.connect(signer).activateIssuers([signer.address])
   const domain = {

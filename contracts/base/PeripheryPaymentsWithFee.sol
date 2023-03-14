@@ -19,7 +19,7 @@ abstract contract PeripheryPaymentsWithFee is PeripheryPayments, IPeripheryPayme
         address recipient,
         uint256 feeBips,
         address feeRecipient
-    ) public payable override {
+    ) public payable virtual override {
         require(feeBips > 0 && feeBips <= 100);
 
         uint256 balanceWETH9 = IWETH9(WETH9).balanceOf(address(this));
@@ -40,7 +40,7 @@ abstract contract PeripheryPaymentsWithFee is PeripheryPayments, IPeripheryPayme
         address recipient,
         uint256 feeBips,
         address feeRecipient
-    ) public payable override {
+    ) public payable virtual override {
         require(feeBips > 0 && feeBips <= 100);
 
         uint256 balanceToken = IERC20(token).balanceOf(address(this));
