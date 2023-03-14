@@ -8,7 +8,8 @@ export const generateAccessToken = async (
   domain: messages.Domain,
   caller: Wallet,
   contract: EATMulticall,
-  parameters: any[]
+  parameters: any[],
+  expiry?: BigNumber
 ) => {
   const token = {
     functionCall: {
@@ -19,7 +20,7 @@ export const generateAccessToken = async (
         parameters,
       ]),
     },
-    expiry: BigNumber.from(4833857428),
+    expiry: expiry || BigNumber.from(4833857428),
   }
 
   const eat = splitSignature(await utils.signAccessToken(signer, domain, token))
