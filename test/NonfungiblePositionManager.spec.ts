@@ -31,6 +31,7 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
 import { messages, utils } from '@violetprotocol/ethereum-access-token-helpers'
 import { splitSignature } from 'ethers/lib/utils'
+import { generateAccessToken } from './shared/generateAccessToken'
 
 describe('NonfungiblePositionManager', () => {
   let wallets: Wallet[]
@@ -1985,27 +1986,3 @@ describe('NonfungiblePositionManager', () => {
     })
   })
 })
-
-const generateAccessToken = async (
-  signer: Wallet,
-  domain: messages.Domain,
-  caller: Wallet,
-  contract: EATMulticall,
-  parameters: any[]
-) => {
-  const token = {
-    functionCall: {
-      functionSignature: contract.interface.getSighash('multicall(uint8,bytes32,bytes32,uint256,bytes[])'),
-      target: contract.address,
-      caller: caller.address,
-      parameters: utils.packParameters(contract.interface, 'multicall(uint8,bytes32,bytes32,uint256,bytes[])', [
-        parameters,
-      ]),
-    },
-    expiry: BigNumber.from(4833857428),
-  }
-
-  const eat = splitSignature(await utils.signAccessToken(signer, domain, token))
-
-  return { eat, expiry: token.expiry }
-}
