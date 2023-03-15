@@ -198,19 +198,53 @@ describe('SwapRouter', function () {
           amountOutMinimum,
         }
 
-        const data = [router.interface.encodeFunctionData('exactInput', [params])]
-        if (outputIsWETH9)
-          data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address]))
-
         // ensure that the swap fails if the limit is any tighter
         params.amountOutMinimum += 1
-        await expect(router.connect(trader).exactInput(params, { value })).to.be.revertedWith('Too little received')
+        const exactInputFailCallData = [router.interface.encodeFunctionData('exactInput', [params])]
+        const { eat: exactInputFailEAT, expiry: exactInputFailExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactInputFailCallData
+        )
+        await expect(
+          router
+            .connect(trader)
+            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+              exactInputFailEAT.v,
+              exactInputFailEAT.r,
+              exactInputFailEAT.s,
+              exactInputFailExpiry,
+              exactInputFailCallData,
+              { value }
+            )
+        ).to.be.revertedWith('Too little received')
         params.amountOutMinimum -= 1
 
+        const exactInputCallData = [router.interface.encodeFunctionData('exactInput', [params])]
+        if (outputIsWETH9)
+          exactInputCallData.push(
+            router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address])
+          )
+        const { eat: exactInputEAT, expiry: exactInputExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactInputCallData
+        )
         // optimized for the gas test
-        return data.length === 1
-          ? router.connect(trader).exactInput(params, { value })
-          : router.connect(trader).multicall(data, { value })
+        return router
+          .connect(trader)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+            exactInputEAT.v,
+            exactInputEAT.r,
+            exactInputEAT.s,
+            exactInputExpiry,
+            exactInputCallData,
+            { value }
+          )
       }
 
       describe('single-pool', () => {
@@ -431,21 +465,53 @@ describe('SwapRouter', function () {
           amountOutMinimum,
         }
 
-        const data = [router.interface.encodeFunctionData('exactInputSingle', [params])]
-        if (outputIsWETH9)
-          data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address]))
-
         // ensure that the swap fails if the limit is any tighter
         params.amountOutMinimum += 1
-        await expect(router.connect(trader).exactInputSingle(params, { value })).to.be.revertedWith(
-          'Too little received'
+        const exactInputSingleFailCallData = [router.interface.encodeFunctionData('exactInputSingle', [params])]
+        const { eat: exactInputSingleFailEAT, expiry: exactInputSingleFailExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactInputSingleFailCallData
         )
-        params.amountOutMinimum -= 1
+        await expect(
+          router
+            .connect(trader)
+            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+              exactInputSingleFailEAT.v,
+              exactInputSingleFailEAT.r,
+              exactInputSingleFailEAT.s,
+              exactInputSingleFailExpiry,
+              exactInputSingleFailCallData,
+              { value }
+            )
+        ).to.be.revertedWith('Too little received')
 
+        params.amountOutMinimum -= 1
+        const exactInputSingleCallData = [router.interface.encodeFunctionData('exactInputSingle', [params])]
+        if (outputIsWETH9)
+          exactInputSingleCallData.push(
+            router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address])
+          )
+        const { eat: exactInputSingleEAT, expiry: exactInputSingleExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactInputSingleCallData
+        )
         // optimized for the gas test
-        return data.length === 1
-          ? router.connect(trader).exactInputSingle(params, { value })
-          : router.connect(trader).multicall(data, { value })
+        return router
+          .connect(trader)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+            exactInputSingleEAT.v,
+            exactInputSingleEAT.r,
+            exactInputSingleEAT.s,
+            exactInputSingleExpiry,
+            exactInputSingleCallData,
+            { value }
+          )
       }
 
       it('0 -> 1', async () => {
@@ -563,16 +629,52 @@ describe('SwapRouter', function () {
           amountInMaximum,
         }
 
-        const data = [router.interface.encodeFunctionData('exactOutput', [params])]
-        if (inputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [0, trader.address]))
-        if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
-
         // ensure that the swap fails if the limit is any tighter
         params.amountInMaximum -= 1
-        await expect(router.connect(trader).exactOutput(params, { value })).to.be.revertedWith('Too much requested')
+        const exactOutputFailCallData = [router.interface.encodeFunctionData('exactOutput', [params])]
+        let { eat: exactOutputFailEAT, expiry: exactOutputFailExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactOutputFailCallData
+        )
+        await expect(
+          router
+            .connect(trader)
+            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+              exactOutputFailEAT.v,
+              exactOutputFailEAT.r,
+              exactOutputFailEAT.s,
+              exactOutputFailExpiry,
+              exactOutputFailCallData,
+              { value }
+            )
+        ).to.be.revertedWith('Too much requested')
         params.amountInMaximum += 1
 
-        return router.connect(trader).multicall(data, { value })
+        const exactOutputCallData = [router.interface.encodeFunctionData('exactOutput', [params])]
+        if (inputIsWETH9)
+          exactOutputCallData.push(router.interface.encodeFunctionData('unwrapWETH9', [0, trader.address]))
+        if (outputIsWETH9)
+          exactOutputCallData.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
+        const { eat: exactOutputEAT, expiry: exactOutputExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactOutputCallData
+        )
+        return router
+          .connect(trader)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+            exactOutputEAT.v,
+            exactOutputEAT.r,
+            exactOutputEAT.s,
+            exactOutputExpiry,
+            exactOutputCallData,
+            { value }
+          )
       }
 
       describe('single-pool', () => {
@@ -787,18 +889,53 @@ describe('SwapRouter', function () {
               : BigNumber.from('1461446703485210103287273052203988822378723970341'),
         }
 
-        const data = [router.interface.encodeFunctionData('exactOutputSingle', [params])]
-        if (inputIsWETH9) data.push(router.interface.encodeFunctionData('refundETH'))
-        if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
-
         // ensure that the swap fails if the limit is any tighter
         params.amountInMaximum -= 1
-        await expect(router.connect(trader).exactOutputSingle(params, { value })).to.be.revertedWith(
-          'Too much requested'
+        const exactOutputSingleFailCallData = [router.interface.encodeFunctionData('exactOutputSingle', [params])]
+        const { eat: exactOutputSingleFailEAT, expiry: exactOutputSingleFailExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactOutputSingleFailCallData
         )
+        await expect(
+          router
+            .connect(trader)
+            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+              exactOutputSingleFailEAT.v,
+              exactOutputSingleFailEAT.r,
+              exactOutputSingleFailEAT.s,
+              exactOutputSingleFailExpiry,
+              exactOutputSingleFailCallData,
+              { value }
+            )
+        ).to.be.revertedWith('Too much requested')
         params.amountInMaximum += 1
 
-        return router.connect(trader).multicall(data, { value })
+        const exactOutputSingleCallData = [router.interface.encodeFunctionData('exactOutputSingle', [params])]
+        if (inputIsWETH9) exactOutputSingleCallData.push(router.interface.encodeFunctionData('refundETH'))
+        if (outputIsWETH9)
+          exactOutputSingleCallData.push(
+            router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address])
+          )
+        const { eat: exactOutputSingleEAT, expiry: exactOutputSingleExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          trader,
+          router,
+          exactOutputSingleCallData
+        )
+        return router
+          .connect(trader)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+            exactOutputSingleEAT.v,
+            exactOutputSingleEAT.r,
+            exactOutputSingleEAT.s,
+            exactOutputSingleExpiry,
+            exactOutputSingleCallData,
+            { value }
+          )
       }
 
       it('0 -> 1', async () => {
@@ -921,7 +1058,10 @@ describe('SwapRouter', function () {
           ]),
         ]
 
-        await router.connect(trader).multicall(data)
+        const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+        await router
+          .connect(trader)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
 
         const balance = await tokens[1].balanceOf(feeRecipient)
         expect(balance.eq(1)).to.be.eq(true)
@@ -950,7 +1090,10 @@ describe('SwapRouter', function () {
           ]),
         ]
 
-        await router.connect(trader).multicall(data)
+        const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+        await router
+          .connect(trader)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
         const endBalance = await waffle.provider.getBalance(feeRecipient)
         expect(endBalance.sub(startBalance).eq(1)).to.be.eq(true)
       })

@@ -1,5 +1,5 @@
 import { waffle, ethers } from 'hardhat'
-import { constants, BigNumberish, Contract, Wallet } from 'ethers'
+import { constants, BigNumberish, Contract, Wallet, BigNumber } from 'ethers'
 import { Fixture } from 'ethereum-waffle'
 import {
   PositionValueTest,
@@ -9,6 +9,7 @@ import {
   TestERC20,
   IUniswapV3Factory,
   AccessTokenVerifier,
+  MockTimeSwapRouter,
 } from '../typechain'
 import { FeeAmount, MaxUint128, TICK_SPACINGS } from './shared/constants'
 import { getMaxTick, getMinTick } from './shared/ticks'
@@ -31,7 +32,7 @@ describe('PositionValue', async () => {
     positionValue: PositionValueTest
     tokens: [TestERC20, TestERC20, TestERC20]
     nft: MockTimeNonfungiblePositionManager
-    router: SwapRouter
+    router: MockTimeSwapRouter
     factory: IUniswapV3Factory
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
     signer: Wallet
@@ -74,7 +75,7 @@ describe('PositionValue', async () => {
   let tokens: [TestERC20, TestERC20, TestERC20]
   let positionValue: PositionValueTest
   let nft: MockTimeNonfungiblePositionManager
-  let router: SwapRouter
+  let router: MockTimeSwapRouter
   let factory: IUniswapV3Factory
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   let signer: Wallet
@@ -146,22 +147,52 @@ describe('PositionValue', async () => {
       await tokens[1].approve(router.address, swapAmount)
 
       // accmuluate token0 fees
-      await router.exactInput({
+      const exactInputParams0For1 = {
         recipient: wallets[0].address,
         deadline: 1,
         path: encodePath([tokens[0].address, tokens[1].address], [FeeAmount.MEDIUM]),
         amountIn: swapAmount,
         amountOutMinimum: 0,
-      })
+      }
+      const calldata = [router.interface.encodeFunctionData('exactInput', [exactInputParams0For1])]
+      let { eat: exactInputEAT, expiry: exactInputExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        wallets[0],
+        router,
+        calldata
+      )
+      await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        exactInputEAT.v,
+        exactInputEAT.r,
+        exactInputEAT.s,
+        exactInputExpiry,
+        calldata
+      )
 
       // accmuluate token1 fees
-      await router.exactInput({
+      const exactInputParams1For0 = {
         recipient: wallets[0].address,
         deadline: 1,
         path: encodePath([tokens[1].address, tokens[0].address], [FeeAmount.MEDIUM]),
         amountIn: swapAmount,
         amountOutMinimum: 0,
-      })
+      }
+      const exactInputParams = [router.interface.encodeFunctionData('exactInput', [exactInputParams1For0])]
+      ;({ eat: exactInputEAT, expiry: exactInputExpiry } = await generateAccessToken(
+        signer,
+        domain,
+        wallets[0],
+        router,
+        exactInputParams
+      ))
+      await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        exactInputEAT.v,
+        exactInputEAT.r,
+        exactInputEAT.s,
+        exactInputExpiry,
+        exactInputParams
+      )
 
       sqrtRatioX96 = (await pool.slot0()).sqrtPriceX96
     })
@@ -430,22 +461,52 @@ describe('PositionValue', async () => {
         await tokens[1].approve(router.address, swapAmount)
 
         // accmuluate token0 fees
-        await router.exactInput({
+        const exactInput0For1Params = {
           recipient: wallets[0].address,
           deadline: 1,
           path: encodePath([tokens[0].address, tokens[1].address], [FeeAmount.MEDIUM]),
           amountIn: swapAmount,
           amountOutMinimum: 0,
-        })
+        }
+        const exactInput0For1CallData = [router.interface.encodeFunctionData('exactInput', [exactInput0For1Params])]
+        const { eat: exactInput0For1EAT, expiry: exactInput0For1Expiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallets[0],
+          router,
+          exactInput0For1CallData
+        )
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          exactInput0For1EAT.v,
+          exactInput0For1EAT.r,
+          exactInput0For1EAT.s,
+          exactInput0For1Expiry,
+          exactInput0For1CallData
+        )
 
         // accmuluate token1 fees
-        await router.exactInput({
+        const exactInput1For0Params = {
           recipient: wallets[0].address,
           deadline: 1,
           path: encodePath([tokens[1].address, tokens[0].address], [FeeAmount.MEDIUM]),
           amountIn: swapAmount,
           amountOutMinimum: 0,
-        })
+        }
+        const exactInput1For0CallData = [router.interface.encodeFunctionData('exactInput', [exactInput1For0Params])]
+        const { eat: exactInput1For0EAT, expiry: exactInput1For0Expiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallets[0],
+          router,
+          exactInput1For0CallData
+        )
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          exactInput1For0EAT.v,
+          exactInput1For0EAT.r,
+          exactInput1For0EAT.s,
+          exactInput1For0Expiry,
+          exactInput1For0CallData
+        )
       })
 
       it('return the correct amount of fees', async () => {
@@ -502,13 +563,29 @@ describe('PositionValue', async () => {
         await tokens[0].approve(router.address, swapAmount)
 
         // accmuluate more token0 fees after clearing initial amount
-        await router.exactInput({
+        const exactInputParams = {
           recipient: wallets[0].address,
           deadline: 1,
           path: encodePath([tokens[0].address, tokens[1].address], [FeeAmount.MEDIUM]),
           amountIn: swapAmount,
           amountOutMinimum: 0,
-        })
+        }
+        const exactInputCalldata = [router.interface.encodeFunctionData('exactInput', [exactInputParams])]
+        const { eat: exactInputEAT, expiry: exactInputExpiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallets[0],
+          router,
+          exactInputCalldata,
+          BigNumber.from(4833857429)
+        )
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          exactInputEAT.v,
+          exactInputEAT.r,
+          exactInputEAT.s,
+          exactInputExpiry,
+          exactInputCalldata
+        )
 
         const collectParameters = {
           tokenId: tokenId,
@@ -568,22 +645,52 @@ describe('PositionValue', async () => {
         await tokens[1].approve(router.address, constants.MaxUint256)
 
         // accumulate token1 fees
-        await router.exactInput({
+        const exactInput1For0Params = {
           recipient: wallets[0].address,
           deadline: 1,
           path: encodePath([tokens[1].address, tokens[0].address], [FeeAmount.MEDIUM]),
           amountIn: expandTo18Decimals(1_000),
           amountOutMinimum: 0,
-        })
+        }
+        const exactInput1For0Calldata = [router.interface.encodeFunctionData('exactInput', [exactInput1For0Params])]
+        const { eat: exactInput1For0EAT, expiry: exactInput1For0Expiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallets[0],
+          router,
+          exactInput1For0Calldata
+        )
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          exactInput1For0EAT.v,
+          exactInput1For0EAT.r,
+          exactInput1For0EAT.s,
+          exactInput1For0Expiry,
+          exactInput1For0Calldata
+        )
 
         // accumulate token0 fees and push price below tickLower
-        await router.exactInput({
+        const exactInput0For1Params = {
           recipient: wallets[0].address,
           deadline: 1,
           path: encodePath([tokens[0].address, tokens[1].address], [FeeAmount.MEDIUM]),
           amountIn: expandTo18Decimals(50_000),
           amountOutMinimum: 0,
-        })
+        }
+        const exactInput0For1Calldata = [router.interface.encodeFunctionData('exactInput', [exactInput0For1Params])]
+        const { eat: exactInput0For1EAT, expiry: exactInput0For1Expiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallets[0],
+          router,
+          exactInput0For1Calldata
+        )
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          exactInput0For1EAT.v,
+          exactInput0For1EAT.r,
+          exactInput0For1EAT.s,
+          exactInput0For1Expiry,
+          exactInput0For1Calldata
+        )
       })
 
       it('returns the correct amount of fees', async () => {
@@ -645,22 +752,52 @@ describe('PositionValue', async () => {
         await tokens[1].approve(router.address, constants.MaxUint256)
 
         // accumulate token0 fees
-        await router.exactInput({
+        const exactInput0For1Params = {
           recipient: wallets[0].address,
           deadline: 1,
           path: encodePath([tokens[0].address, tokens[1].address], [FeeAmount.MEDIUM]),
           amountIn: expandTo18Decimals(1_000),
           amountOutMinimum: 0,
-        })
+        }
+        const exactInput0For1Calldata = [router.interface.encodeFunctionData('exactInput', [exactInput0For1Params])]
+        const { eat: exactInput0For1EAT, expiry: exactInput0For1Expiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallets[0],
+          router,
+          exactInput0For1Calldata
+        )
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          exactInput0For1EAT.v,
+          exactInput0For1EAT.r,
+          exactInput0For1EAT.s,
+          exactInput0For1Expiry,
+          exactInput0For1Calldata
+        )
 
         // accumulate token1 fees and push price above tickUpper
-        await router.exactInput({
+        const exactInput1For0Params = {
           recipient: wallets[0].address,
           deadline: 1,
           path: encodePath([tokens[1].address, tokens[0].address], [FeeAmount.MEDIUM]),
           amountIn: expandTo18Decimals(50_000),
           amountOutMinimum: 0,
-        })
+        }
+        const exactInput1For0Calldata = [router.interface.encodeFunctionData('exactInput', [exactInput1For0Params])]
+        const { eat: exactInput1For0EAT, expiry: exactInput1For0Expiry } = await generateAccessToken(
+          signer,
+          domain,
+          wallets[0],
+          router,
+          exactInput1For0Calldata
+        )
+        await router['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+          exactInput1For0EAT.v,
+          exactInput1For0EAT.r,
+          exactInput1For0EAT.s,
+          exactInput1For0Expiry,
+          exactInput1For0Calldata
+        )
       })
 
       it('returns the correct amount of fees', async () => {

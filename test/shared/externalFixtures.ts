@@ -5,11 +5,12 @@ import {
 import { abi as FACTORY_V2_ABI, bytecode as FACTORY_V2_BYTECODE } from '@uniswap/v2-core/build/UniswapV2Factory.json'
 import { Fixture } from 'ethereum-waffle'
 import { ethers, waffle } from 'hardhat'
-import { IUniswapV3Factory, IWETH9, MockTimeSwapRouter } from '../../typechain'
+import { AccessTokenVerifier, IUniswapV3Factory, IWETH9, MockTimeSwapRouter } from '../../typechain'
 
 import WETH9 from '../contracts/WETH9.json'
 import { Contract } from '@ethersproject/contracts'
 import { constants } from 'ethers'
+import { EAT_ISSUER_PK } from './eatSigner'
 
 const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
   const weth9 = (await waffle.deployContract(wallet, {
@@ -44,14 +45,21 @@ export const v3RouterFixture: Fixture<{
   weth9: IWETH9
   factory: IUniswapV3Factory
   router: MockTimeSwapRouter
+  verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {
   const { weth9 } = await wethFixture([wallet], provider)
   const factory = await v3CoreFactoryFixture([wallet], provider)
 
+  // ETHEREUM ACCESS TOKEN SETUP
+  const signer = new ethers.Wallet(EAT_ISSUER_PK, provider)
+  const verifierFactory = await ethers.getContractFactory('AccessTokenVerifier')
+  const verifier = <AccessTokenVerifier>await verifierFactory.deploy(signer.address)
+
   const router = (await (await ethers.getContractFactory('MockTimeSwapRouter')).deploy(
     factory.address,
-    weth9.address
+    weth9.address,
+    verifier.address
   )) as MockTimeSwapRouter
 
-  return { factory, weth9, router }
+  return { factory, weth9, router, verifier }
 }

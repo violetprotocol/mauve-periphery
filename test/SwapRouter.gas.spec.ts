@@ -161,10 +161,12 @@ describe('SwapRouter gas tests', function () {
     const data = [router.interface.encodeFunctionData('exactInput', [params])]
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address]))
 
+    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+
     // optimized for the gas test
-    return data.length === 1
-      ? router.connect(trader).exactInput(params, { value })
-      : router.connect(trader).multicall(data, { value })
+    return router
+      .connect(trader)
+      ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data, { value })
   }
 
   async function exactInputSingle(
@@ -193,10 +195,11 @@ describe('SwapRouter gas tests', function () {
     const data = [router.interface.encodeFunctionData('exactInputSingle', [params])]
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address]))
 
+    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
     // optimized for the gas test
-    return data.length === 1
-      ? router.connect(trader).exactInputSingle(params, { value })
-      : router.connect(trader).multicall(data, { value })
+    return router
+      .connect(trader)
+      ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data, { value })
   }
 
   async function exactOutput(tokens: string[]): Promise<ContractTransaction> {
@@ -220,7 +223,11 @@ describe('SwapRouter gas tests', function () {
     if (inputIsWETH9) data.push(router.interface.encodeFunctionData('refundETH'))
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
 
-    return router.connect(trader).multicall(data, { value })
+    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+
+    return router
+      .connect(trader)
+      ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data, { value })
   }
 
   async function exactOutputSingle(
@@ -250,7 +257,10 @@ describe('SwapRouter gas tests', function () {
     if (inputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [0, trader.address]))
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
 
-    return router.connect(trader).multicall(data, { value })
+    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+    return router
+      .connect(trader)
+      ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data, { value })
   }
 
   // TODO should really throw this in the fixture
@@ -355,7 +365,10 @@ describe('SwapRouter gas tests', function () {
         router.interface.encodeFunctionData('sweepToken', [tokens[0].address, 2, trader.address]),
       ]
 
-      await snapshotGasCost(router.connect(trader).multicall(data))
+      const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+      await snapshotGasCost(
+        router.connect(trader)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
+      )
     })
 
     it('3 trades (directly to sender)', async () => {
@@ -391,7 +404,10 @@ describe('SwapRouter gas tests', function () {
         router.interface.encodeFunctionData('exactInput', [swap2]),
       ]
 
-      await snapshotGasCost(router.connect(trader).multicall(data))
+      const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+      await snapshotGasCost(
+        router.connect(trader)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
+      )
     })
   })
 
@@ -419,7 +435,10 @@ describe('SwapRouter gas tests', function () {
       router.interface.encodeFunctionData('exactInput', [swap1]),
     ]
 
-    await snapshotGasCost(router.connect(trader).multicall(data))
+    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+    await snapshotGasCost(
+      router.connect(trader)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
+    )
   })
 
   describe('#exactInputSingle', () => {

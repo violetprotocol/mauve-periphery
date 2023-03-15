@@ -9,8 +9,7 @@ import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import './interfaces/ISwapRouter.sol';
 import './base/PeripheryImmutableState.sol';
 import './base/PeripheryValidation.sol';
-import './base/PeripheryPaymentsWithFee.sol';
-import './base/Multicall.sol';
+import './base/EATMulticallPeripheryPaymentsWithFee.sol';
 import './base/SelfPermit.sol';
 import './libraries/Path.sol';
 import './libraries/PoolAddress.sol';
@@ -23,8 +22,7 @@ contract SwapRouter is
     ISwapRouter,
     PeripheryImmutableState,
     PeripheryValidation,
-    PeripheryPaymentsWithFee,
-    Multicall,
+    EATMulticallPeripheryPaymentsWithFee,
     SelfPermit
 {
     using Path for bytes;
@@ -37,7 +35,11 @@ contract SwapRouter is
     /// @dev Transient storage variable used for returning the computed amount in for an exact output swap.
     uint256 private amountInCached = DEFAULT_AMOUNT_IN_CACHED;
 
-    constructor(address _factory, address _WETH9) PeripheryImmutableState(_factory, _WETH9) {}
+    constructor(
+        address _factory,
+        address _WETH9,
+        address _EATVerifier
+    ) PeripheryImmutableState(_factory, _WETH9) EATMulticall(_EATVerifier) {}
 
     /// @dev Returns the pool for the given token pair and fee. The pool contract may or may not exist.
     function getPool(
@@ -117,6 +119,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountOut)
     {
         amountOut = exactInputInternal(
@@ -134,6 +137,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountOut)
     {
         address payer = msg.sender; // msg.sender pays for the first hop
@@ -205,6 +209,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountIn)
     {
         // avoid an SLOAD by using the swap return data
@@ -226,6 +231,7 @@ contract SwapRouter is
         payable
         override
         checkDeadline(params.deadline)
+        onlySelfMulticall
         returns (uint256 amountIn)
     {
         // it's okay that the payer is fixed to msg.sender here, as they're only paying for the "final" exact output

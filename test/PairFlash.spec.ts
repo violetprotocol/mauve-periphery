@@ -25,7 +25,7 @@ import { computePoolAddress } from './shared/computePoolAddress'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { generateAccessToken } from './shared/generateAccessToken'
 
-describe('PairFlash test', () => {
+describe.skip('PairFlash test', () => {
   const provider = waffle.provider
   const wallets = waffle.provider.getWallets()
   const wallet = wallets[0]

@@ -35,7 +35,3 @@ contract TestEATMulticall is EATMulticall {
         return msg.sender;
     }
 }
-
-contract Verifier is AccessTokenVerifier {
-    constructor(address root) AccessTokenVerifier(root) {}
-}
