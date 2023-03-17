@@ -14,6 +14,7 @@ import {
 import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
 import { parseEther } from 'ethers/lib/utils'
 import { EAT_ISSUER_PK } from './eatSigner'
+import { positionManagerBytes32 } from './roles'
 
 export type Domain = {
   name: string
@@ -75,6 +76,8 @@ const completeFixture: Fixture<{
     nftDescriptor.address,
     verifier.address
   )) as MockTimeNonfungiblePositionManager
+
+  await factory.setRole(nft.address, positionManagerBytes32)
 
   const createAndInitializePoolIfNecessary: CreatePoolIfNecessary = createPoolIfNecessary(factory, wallet)
 
