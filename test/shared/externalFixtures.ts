@@ -11,6 +11,7 @@ import WETH9 from '../contracts/WETH9.json'
 import { Contract } from '@ethersproject/contracts'
 import { constants } from 'ethers'
 import { EAT_ISSUER_PK } from './eatSigner'
+import { swapRouterBytes32 } from './roles'
 
 const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
   const weth9 = (await waffle.deployContract(wallet, {
@@ -60,6 +61,7 @@ export const v3RouterFixture: Fixture<{
     weth9.address,
     verifier.address
   )) as MockTimeSwapRouter
+  await factory.setRole(router.address, swapRouterBytes32);
 
   return { factory, weth9, router, verifier }
 }
