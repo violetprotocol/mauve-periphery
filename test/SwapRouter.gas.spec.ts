@@ -2,7 +2,14 @@ import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifact
 import { Fixture } from 'ethereum-waffle'
 import { BigNumber, constants, ContractTransaction, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
-import { IUniswapV3Pool, IWETH9, MockTimeSwapRouter, TestERC20, AccessTokenVerifier } from '../typechain'
+import {
+  IUniswapV3Pool,
+  IWETH9,
+  MockTimeSwapRouter,
+  TestERC20,
+  AccessTokenVerifier,
+  IUniswapV3Factory,
+} from '../typechain'
 import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
@@ -12,7 +19,8 @@ import { expect } from './shared/expect'
 import { encodePath } from './shared/path'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
-import { generateAccessToken } from './shared/generateAccessToken'
+import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { swapRouterBytes32 } from './shared/roles'
 
 describe('SwapRouter gas tests', function () {
   this.timeout(40000)
@@ -27,6 +35,7 @@ describe('SwapRouter gas tests', function () {
     signer: Wallet
     domain: Domain
     verifier: AccessTokenVerifier
+    factory: IUniswapV3Factory
   }> = async (wallets, provider) => {
     const {
       weth9,
@@ -74,7 +83,13 @@ describe('SwapRouter gas tests', function () {
         deadline: 1,
       }
       const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallet,
+        nft,
+        mintMulticallParameters
+      )
 
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
@@ -116,6 +131,7 @@ describe('SwapRouter gas tests', function () {
       signer,
       domain,
       verifier,
+      factory,
     }
   }
 
@@ -126,6 +142,7 @@ describe('SwapRouter gas tests', function () {
   let signer: Wallet
   let domain: Domain
   let verifier: AccessTokenVerifier
+  let factory: IUniswapV3Factory
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -137,7 +154,7 @@ describe('SwapRouter gas tests', function () {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ router, weth9, tokens, pools, signer, domain, verifier } = await loadFixture(swapRouterFixture))
+    ;({ router, weth9, tokens, pools, signer, domain, verifier, factory } = await loadFixture(swapRouterFixture))
   })
 
   async function exactInput(
@@ -161,7 +178,7 @@ describe('SwapRouter gas tests', function () {
     const data = [router.interface.encodeFunctionData('exactInput', [params])]
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address]))
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
 
     // optimized for the gas test
     return router
@@ -195,7 +212,7 @@ describe('SwapRouter gas tests', function () {
     const data = [router.interface.encodeFunctionData('exactInputSingle', [params])]
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address]))
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
     // optimized for the gas test
     return router
       .connect(trader)
@@ -223,7 +240,7 @@ describe('SwapRouter gas tests', function () {
     if (inputIsWETH9) data.push(router.interface.encodeFunctionData('refundETH'))
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
 
     return router
       .connect(trader)
@@ -257,7 +274,7 @@ describe('SwapRouter gas tests', function () {
     if (inputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [0, trader.address]))
     if (outputIsWETH9) data.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
     return router
       .connect(trader)
       ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data, { value })
@@ -310,7 +327,9 @@ describe('SwapRouter gas tests', function () {
       const callee = await calleeFactory.deploy()
 
       await tokens[0].connect(trader).approve(callee.address, constants.MaxUint256)
+      await factory.setRole(callee.address, swapRouterBytes32)
       await snapshotGasCost(callee.connect(trader).swapExact0For1(pools[0].address, 2, trader.address, '4295128740'))
+      await factory.setRole(router.address, swapRouterBytes32)
     })
 
     it('0 -> 1 -> 2', async () => {
@@ -365,7 +384,7 @@ describe('SwapRouter gas tests', function () {
         router.interface.encodeFunctionData('sweepToken', [tokens[0].address, 2, trader.address]),
       ]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+      const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
       await snapshotGasCost(
         router.connect(trader)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
       )
@@ -404,7 +423,7 @@ describe('SwapRouter gas tests', function () {
         router.interface.encodeFunctionData('exactInput', [swap2]),
       ]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+      const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
       await snapshotGasCost(
         router.connect(trader)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
       )
@@ -435,7 +454,7 @@ describe('SwapRouter gas tests', function () {
       router.interface.encodeFunctionData('exactInput', [swap1]),
     ]
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
     await snapshotGasCost(
       router.connect(trader)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
     )

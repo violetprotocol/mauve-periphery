@@ -15,7 +15,7 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
 import { extractJSONFromURI } from './shared/extractJSONFromURI'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
-import { generateAccessToken } from './shared/generateAccessToken'
+import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
 const DAI = '0x6B175474E89094C44Da98b954EedeAC495271d0F'
 const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48'
@@ -168,7 +168,13 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         deadline: 1,
       }
       const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        nft,
+        mintMulticallParameters
+      )
 
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
@@ -204,7 +210,13 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         deadline: 1,
       }
       const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        nft,
+        mintMulticallParameters
+      )
 
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
@@ -238,7 +250,13 @@ describe('NonfungibleTokenPositionDescriptor', () => {
         deadline: 1,
       }
       const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        nft,
+        mintMulticallParameters
+      )
 
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,

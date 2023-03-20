@@ -17,7 +17,7 @@ import { encodePath } from './shared/path'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
-import { generateAccessToken } from './shared/generateAccessToken'
+import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
 describe('SwapRouter', function () {
   this.timeout(40000)
@@ -157,7 +157,13 @@ describe('SwapRouter', function () {
         deadline: 1,
       }
       const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, mintMulticallParameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallet,
+        nft,
+        mintMulticallParameters
+      )
 
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
@@ -201,7 +207,7 @@ describe('SwapRouter', function () {
         // ensure that the swap fails if the limit is any tighter
         params.amountOutMinimum += 1
         const exactInputFailCallData = [router.interface.encodeFunctionData('exactInput', [params])]
-        const { eat: exactInputFailEAT, expiry: exactInputFailExpiry } = await generateAccessToken(
+        const { eat: exactInputFailEAT, expiry: exactInputFailExpiry } = await generateAccessTokenForMulticall(
           signer,
           domain,
           trader,
@@ -227,7 +233,7 @@ describe('SwapRouter', function () {
           exactInputCallData.push(
             router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address])
           )
-        const { eat: exactInputEAT, expiry: exactInputExpiry } = await generateAccessToken(
+        const { eat: exactInputEAT, expiry: exactInputExpiry } = await generateAccessTokenForMulticall(
           signer,
           domain,
           trader,
@@ -468,13 +474,10 @@ describe('SwapRouter', function () {
         // ensure that the swap fails if the limit is any tighter
         params.amountOutMinimum += 1
         const exactInputSingleFailCallData = [router.interface.encodeFunctionData('exactInputSingle', [params])]
-        const { eat: exactInputSingleFailEAT, expiry: exactInputSingleFailExpiry } = await generateAccessToken(
-          signer,
-          domain,
-          trader,
-          router,
-          exactInputSingleFailCallData
-        )
+        const {
+          eat: exactInputSingleFailEAT,
+          expiry: exactInputSingleFailExpiry,
+        } = await generateAccessTokenForMulticall(signer, domain, trader, router, exactInputSingleFailCallData)
         await expect(
           router
             .connect(trader)
@@ -494,7 +497,7 @@ describe('SwapRouter', function () {
           exactInputSingleCallData.push(
             router.interface.encodeFunctionData('unwrapWETH9', [amountOutMinimum, trader.address])
           )
-        const { eat: exactInputSingleEAT, expiry: exactInputSingleExpiry } = await generateAccessToken(
+        const { eat: exactInputSingleEAT, expiry: exactInputSingleExpiry } = await generateAccessTokenForMulticall(
           signer,
           domain,
           trader,
@@ -632,7 +635,7 @@ describe('SwapRouter', function () {
         // ensure that the swap fails if the limit is any tighter
         params.amountInMaximum -= 1
         const exactOutputFailCallData = [router.interface.encodeFunctionData('exactOutput', [params])]
-        let { eat: exactOutputFailEAT, expiry: exactOutputFailExpiry } = await generateAccessToken(
+        let { eat: exactOutputFailEAT, expiry: exactOutputFailExpiry } = await generateAccessTokenForMulticall(
           signer,
           domain,
           trader,
@@ -658,7 +661,7 @@ describe('SwapRouter', function () {
           exactOutputCallData.push(router.interface.encodeFunctionData('unwrapWETH9', [0, trader.address]))
         if (outputIsWETH9)
           exactOutputCallData.push(router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address]))
-        const { eat: exactOutputEAT, expiry: exactOutputExpiry } = await generateAccessToken(
+        const { eat: exactOutputEAT, expiry: exactOutputExpiry } = await generateAccessTokenForMulticall(
           signer,
           domain,
           trader,
@@ -892,13 +895,10 @@ describe('SwapRouter', function () {
         // ensure that the swap fails if the limit is any tighter
         params.amountInMaximum -= 1
         const exactOutputSingleFailCallData = [router.interface.encodeFunctionData('exactOutputSingle', [params])]
-        const { eat: exactOutputSingleFailEAT, expiry: exactOutputSingleFailExpiry } = await generateAccessToken(
-          signer,
-          domain,
-          trader,
-          router,
-          exactOutputSingleFailCallData
-        )
+        const {
+          eat: exactOutputSingleFailEAT,
+          expiry: exactOutputSingleFailExpiry,
+        } = await generateAccessTokenForMulticall(signer, domain, trader, router, exactOutputSingleFailCallData)
         await expect(
           router
             .connect(trader)
@@ -919,7 +919,7 @@ describe('SwapRouter', function () {
           exactOutputSingleCallData.push(
             router.interface.encodeFunctionData('unwrapWETH9', [amountOut, trader.address])
           )
-        const { eat: exactOutputSingleEAT, expiry: exactOutputSingleExpiry } = await generateAccessToken(
+        const { eat: exactOutputSingleEAT, expiry: exactOutputSingleExpiry } = await generateAccessTokenForMulticall(
           signer,
           domain,
           trader,
@@ -1058,7 +1058,7 @@ describe('SwapRouter', function () {
           ]),
         ]
 
-        const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+        const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
         await router
           .connect(trader)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)
@@ -1090,7 +1090,7 @@ describe('SwapRouter', function () {
           ]),
         ]
 
-        const { eat, expiry } = await generateAccessToken(signer, domain, trader, router, data)
+        const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, trader, router, data)
         await router
           .connect(trader)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, data)

@@ -10,7 +10,7 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
-import { generateAccessToken } from './shared/generateAccessToken'
+import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
 describe('TickLens', () => {
   let wallets: Wallet[]
@@ -94,7 +94,13 @@ describe('TickLens', () => {
         deadline: 1,
       }
       const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        nft,
+        mintMulticallParameters
+      )
 
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
@@ -120,7 +126,13 @@ describe('TickLens', () => {
         deadline: 1,
       }
       const mintMulticallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], nft, mintMulticallParameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        nft,
+        mintMulticallParameters
+      )
 
       const [mintResponse] = await nft.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,

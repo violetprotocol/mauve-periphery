@@ -7,6 +7,7 @@ import { utils, messages } from '@violetprotocol/ethereum-access-token-helpers'
 
 import snapshotGasCost from './shared/snapshotGasCost'
 import { parseEther, splitSignature } from 'ethers/lib/utils'
+import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
 // generated randomly from privatekeys.pw
 // DO NOT USE IN SENSITIVE PLACES
@@ -50,7 +51,7 @@ describe('EATMulticall', async () => {
   it('revert messages are returned', async () => {
     const parameters = [testMulticall.interface.encodeFunctionData('functionThatRevertsWithError', ['abcdef'])]
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallets[0], testMulticall, parameters)
     await expect(
       testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
     ).to.be.revertedWith('abcdef')
@@ -59,7 +60,7 @@ describe('EATMulticall', async () => {
   it('return data is properly encoded', async () => {
     const parameters = [testMulticall.interface.encodeFunctionData('functionThatReturnsTuple', [1, 2])]
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallets[0], testMulticall, parameters)
     const [data] = await testMulticall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
       eat.v,
       eat.r,
@@ -87,7 +88,13 @@ describe('EATMulticall', async () => {
     it('msg.value', async () => {
       const parameters = [testMulticall.interface.encodeFunctionData('pays')]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        testMulticall,
+        parameters
+      )
       await testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
         value: 3,
       })
@@ -100,7 +107,13 @@ describe('EATMulticall', async () => {
         testMulticall.interface.encodeFunctionData('pays'),
       ]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        testMulticall,
+        parameters
+      )
 
       await testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
         value: 3,
@@ -120,7 +133,7 @@ describe('EATMulticall', async () => {
   it('gas cost of pay w/ multicall', async () => {
     const parameters = [testMulticall.interface.encodeFunctionData('pays')]
 
-    const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+    const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallets[0], testMulticall, parameters)
     await snapshotGasCost(
       testMulticall['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters, {
         value: 3,
@@ -132,7 +145,13 @@ describe('EATMulticall', async () => {
     it('should succeed with multicall', async () => {
       const parameters = [testMulticall.interface.encodeFunctionData('functionThatCanOnlyBeMulticalled')]
 
-      const { eat, expiry } = await generateAccessToken(signer, domain, wallets[0], testMulticall, parameters)
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        testMulticall,
+        parameters
+      )
       const [data] = await testMulticall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
         eat.v,
         eat.r,
@@ -152,27 +171,3 @@ describe('EATMulticall', async () => {
     })
   })
 })
-
-const generateAccessToken = async (
-  signer: Wallet,
-  domain: messages.Domain,
-  caller: Wallet,
-  contract: TestEATMulticall,
-  parameters: any[]
-) => {
-  const token = {
-    functionCall: {
-      functionSignature: contract.interface.getSighash('multicall(uint8,bytes32,bytes32,uint256,bytes[])'),
-      target: contract.address,
-      caller: caller.address,
-      parameters: utils.packParameters(contract.interface, 'multicall(uint8,bytes32,bytes32,uint256,bytes[])', [
-        parameters,
-      ]),
-    },
-    expiry: BigNumber.from(4833857428),
-  }
-
-  const eat = splitSignature(await utils.signAccessToken(signer, domain, token))
-
-  return { eat, expiry: token.expiry }
-}
