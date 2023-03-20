@@ -61,7 +61,7 @@ export const v3RouterFixture: Fixture<{
     weth9.address,
     verifier.address
   )) as MockTimeSwapRouter
-  await factory.setRole(router.address, swapRouterBytes32);
+  await factory.setRole(router.address, swapRouterBytes32)
 
   return { factory, weth9, router, verifier }
 }
