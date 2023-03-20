@@ -402,4 +402,84 @@ contract NonfungiblePositionManager is
         _positions[tokenId].operator = to;
         emit Approval(ownerOf(tokenId), to, tokenId);
     }
+
+    /// @dev Overrides approve to block usage in favour of EAT-gated version
+    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
+        revert('non-EAT approve disallowed');
+    }
+
+    /// @dev Overrides approve to block usage in favour of EAT-gated version
+    function approve(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address to,
+        uint256 tokenId
+    ) public virtual requiresAuth(v, r, s, expiry) {
+        super.approve(to, tokenId);
+    }
+
+    /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
+    function setApprovalForAll(address operator, bool approved) public virtual override(ERC721, IERC721) {
+        revert('non-EAT setApprovalForAll disallowed');
+    }
+
+    /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
+    function setApprovalForAll(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address operator,
+        bool approved
+    ) public virtual requiresAuth(v, r, s, expiry) {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    /// @dev Overrides transferFrom to block usage in favour of EAT-gated version
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override(ERC721, IERC721) {
+        revert('non-EAT transferFrom disallowed');
+    }
+
+    /// @dev Overrides transferFrom to block usage in favour of EAT-gated version
+    function transferFrom(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual requiresAuth(v, r, s, expiry) {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    /**
+     * @dev See {IERC721-safeTransferFrom}.
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override(ERC721, IERC721) {
+        revert('non-EAT safeTransferFrom disallowed');
+    }
+
+    /// @dev Overrides safeTransferFrom to block usage in favour of EAT-gated version
+    function safeTransferFrom(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual requiresAuth(v, r, s, expiry) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
 }
