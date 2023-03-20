@@ -5,7 +5,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.7.0",
+  "version": "1.8.0",
   "homepage": "https://mauve.org",
   "keywords": [
     "mauve",
@@ -21,6 +21,7 @@
     "contracts/interfaces",
     "contracts/libraries",
     "artifacts/contracts/**/*.json",
+    "dist/generateAccessToken.ts",
     "!artifacts/contracts/**/*.dbg.json",
     "!artifacts/contracts/test/**/*",
     "!artifacts/contracts/base/**/*"
@@ -33,7 +34,7 @@
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "1.0.1",
     "@violetprotocol/ethereum-access-token": "0.2.0-sol07",
-    "@violetprotocol/mauve-v3-core": "1.1.1",
+    "@violetprotocol/mauve-v3-core": "1.2.1",
     "base64-sol": "1.0.1",
     "hardhat-watcher": "^2.1.1"
   },
@@ -66,6 +67,7 @@
     "typescript": "^3.7.3"
   },
   "scripts": {
+    "prepare": "yarn compile && yarn tsc",
     "compile": "hardhat compile",
     "test": "hardhat test"
   }

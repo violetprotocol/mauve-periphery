@@ -4,7 +4,7 @@ import { FeeAmount, TICK_SPACINGS } from './constants'
 import { CreatePoolIfNecessary } from './createPoolIfNecessary'
 import { encodePriceSqrt } from './encodePriceSqrt'
 import { getMaxTick, getMinTick } from './ticks'
-import { generateAccessToken } from './generateAccessToken'
+import { generateAccessTokenForMulticall } from './generateAccessToken'
 import { Domain } from './completeFixture'
 
 export async function createPool(
@@ -36,7 +36,7 @@ export async function createPool(
   }
 
   const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
-  const { eat, expiry } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters)
+  const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallet, nft, multicallParameters)
 
   await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
 }
@@ -70,7 +70,13 @@ export async function createPoolWithMultiplePositions(
   }
 
   const multicallParameters1 = [nft.interface.encodeFunctionData('mint', [liquidityParams1])]
-  const { eat: eat1, expiry: expiry1 } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters1)
+  const { eat: eat1, expiry: expiry1 } = await generateAccessTokenForMulticall(
+    signer,
+    domain,
+    wallet,
+    nft,
+    multicallParameters1
+  )
 
   await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat1.v, eat1.r, eat1.s, expiry1, multicallParameters1)
 
@@ -89,7 +95,13 @@ export async function createPoolWithMultiplePositions(
   }
 
   const multicallParameters2 = [nft.interface.encodeFunctionData('mint', [liquidityParams2])]
-  const { eat: eat2, expiry: expiry2 } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters2)
+  const { eat: eat2, expiry: expiry2 } = await generateAccessTokenForMulticall(
+    signer,
+    domain,
+    wallet,
+    nft,
+    multicallParameters2
+  )
 
   await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat2.v, eat2.r, eat2.s, expiry2, multicallParameters2)
 
@@ -108,7 +120,13 @@ export async function createPoolWithMultiplePositions(
   }
 
   const multicallParameters3 = [nft.interface.encodeFunctionData('mint', [liquidityParams3])]
-  const { eat: eat3, expiry: expiry3 } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters3)
+  const { eat: eat3, expiry: expiry3 } = await generateAccessTokenForMulticall(
+    signer,
+    domain,
+    wallet,
+    nft,
+    multicallParameters3
+  )
 
   await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat3.v, eat3.r, eat3.s, expiry3, multicallParameters3)
 }
@@ -142,7 +160,13 @@ export async function createPoolWithZeroTickInitialized(
   }
 
   const multicallParameters1 = [nft.interface.encodeFunctionData('mint', [liquidityParams1])]
-  const { eat: eat1, expiry: expiry1 } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters1)
+  const { eat: eat1, expiry: expiry1 } = await generateAccessTokenForMulticall(
+    signer,
+    domain,
+    wallet,
+    nft,
+    multicallParameters1
+  )
 
   await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat1.v, eat1.r, eat1.s, expiry1, multicallParameters1)
 
@@ -161,7 +185,13 @@ export async function createPoolWithZeroTickInitialized(
   }
 
   const multicallParameters2 = [nft.interface.encodeFunctionData('mint', [liquidityParams2])]
-  const { eat: eat2, expiry: expiry2 } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters2)
+  const { eat: eat2, expiry: expiry2 } = await generateAccessTokenForMulticall(
+    signer,
+    domain,
+    wallet,
+    nft,
+    multicallParameters2
+  )
 
   await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat2.v, eat2.r, eat2.s, expiry2, multicallParameters2)
 
@@ -180,7 +210,13 @@ export async function createPoolWithZeroTickInitialized(
   }
 
   const multicallParameters3 = [nft.interface.encodeFunctionData('mint', [liquidityParams3])]
-  const { eat: eat3, expiry: expiry3 } = await generateAccessToken(signer, domain, wallet, nft, multicallParameters3)
+  const { eat: eat3, expiry: expiry3 } = await generateAccessTokenForMulticall(
+    signer,
+    domain,
+    wallet,
+    nft,
+    multicallParameters3
+  )
 
   await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat3.v, eat3.r, eat3.s, expiry3, multicallParameters3)
 }
