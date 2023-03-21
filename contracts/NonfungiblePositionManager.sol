@@ -8,7 +8,7 @@ import '@violetprotocol/mauve-v3-core/contracts/libraries/FullMath.sol';
 
 import './interfaces/INonfungiblePositionManager.sol';
 import './interfaces/INonfungibleTokenPositionDescriptor.sol';
-import './interfaces/IVioletID.sol';
+import './interfaces/external/IVioletID.sol';
 import './libraries/PositionKey.sol';
 import './libraries/PoolAddress.sol';
 import './base/LiquidityManagement.sol';
@@ -76,13 +76,15 @@ contract NonfungiblePositionManager is
         address _factory,
         address _WETH9,
         address _tokenDescriptor_,
-        address _eatVerifier
+        address _eatVerifier,
+        address _violetID_
     )
         ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1')
         PeripheryImmutableState(_factory, _WETH9)
         EATMulticall(_eatVerifier)
     {
         _tokenDescriptor = _tokenDescriptor_;
+        _violetID = _violetID_;
     }
 
     /// @inheritdoc INonfungiblePositionManager
