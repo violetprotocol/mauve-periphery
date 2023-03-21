@@ -789,7 +789,7 @@ describe('NonfungiblePositionManager', () => {
 
       await expect(
         nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not approved')
+      ).to.be.revertedWith('NA')
     })
 
     it('decreases position liquidity', async () => {
@@ -1252,7 +1252,7 @@ describe('NonfungiblePositionManager', () => {
       const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallet, nft, multicallParameters)
       await expect(
         nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not approved')
+      ).to.be.revertedWith('NA')
     })
 
     it('cannot be called while there is still liquidity', async () => {
@@ -1263,7 +1263,7 @@ describe('NonfungiblePositionManager', () => {
         nft
           .connect(other)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not cleared')
+      ).to.be.revertedWith('NC')
     })
 
     it('cannot be called while there is still partial liquidity', async () => {
@@ -1301,7 +1301,7 @@ describe('NonfungiblePositionManager', () => {
         nft
           .connect(other)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not cleared')
+      ).to.be.revertedWith('NC')
     })
 
     it('cannot be called while there is still tokens owed', async () => {
@@ -1339,7 +1339,7 @@ describe('NonfungiblePositionManager', () => {
         nft
           .connect(other)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not cleared')
+      ).to.be.revertedWith('NC')
     })
 
     it('deletes the token', async () => {
@@ -1400,7 +1400,7 @@ describe('NonfungiblePositionManager', () => {
           burnExpiry,
           multicallParameters
         )
-      await expect(nft.positions(tokenId)).to.be.revertedWith('Invalid token ID')
+      await expect(nft.positions(tokenId)).to.be.revertedWith('ITI')
     })
 
     it('gas', async () => {
