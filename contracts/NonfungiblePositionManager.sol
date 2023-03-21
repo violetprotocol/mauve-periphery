@@ -8,6 +8,7 @@ import '@violetprotocol/mauve-v3-core/contracts/libraries/FullMath.sol';
 
 import './interfaces/INonfungiblePositionManager.sol';
 import './interfaces/INonfungibleTokenPositionDescriptor.sol';
+import './interfaces/IVioletID.sol';
 import './libraries/PositionKey.sol';
 import './libraries/PoolAddress.sol';
 import './base/LiquidityManagement.sol';
@@ -63,6 +64,13 @@ contract NonfungiblePositionManager is
 
     /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
     address private immutable _tokenDescriptor;
+
+    address private immutable _violetID;
+
+    modifier onlyRegisteredWithViolet(address account) {
+        require(IVioletID(_violetID).isRegistered(account), 'account does not own VioletID');
+        _;
+    }
 
     constructor(
         address _factory,
