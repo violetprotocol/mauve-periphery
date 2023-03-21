@@ -26,29 +26,36 @@ contract NonfungiblePositionManager is
     LiquidityManagement,
     PeripheryValidation
 {
+
     // details about the uniswap position
     struct Position {
-        // the nonce for permits
-        uint96 nonce;
-        // the address that is approved for spending this token
-        address operator;
-        // the ID of the pool with which this token is connected
-        uint80 poolId;
+        // how many uncollected tokens are owed to the position, as of the last computation
+        uint128 tokensOwed0;
+        uint128 tokensOwed1;
         // the tick range of the position
         int24 tickLower;
         int24 tickUpper;
+        // the ID of the pool with which this token is connected
+        uint80 poolId;
+        // the nonce for permits
+        uint96 nonce;
         // the liquidity of the position
         uint128 liquidity;
         // the fee growth of the aggregate position as of the last action on the individual position
         uint256 feeGrowthInside0LastX128;
         uint256 feeGrowthInside1LastX128;
-        // how many uncollected tokens are owed to the position, as of the last computation
-        uint128 tokensOwed0;
-        uint128 tokensOwed1;
+        // the address that is approved for spending this token
+        address operator;
     }
 
-    /// @dev IDs of pools assigned by this contract
-    mapping(address => uint80) private _poolIds;
+    /// @dev The ID of the next pool that is used for the first time. Skips 0
+    uint80 private _nextPoolId = 1;
+
+    /// @dev The ID of the next token that will be minted. Skips 0
+    uint176 private _nextId = 1;
+
+    /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
+    address private immutable _tokenDescriptor;
 
     /// @dev Pool keys by pool ID, to save on SSTOREs for position data
     mapping(uint80 => PoolAddress.PoolKey) private _poolIdToPoolKey;
@@ -56,13 +63,9 @@ contract NonfungiblePositionManager is
     /// @dev The token ID position data
     mapping(uint256 => Position) private _positions;
 
-    /// @dev The ID of the next token that will be minted. Skips 0
-    uint176 private _nextId = 1;
-    /// @dev The ID of the next pool that is used for the first time. Skips 0
-    uint80 private _nextPoolId = 1;
+    /// @dev IDs of pools assigned by this contract
+    mapping(address => uint80) private _poolIds;
 
-    /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
-    address private immutable _tokenDescriptor;
 
     constructor(
         address _factory,
