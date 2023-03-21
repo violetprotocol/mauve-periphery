@@ -26,7 +26,6 @@ contract NonfungiblePositionManager is
     LiquidityManagement,
     PeripheryValidation
 {
-
     // details about the uniswap position
     struct Position {
         // how many uncollected tokens are owed to the position, as of the last computation
@@ -65,7 +64,6 @@ contract NonfungiblePositionManager is
 
     /// @dev IDs of pools assigned by this contract
     mapping(address => uint80) private _poolIds;
-
 
     constructor(
         address _factory,
