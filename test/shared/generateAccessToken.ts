@@ -4,6 +4,30 @@ import { EATMulticall } from '../../typechain'
 import { splitSignature } from 'ethers/lib/utils'
 import { ethers } from 'hardhat'
 
+export const generateAccessToken = async (
+  signer: Wallet,
+  domain: messages.Domain,
+  functionName: string,
+  caller: Wallet,
+  contract: EATMulticall,
+  parameters: any[],
+  expiry?: BigNumber
+) => {
+  const token = {
+    functionCall: {
+      functionSignature: contract.interface.getSighash(functionName),
+      target: ethers.utils.getAddress(contract.address),
+      caller: ethers.utils.getAddress(caller.address),
+      parameters: utils.packParameters(contract.interface, functionName, parameters),
+    },
+    expiry: expiry || BigNumber.from(4833857428),
+  }
+
+  const eat = splitSignature(await utils.signAccessToken(signer, domain, token))
+
+  return { eat, expiry: token.expiry }
+}
+
 export const generateAccessTokenForMulticall = async (
   signer: Wallet,
   domain: messages.Domain,

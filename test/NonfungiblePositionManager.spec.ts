@@ -26,9 +26,7 @@ import poolAtAddress from './shared/poolAtAddress'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
-import { messages, utils } from '@violetprotocol/ethereum-access-token-helpers'
-import { splitSignature } from 'ethers/lib/utils'
-import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { generateAccessToken, generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
 describe('NonfungiblePositionManager', () => {
   let wallets: Wallet[]
@@ -212,7 +210,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('fails if cannot transfer', async () => {
-      const poolAddress = await createAndInitializePoolIfNecessary(
+      await createAndInitializePoolIfNecessary(
         tokens[0].address,
         tokens[1].address,
         FeeAmount.MEDIUM,
@@ -791,7 +789,7 @@ describe('NonfungiblePositionManager', () => {
 
       await expect(
         nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not approved')
+      ).to.be.revertedWith('NA')
     })
 
     it('decreases position liquidity', async () => {
@@ -1254,7 +1252,7 @@ describe('NonfungiblePositionManager', () => {
       const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallet, nft, multicallParameters)
       await expect(
         nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not approved')
+      ).to.be.revertedWith('NA')
     })
 
     it('cannot be called while there is still liquidity', async () => {
@@ -1265,7 +1263,7 @@ describe('NonfungiblePositionManager', () => {
         nft
           .connect(other)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not cleared')
+      ).to.be.revertedWith('NC')
     })
 
     it('cannot be called while there is still partial liquidity', async () => {
@@ -1303,7 +1301,7 @@ describe('NonfungiblePositionManager', () => {
         nft
           .connect(other)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not cleared')
+      ).to.be.revertedWith('NC')
     })
 
     it('cannot be called while there is still tokens owed', async () => {
@@ -1341,7 +1339,7 @@ describe('NonfungiblePositionManager', () => {
         nft
           .connect(other)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
-      ).to.be.revertedWith('Not cleared')
+      ).to.be.revertedWith('NC')
     })
 
     it('deletes the token', async () => {
@@ -1402,7 +1400,7 @@ describe('NonfungiblePositionManager', () => {
           burnExpiry,
           multicallParameters
         )
-      await expect(nft.positions(tokenId)).to.be.revertedWith('Invalid token ID')
+      await expect(nft.positions(tokenId)).to.be.revertedWith('ITI')
     })
 
     it('gas', async () => {
@@ -1498,30 +1496,138 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('can only be called by authorized or owner', async () => {
-      await expect(nft.transferFrom(other.address, wallet.address, tokenId)).to.be.revertedWith(
-        'ERC721: transfer caller is not owner nor approved'
+      const { eat, expiry } = await generateAccessToken(
+        signer,
+        domain,
+        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+        wallet,
+        nft,
+        [other.address, wallet.address, tokenId]
       )
+      await expect(
+        nft['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          other.address,
+          wallet.address,
+          tokenId
+        )
+      ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved')
     })
 
     it('changes the owner', async () => {
-      await nft.connect(other).transferFrom(other.address, wallet.address, tokenId)
+      const { eat, expiry } = await generateAccessToken(
+        signer,
+        domain,
+        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+        other,
+        nft,
+        [other.address, wallet.address, tokenId]
+      )
+      await nft
+        .connect(other)
+        ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          other.address,
+          wallet.address,
+          tokenId
+        )
       expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
     })
 
     it('removes existing approval', async () => {
-      await nft.connect(other).approve(wallet.address, tokenId)
+      let { eat, expiry } = await generateAccessToken(
+        signer,
+        domain,
+        'approve(uint8,bytes32,bytes32,uint256,address,uint256)',
+        other,
+        nft,
+        [wallet.address, tokenId]
+      )
+      await nft
+        .connect(other)
+        ['approve(uint8,bytes32,bytes32,uint256,address,uint256)'](eat.v, eat.r, eat.s, expiry, wallet.address, tokenId)
       expect(await nft.getApproved(tokenId)).to.eq(wallet.address)
-      await nft.transferFrom(other.address, wallet.address, tokenId)
+      ;({ eat, expiry } = await generateAccessToken(
+        signer,
+        domain,
+        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+        wallet,
+        nft,
+        [other.address, wallet.address, tokenId]
+      ))
+      await nft['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        other.address,
+        wallet.address,
+        tokenId
+      )
       expect(await nft.getApproved(tokenId)).to.eq(constants.AddressZero)
     })
 
     it('gas', async () => {
-      await snapshotGasCost(nft.connect(other).transferFrom(other.address, wallet.address, tokenId))
+      const { eat, expiry } = await generateAccessToken(
+        signer,
+        domain,
+        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+        other,
+        nft,
+        [other.address, wallet.address, tokenId]
+      )
+      await snapshotGasCost(
+        nft
+          .connect(other)
+          ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+            eat.v,
+            eat.r,
+            eat.s,
+            expiry,
+            other.address,
+            wallet.address,
+            tokenId
+          )
+      )
     })
 
     it('gas comes from approved', async () => {
-      await nft.connect(other).approve(wallet.address, tokenId)
-      await snapshotGasCost(nft.transferFrom(other.address, wallet.address, tokenId))
+      let { eat, expiry } = await generateAccessToken(
+        signer,
+        domain,
+        'approve(uint8,bytes32,bytes32,uint256,address,uint256)',
+        other,
+        nft,
+        [wallet.address, tokenId]
+      )
+      await nft
+        .connect(other)
+        ['approve(uint8,bytes32,bytes32,uint256,address,uint256)'](eat.v, eat.r, eat.s, expiry, wallet.address, tokenId)
+      ;({ eat, expiry } = await generateAccessToken(
+        signer,
+        domain,
+        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+        wallet,
+        nft,
+        [other.address, wallet.address, tokenId]
+      ))
+      await snapshotGasCost(
+        nft['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+          eat.v,
+          eat.r,
+          eat.s,
+          expiry,
+          other.address,
+          wallet.address,
+          tokenId
+        )
+      )
     })
   })
 

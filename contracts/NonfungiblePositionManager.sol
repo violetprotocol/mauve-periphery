@@ -29,27 +29,33 @@ contract NonfungiblePositionManager is
 {
     // details about the uniswap position
     struct Position {
+        // how many uncollected tokens are owed to the position, as of the last computation
+        uint128 tokensOwed0;
+        uint128 tokensOwed1;
+        // the tick range of the position
+        int24 tickLower;
+        int24 tickUpper;
+        // the ID of the pool with which this token is connected
+        uint80 poolId;
         // the nonce for permits
         uint96 nonce;
         // the address that is approved for spending this token
         address operator;
-        // the ID of the pool with which this token is connected
-        uint80 poolId;
-        // the tick range of the position
-        int24 tickLower;
-        int24 tickUpper;
         // the liquidity of the position
         uint128 liquidity;
         // the fee growth of the aggregate position as of the last action on the individual position
         uint256 feeGrowthInside0LastX128;
         uint256 feeGrowthInside1LastX128;
-        // how many uncollected tokens are owed to the position, as of the last computation
-        uint128 tokensOwed0;
-        uint128 tokensOwed1;
     }
 
-    /// @dev IDs of pools assigned by this contract
-    mapping(address => uint80) private _poolIds;
+    /// @dev The ID of the next pool that is used for the first time. Skips 0
+    uint80 private _nextPoolId = 1;
+
+    /// @dev The ID of the next token that will be minted. Skips 0
+    uint176 private _nextId = 1;
+
+    /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
+    address private immutable _tokenDescriptor;
 
     /// @dev Pool keys by pool ID, to save on SSTOREs for position data
     mapping(uint80 => PoolAddress.PoolKey) private _poolIdToPoolKey;
@@ -57,18 +63,14 @@ contract NonfungiblePositionManager is
     /// @dev The token ID position data
     mapping(uint256 => Position) private _positions;
 
-    /// @dev The ID of the next token that will be minted. Skips 0
-    uint176 private _nextId = 1;
-    /// @dev The ID of the next pool that is used for the first time. Skips 0
-    uint80 private _nextPoolId = 1;
-
-    /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
-    address private immutable _tokenDescriptor;
+    /// @dev IDs of pools assigned by this contract
+    mapping(address => uint80) private _poolIds;
 
     address private immutable _violetID;
 
     modifier onlyRegisteredWithViolet(address account) {
-        require(IVioletID(_violetID).isRegistered(account), 'account does not own VioletID');
+        // NID -> No Violet ID
+        require(IVioletID(_violetID).isRegistered(account), 'NID');
         _;
     }
 
@@ -108,7 +110,8 @@ contract NonfungiblePositionManager is
         )
     {
         Position memory position = _positions[tokenId];
-        require(position.poolId != 0, 'Invalid token ID');
+        // ITI -> Invalid token ID
+        require(position.poolId != 0, 'ITI');
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
         return (
             position.nonce,
@@ -194,7 +197,8 @@ contract NonfungiblePositionManager is
     }
 
     modifier isAuthorizedForToken(uint256 tokenId) {
-        require(_isApprovedOrOwner(msg.sender, tokenId), 'Not approved');
+        // NO -> Not approved
+        require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
         _;
     }
 
@@ -391,7 +395,8 @@ contract NonfungiblePositionManager is
     /// @inheritdoc INonfungiblePositionManager
     function burn(uint256 tokenId) external payable override onlySelfMulticall isAuthorizedForToken(tokenId) {
         Position storage position = _positions[tokenId];
-        require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'Not cleared');
+        // NC -> Not cleared
+        require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'NC');
         delete _positions[tokenId];
         _burn(tokenId);
     }
@@ -402,7 +407,8 @@ contract NonfungiblePositionManager is
 
     /// @inheritdoc IERC721
     function getApproved(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
-        require(_exists(tokenId), 'ERC721: approved query for nonexistent token');
+        // NET ERC721: approved query for nonexistent token
+        require(_exists(tokenId), 'NET');
 
         return _positions[tokenId].operator;
     }
@@ -423,6 +429,18 @@ contract NonfungiblePositionManager is
         super.approve(to, tokenId);
     }
 
+    /// @dev Overrides approve to block usage in favour of EAT-gated version
+    function approve(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address to,
+        uint256 tokenId
+    ) public virtual requiresAuth(v, r, s, expiry) {
+        super.approve(to, tokenId);
+    }
+
     /// @dev Overrides setApprovalForAll to restrict to only VioletID holders
     function setApprovalForAll(address operator, bool approved)
         public
@@ -430,6 +448,18 @@ contract NonfungiblePositionManager is
         override(ERC721, IERC721)
         onlyRegisteredWithViolet(operator)
     {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
+    function setApprovalForAll(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address operator,
+        bool approved
+    ) public virtual requiresAuth(v, r, s, expiry) {
         super.setApprovalForAll(operator, approved);
     }
 
@@ -442,12 +472,38 @@ contract NonfungiblePositionManager is
         super.transferFrom(from, to, tokenId);
     }
 
+    /// @dev Overrides transferFrom to block usage in favour of EAT-gated version
+    function transferFrom(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual requiresAuth(v, r, s, expiry) {
+        super.transferFrom(from, to, tokenId);
+    }
+
     /// @dev Overrides safeTransferFrom to restrict to only VioletID holders
     function safeTransferFrom(
         address from,
         address to,
         uint256 tokenId
     ) public virtual override(ERC721, IERC721) onlyRegisteredWithViolet(to) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
+
+    /// @dev Overrides safeTransferFrom to block usage in favour of EAT-gated version
+    function safeTransferFrom(
+        uint8 v,
+        bytes32 r,
+        bytes32 s,
+        uint256 expiry,
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual requiresAuth(v, r, s, expiry) {
         super.safeTransferFrom(from, to, tokenId);
     }
 }

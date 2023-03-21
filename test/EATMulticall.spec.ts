@@ -81,7 +81,7 @@ describe('EATMulticall', async () => {
       testMulticall.callStatic['multicall(bytes[])']([
         testMulticall.interface.encodeFunctionData('functionThatReturnsTuple', ['1', '2']),
       ])
-    ).to.be.revertedWith('non-EAT multicall disallowed')
+    ).to.be.revertedWith('NED')
   })
 
   describe('context is preserved', () => {
