@@ -410,4 +410,42 @@ contract NonfungiblePositionManager is
         _positions[tokenId].operator = to;
         emit Approval(ownerOf(tokenId), to, tokenId);
     }
+
+    /// @dev Overrides approve to restrict to only VioletID holders
+    function approve(address to, uint256 tokenId)
+        public
+        virtual
+        override(ERC721, IERC721)
+        onlyRegisteredWithViolet(to)
+    {
+        super.approve(to, tokenId);
+    }
+
+    /// @dev Overrides setApprovalForAll to restrict to only VioletID holders
+    function setApprovalForAll(address operator, bool approved)
+        public
+        virtual
+        override(ERC721, IERC721)
+        onlyRegisteredWithViolet(operator)
+    {
+        super.setApprovalForAll(operator, approved);
+    }
+
+    /// @dev Overrides transferFrom to restrict to only VioletID holders
+    function transferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override(ERC721, IERC721) onlyRegisteredWithViolet(to) {
+        super.transferFrom(from, to, tokenId);
+    }
+
+    /// @dev Overrides safeTransferFrom to restrict to only VioletID holders
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) public virtual override(ERC721, IERC721) onlyRegisteredWithViolet(to) {
+        super.safeTransferFrom(from, to, tokenId);
+    }
 }
