@@ -50,11 +50,11 @@ contract NonfungiblePositionManager is
     /// @dev The ID of the next pool that is used for the first time. Skips 0
     uint80 private _nextPoolId = 1;
 
-    /// @dev The ID of the next token that will be minted. Skips 0
-    uint176 private _nextId = 1;
-
     /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
     address private immutable _tokenDescriptor;
+
+    /// @dev The ID of the next token that will be minted. Skips 0
+    uint176 private _nextId = 1;
 
     /// @dev Pool keys by pool ID, to save on SSTOREs for position data
     mapping(uint80 => PoolAddress.PoolKey) private _poolIdToPoolKey;
