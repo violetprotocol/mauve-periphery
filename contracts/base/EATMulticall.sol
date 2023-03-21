@@ -21,6 +21,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     // be careful with external contract function calls made by functions you modify with this
     // keep in mind possible re-entrancy
     modifier onlySelfMulticall {
+        // For some reason, this revert reason does not impact contract size
         require(isMulticalling, 'only callable by self multicall');
         _;
     }
@@ -38,6 +39,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
 
     /// @inheritdoc IMulticall
     function multicall(bytes[] calldata data) public payable override returns (bytes[] memory results) {
-        revert('non-EAT multicall disallowed');
+        // NED -> non-EAT multicall disallowed
+        revert('NED');
     }
 }

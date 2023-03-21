@@ -4,6 +4,7 @@ import '@nomiclabs/hardhat-waffle'
 import 'hardhat-typechain'
 import 'hardhat-watcher'
 import 'hardhat-dependency-compiler'
+import 'hardhat-contract-sizer'
 
 const LOW_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.7.6',
@@ -11,7 +12,7 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
     evmVersion: 'istanbul',
     optimizer: {
       enabled: true,
-      runs: 2_000,
+      runs: 1_500,
     },
     metadata: {
       bytecodeHash: 'none',
@@ -84,6 +85,9 @@ export default {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
     apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  contractSizer: {
+    runOnCompile: false,
   },
   solidity: {
     compilers: [DEFAULT_COMPILER_SETTINGS],

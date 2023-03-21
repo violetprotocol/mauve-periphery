@@ -38,23 +38,23 @@ contract NonfungiblePositionManager is
         uint80 poolId;
         // the nonce for permits
         uint96 nonce;
+        // the address that is approved for spending this token
+        address operator;
         // the liquidity of the position
         uint128 liquidity;
         // the fee growth of the aggregate position as of the last action on the individual position
         uint256 feeGrowthInside0LastX128;
         uint256 feeGrowthInside1LastX128;
-        // the address that is approved for spending this token
-        address operator;
     }
 
     /// @dev The ID of the next pool that is used for the first time. Skips 0
     uint80 private _nextPoolId = 1;
 
-    /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
-    address private immutable _tokenDescriptor;
-
     /// @dev The ID of the next token that will be minted. Skips 0
     uint176 private _nextId = 1;
+
+    /// @dev The address of the token descriptor contract, which handles generating token URIs for position tokens
+    address private immutable _tokenDescriptor;
 
     /// @dev Pool keys by pool ID, to save on SSTOREs for position data
     mapping(uint80 => PoolAddress.PoolKey) private _poolIdToPoolKey;
@@ -99,7 +99,8 @@ contract NonfungiblePositionManager is
         )
     {
         Position memory position = _positions[tokenId];
-        require(position.poolId != 0, 'Invalid token ID');
+        // ITI -> Invalid token ID
+        require(position.poolId != 0, 'ITI');
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
         return (
             position.nonce,
@@ -185,7 +186,8 @@ contract NonfungiblePositionManager is
     }
 
     modifier isAuthorizedForToken(uint256 tokenId) {
-        require(_isApprovedOrOwner(msg.sender, tokenId), 'Not approved');
+        // NO -> Not approved
+        require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
         _;
     }
 
@@ -382,7 +384,8 @@ contract NonfungiblePositionManager is
     /// @inheritdoc INonfungiblePositionManager
     function burn(uint256 tokenId) external payable override onlySelfMulticall isAuthorizedForToken(tokenId) {
         Position storage position = _positions[tokenId];
-        require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'Not cleared');
+        // NC -> Not cleared
+        require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'NC');
         delete _positions[tokenId];
         _burn(tokenId);
     }
@@ -393,7 +396,8 @@ contract NonfungiblePositionManager is
 
     /// @inheritdoc IERC721
     function getApproved(uint256 tokenId) public view override(ERC721, IERC721) returns (address) {
-        require(_exists(tokenId), 'ERC721: approved query for nonexistent token');
+        // NET ERC721: approved query for nonexistent token
+        require(_exists(tokenId), 'NET');
 
         return _positions[tokenId].operator;
     }
@@ -406,7 +410,8 @@ contract NonfungiblePositionManager is
 
     /// @dev Overrides approve to block usage in favour of EAT-gated version
     function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
-        revert('non-EAT approve disallowed');
+        // NED -> non-EAT version disallowed
+        revert('NED');
     }
 
     /// @dev Overrides approve to block usage in favour of EAT-gated version
@@ -423,7 +428,8 @@ contract NonfungiblePositionManager is
 
     /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
     function setApprovalForAll(address operator, bool approved) public virtual override(ERC721, IERC721) {
-        revert('non-EAT setApprovalForAll disallowed');
+        // NED -> non-EAT version disallowed
+        revert('NED');
     }
 
     /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
@@ -444,7 +450,8 @@ contract NonfungiblePositionManager is
         address to,
         uint256 tokenId
     ) public virtual override(ERC721, IERC721) {
-        revert('non-EAT transferFrom disallowed');
+        // NED -> non-EAT version disallowed
+        revert('NED');
     }
 
     /// @dev Overrides transferFrom to block usage in favour of EAT-gated version
@@ -468,7 +475,8 @@ contract NonfungiblePositionManager is
         address to,
         uint256 tokenId
     ) public virtual override(ERC721, IERC721) {
-        revert('non-EAT safeTransferFrom disallowed');
+        // NED -> non-EAT version disallowed
+        revert('NED');
     }
 
     /// @dev Overrides safeTransferFrom to block usage in favour of EAT-gated version
