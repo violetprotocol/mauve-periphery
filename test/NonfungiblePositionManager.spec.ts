@@ -28,6 +28,8 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
 import { generateAccessToken, generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
+const VIOLET_VERIFICATION_STATUS = 0
+
 describe('NonfungiblePositionManager', () => {
   let wallets: Wallet[]
   let wallet: Wallet, other: Wallet
@@ -65,7 +67,7 @@ describe('NonfungiblePositionManager', () => {
     }
 
     // issue NTT to wallet only
-    await violetID.grantStatus(wallet.address, 0, '0x00')
+    await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
 
     expect(await violetID.callStatic.hasVioletVerificationStatus(wallet.address)).to.be.true
     console.log(await violetID.callStatic.hasVioletVerificationStatus(wallet.address))
