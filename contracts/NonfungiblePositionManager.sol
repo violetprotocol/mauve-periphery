@@ -2,6 +2,7 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
+import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Factory.sol';
 import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/FixedPoint128.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/FullMath.sol';
