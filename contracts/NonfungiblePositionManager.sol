@@ -354,6 +354,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
+        onlyEmergencyState(false)
         returns (uint256 amount0, uint256 amount1)
     {
         return _collect(params);
