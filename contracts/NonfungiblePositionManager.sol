@@ -135,7 +135,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         checkDeadline(params.deadline)
-        onlyEmergencyState(false)
+        onlyWhenEmergencyModeIs(false)
         returns (
             uint256 tokenId,
             uint128 liquidity,
@@ -212,7 +212,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         checkDeadline(params.deadline)
-        onlyEmergencyState(false)
+        onlyWhenEmergencyModeIs(false)
         returns (
             uint128 liquidity,
             uint256 amount0,
@@ -270,7 +270,7 @@ contract NonfungiblePositionManager is
         external
         payable
         isAuthorizedForToken(params.tokenId)
-        onlyEmergencyState(true)
+        onlyWhenEmergencyModeIs(true)
         returns (uint256 amount0, uint256 amount1)
     {
         return _decreaseLiquidity(params);
@@ -283,7 +283,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
-        onlyEmergencyState(false)
+        onlyWhenEmergencyModeIs(false)
         returns (uint256 amount0, uint256 amount1)
     {
         return _decreaseLiquidity(params);
@@ -341,7 +341,7 @@ contract NonfungiblePositionManager is
         external
         payable
         isAuthorizedForToken(params.tokenId)
-        onlyEmergencyState(true)
+        onlyWhenEmergencyModeIs(true)
         returns (uint256 amount0, uint256 amount1)
     {
         return _collect(params);
@@ -354,7 +354,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
-        onlyEmergencyState(false)
+        onlyWhenEmergencyModeIs(false)
         returns (uint256 amount0, uint256 amount1)
     {
         return _collect(params);
@@ -428,12 +428,12 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         isAuthorizedForToken(tokenId)
-        onlyEmergencyState(false)
+        onlyWhenEmergencyModeIs(false)
     {
         _burn_(tokenId);
     }
 
-    function emergencyBurn(uint256 tokenId) external payable isAuthorizedForToken(tokenId) onlyEmergencyState(true) {
+    function emergencyBurn(uint256 tokenId) external payable isAuthorizedForToken(tokenId) onlyWhenEmergencyModeIs(true) {
         _burn_(tokenId);
     }
 
@@ -469,7 +469,7 @@ contract NonfungiblePositionManager is
         virtual
         override(ERC721, IERC721)
         onlyMauveCompliant(to)
-        onlyEmergencyState(false)
+        onlyWhenEmergencyModeIs(false)
     {
         super.approve(to, tokenId);
     }
@@ -492,7 +492,7 @@ contract NonfungiblePositionManager is
         virtual
         override(ERC721, IERC721)
         onlyMauveCompliant(operator)
-        onlyEmergencyState(false)
+        onlyWhenEmergencyModeIs(false)
     {
         super.setApprovalForAll(operator, approved);
     }
@@ -514,7 +514,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyEmergencyState(false) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenEmergencyModeIs(false) {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -536,7 +536,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyEmergencyState(false) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenEmergencyModeIs(false) {
         super.safeTransferFrom(from, to, tokenId);
     }
 

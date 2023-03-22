@@ -18,7 +18,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         _;
     }
 
-    modifier onlyEmergencyState(bool desiredEmergencyModeState) {
+    modifier onlyWhenEmergencyModeIs(bool desiredEmergencyModeState) {
         _checkEmergencyMode(desiredEmergencyModeState);
         _;
     }
