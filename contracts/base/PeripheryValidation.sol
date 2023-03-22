@@ -11,6 +11,6 @@ abstract contract PeripheryValidation is BlockTimestamp {
     }
 
     function _checkDeadline(uint256 deadline) internal view virtual {
-      require(_blockTimestamp() <= deadline, 'Transaction too old');
+        require(_blockTimestamp() <= deadline, 'Transaction too old');
     }
 }

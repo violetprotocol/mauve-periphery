@@ -79,15 +79,13 @@ contract NonfungiblePositionManager is
         _tokenDescriptor = _tokenDescriptor_;
     }
 
-
     function checkAuthorization(address addressToCheck) private view {
         if (_isEmergencyModeActivated()) {
-           _checkMauveCompliant(addressToCheck);
+            _checkMauveCompliant(addressToCheck);
         } else {
             require(_isSelfMulticalling());
         }
     }
-
 
     /// @inheritdoc INonfungiblePositionManager
     function positions(uint256 tokenId)
@@ -396,12 +394,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function burn(uint256 tokenId)
-        external
-        payable
-        override
-        isAuthorizedForToken(tokenId)
-    {
+    function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) {
         checkAuthorization(ownerOf(tokenId));
         Position storage position = _positions[tokenId];
         // NC -> Not cleared
@@ -429,12 +422,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @dev Overrides approve to restrict to only VioletID holders
-    function approve(address to, uint256 tokenId)
-        public
-        virtual
-        override(ERC721, IERC721)
-        onlyMauveCompliant(to)
-    {
+    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
         super.approve(to, tokenId);
     }
 

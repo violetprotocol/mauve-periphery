@@ -1398,15 +1398,17 @@ describe('NonfungiblePositionManager', () => {
         nft,
         multicallParameters
       )
-      await expect (nft
-        .connect(other)
-        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
-          burnEat.v,
-          burnEat.r,
-          burnEat.s,
-          burnExpiry,
-          multicallParameters
-        )).to.not.be.reverted
+      await expect(
+        nft
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+            burnEat.v,
+            burnEat.r,
+            burnEat.s,
+            burnExpiry,
+            multicallParameters
+          )
+      ).to.not.be.reverted
       await expect(nft.positions(tokenId)).to.be.revertedWith('ITI')
     })
 
@@ -1453,9 +1455,7 @@ describe('NonfungiblePositionManager', () => {
       await violetID.grantStatus(other.address, VIOLET_VERIFICATION_STATUS, '0x00')
       expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
       await nft.activateEmergencyMode()
-      await expect(
-        nft.connect(other)["emergencyBurn(uint256)"](tokenId)
-      ).to.not.be.reverted
+      await expect(nft.connect(other)['emergencyBurn(uint256)'](tokenId)).to.not.be.reverted
       await expect(nft.positions(tokenId)).to.be.revertedWith('ITI')
     })
 
@@ -1502,10 +1502,7 @@ describe('NonfungiblePositionManager', () => {
       await violetID.grantStatus(other.address, VIOLET_VERIFICATION_STATUS, '0x00')
       expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
 
-      await expect(
-        nft.connect(other)["emergencyBurn(uint256)"](tokenId)
-      ).to.be.reverted
-
+      await expect(nft.connect(other)['emergencyBurn(uint256)'](tokenId)).to.be.reverted
     })
 
     it('gas', async () => {
@@ -1649,32 +1646,21 @@ describe('NonfungiblePositionManager', () => {
       await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
 
-      await expect(nft.connect(other)
-        ["transferFrom(address,address,uint256)"]
-        (
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.not.be.reverted
+      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
+        .to.not.be.reverted
 
       expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    });
+    })
 
     it('changes the owner, transferring with VID method on non Emergency State when wallet does NOT has VID', async () => {
       // await violetID.revokeStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
 
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
 
-      await expect(
-        nft
-        .connect(other)
-        ["transferFrom(address,address,uint256)"](
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.be.reverted
+      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
+        .to.be.reverted
       expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
-    });
+    })
 
     it('should not transfer if emergencyMode is activated', async () => {
       await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
@@ -1682,29 +1668,20 @@ describe('NonfungiblePositionManager', () => {
 
       await nft.activateEmergencyMode()
 
-      await expect(nft.connect(other)
-        ["transferFrom(address,address,uint256)"]
-        (
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.be.reverted
+      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
+        .to.be.reverted
     })
 
     it('safeTransfer should execute with VID', async () => {
       await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
 
-      await expect(nft.connect(other)
-        ["safeTransferFrom(address,address,uint256)"]
-        (
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.not.be.reverted
+      await expect(
+        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+      ).to.not.be.reverted
 
       expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    });
+    })
 
     it('safeTransfer should revert without VID', async () => {
       // await violetID.revokeStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
@@ -1712,15 +1689,10 @@ describe('NonfungiblePositionManager', () => {
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
 
       await expect(
-        nft
-        .connect(other)
-        ["safeTransferFrom(address,address,uint256)"](
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.be.reverted
+        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+      ).to.be.reverted
       expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
-    });
+    })
 
     it('should not safeTransfer if emergencyMode is activated', async () => {
       await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
@@ -1728,26 +1700,22 @@ describe('NonfungiblePositionManager', () => {
 
       await nft.activateEmergencyMode()
 
-      await expect(nft.connect(other)
-        ["safeTransferFrom(address,address,uint256)"]
-        (
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.be.reverted
+      await expect(
+        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+      ).to.be.reverted
     })
 
     it('should approve if recipient has VID', async () => {
       await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
-      
-      await expect(nft.connect(other)["approve(address,uint256)"](wallet.address, tokenId)).to.not.be.reverted
+
+      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
     })
 
     it('should not approve if recipient does not have VID', async () => {
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
-      
-      await expect(nft.connect(other)["approve(address,uint256)"](wallet.address, tokenId)).to.be.reverted
+
+      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.be.reverted
     })
 
     it('should not approve while in emergencyMode', async () => {
@@ -1755,21 +1723,21 @@ describe('NonfungiblePositionManager', () => {
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
 
       await nft.activateEmergencyMode()
-      
-      await expect(nft.connect(other)["approve(address,uint256)"](wallet.address, tokenId)).to.be.reverted
+
+      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.be.reverted
     })
 
     it('should setApproveForAll if operator has VID', async () => {
       await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
-      
-      await expect(nft.connect(other)["setApprovalForAll(address,bool)"](wallet.address, true)).to.not.be.reverted
+
+      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
     })
 
     it('should not setApprovalForAll if operator does not have VID', async () => {
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
-      
-      await expect(nft.connect(other)["setApprovalForAll(address,bool)"](wallet.address, true)).to.be.reverted
+
+      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.be.reverted
     })
 
     it('should not setApprovalForAll while in emergencyMode', async () => {
@@ -1777,8 +1745,8 @@ describe('NonfungiblePositionManager', () => {
       expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
 
       await nft.activateEmergencyMode()
-      
-      await expect(nft.connect(other)["setApprovalForAll(address,bool)"](wallet.address, true)).to.be.reverted
+
+      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.be.reverted
     })
 
     it('removes existing approval', async () => {

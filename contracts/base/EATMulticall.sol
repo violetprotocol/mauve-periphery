@@ -26,7 +26,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
         _;
     }
 
-    function _isSelfMulticalling() internal view returns (bool){
+    function _isSelfMulticalling() internal view returns (bool) {
         return isMulticalling;
     }
 
