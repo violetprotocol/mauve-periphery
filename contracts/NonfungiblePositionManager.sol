@@ -68,9 +68,13 @@ contract NonfungiblePositionManager is
 
     address private immutable _violetID;
 
-    modifier onlyRegisteredWithViolet(address account) {
-        // NID -> No Violet ID
-        require(IVioletID(_violetID).isRegistered(account), 'NID');
+    modifier onlyMauveCompliant(address account) {
+        uint256[] memory tokenIds = IUniswapV3Factory(factory).getMauveComplianceRegime();
+
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            // NID -> No Violet ID
+            require(IVioletID(_violetID).isRegistered(account, tokenIds[i]), 'NID');
+        }
         _;
     }
 
@@ -420,12 +424,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @dev Overrides approve to restrict to only VioletID holders
-    function approve(address to, uint256 tokenId)
-        public
-        virtual
-        override(ERC721, IERC721)
-        onlyRegisteredWithViolet(to)
-    {
+    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
         super.approve(to, tokenId);
     }
 
@@ -446,7 +445,7 @@ contract NonfungiblePositionManager is
         public
         virtual
         override(ERC721, IERC721)
-        onlyRegisteredWithViolet(operator)
+        onlyMauveCompliant(operator)
     {
         super.setApprovalForAll(operator, approved);
     }
@@ -468,7 +467,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyRegisteredWithViolet(to) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -490,7 +489,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyRegisteredWithViolet(to) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
         super.safeTransferFrom(from, to, tokenId);
     }
 
