@@ -22,8 +22,12 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     // keep in mind possible re-entrancy
     modifier onlySelfMulticall {
         // For some reason, this revert reason does not impact contract size
-        require(isMulticalling, 'only callable by self multicall');
+        require(_isSelfMulticalling(), 'only callable by self multicall');
         _;
+    }
+
+    function _isSelfMulticalling() internal view returns (bool){
+        return isMulticalling;
     }
 
     function multicall(
