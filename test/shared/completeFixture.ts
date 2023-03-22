@@ -1,7 +1,7 @@
 import { Fixture } from 'ethereum-waffle'
 import { ethers } from 'hardhat'
 import { v3RouterFixture, violetIDFixture } from './externalFixtures'
-import { constants, Contract, Wallet } from 'ethers'
+import { constants, Contract, Wallet, BigNumber } from 'ethers'
 import {
   IWETH9,
   MockTimeNonfungiblePositionManager,
@@ -82,6 +82,7 @@ const completeFixture: Fixture<{
   )) as MockTimeNonfungiblePositionManager
 
   await factory.setRole(nft.address, positionManagerBytes32)
+  await factory["setMauveComplianceRegime(uint256[])"]([BigNumber.from(0)])
 
   const createAndInitializePoolIfNecessary: CreatePoolIfNecessary = createPoolIfNecessary(factory, wallet)
 

@@ -34,6 +34,10 @@ exports[`NonfungiblePositionManager #transferFrom gas 1`] = `151237`;
 
 exports[`NonfungiblePositionManager #transferFrom gas comes from approved 1`] = `149812`;
 
+exports[`NonfungiblePositionManager #transferFrom, approve gas 1`] = `151225`;
+
+exports[`NonfungiblePositionManager #transferFrom, approve gas comes from approved 1`] = `149808`;
+
 exports[`NonfungiblePositionManager bytecode size 1`] = `24146`;
 
 exports[`NonfungiblePositionManager multicall exit gas 1`] = `277217`;

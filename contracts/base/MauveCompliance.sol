@@ -45,7 +45,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             // NID -> No Violet ID
-            require(IVioletID(_violetID).isRegistered(account, tokenIds[i]), 'NID');
+            require(IVioletID(_violetID).hasStatus(account, tokenIds[i]), 'NID');
         }
     }
 }

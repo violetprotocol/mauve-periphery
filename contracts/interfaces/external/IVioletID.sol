@@ -5,9 +5,16 @@
 pragma solidity >=0.7.5;
 
 interface IVioletID {
-    function isRegistered(address account, uint256 tokenId) external view returns (bool);
+    event GrantedStatus(address account, uint256 tokenId);
+    event RevokedStatus(address account, uint256 tokenId, bytes reason);
 
-    function isBaseRegistered(address account) external view returns (bool);
+    function grantStatus(address account, uint256 tokenId, bytes memory data) external;
 
-    function numberOfBaseRegistered() external view returns (uint256);
+    function revokeStatus(address account, uint256 tokenId, bytes memory reason) external;
+
+    function hasStatus(address account, uint256 tokenId) external view returns (bool);
+
+    function hasVioletVerificationStatus(address account) external view returns (bool);
+
+    function numberWithVioletVerificationStatus() external view returns (uint256);
 }
