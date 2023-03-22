@@ -414,7 +414,13 @@ contract NonfungiblePositionManager is
     }
 
     /// @dev Overrides approve to restrict to only VioletID holders
-    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
+    function approve(address to, uint256 tokenId)
+        public
+        virtual
+        override(ERC721, IERC721)
+        onlyMauveCompliant(to)
+        onlyNormalOperation
+    {
         super.approve(to, tokenId);
     }
 
@@ -436,6 +442,7 @@ contract NonfungiblePositionManager is
         virtual
         override(ERC721, IERC721)
         onlyMauveCompliant(operator)
+        onlyNormalOperation
     {
         super.setApprovalForAll(operator, approved);
     }
@@ -457,7 +464,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyNormalOperation {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -479,7 +486,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyNormalOperation {
         super.safeTransferFrom(from, to, tokenId);
     }
 
