@@ -419,7 +419,7 @@ contract NonfungiblePositionManager is
         virtual
         override(ERC721, IERC721)
         onlyMauveCompliant(to)
-        onlyNormalOperation
+        onlyEmergencyState(false)
     {
         super.approve(to, tokenId);
     }
@@ -442,7 +442,7 @@ contract NonfungiblePositionManager is
         virtual
         override(ERC721, IERC721)
         onlyMauveCompliant(operator)
-        onlyNormalOperation
+        onlyEmergencyState(false)
     {
         super.setApprovalForAll(operator, approved);
     }
@@ -464,7 +464,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyNormalOperation {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyEmergencyState(false) {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -486,7 +486,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyNormalOperation {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyEmergencyState(false) {
         super.safeTransferFrom(from, to, tokenId);
     }
 

@@ -18,14 +18,13 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         _;
     }
 
-    modifier onlyNormalOperation {
-        require(!isEmergencyMode);
+    modifier onlyEmergencyState(bool desiredEmergencyModeState) {
+        _checkEmergencyMode(desiredEmergencyModeState);
         _;
     }
 
-    modifier onlyInEmergencyMode {
-        require(isEmergencyMode);
-        _;
+    function _checkEmergencyMode(bool desiredEmergencyModeState) internal view virtual {
+        require(isEmergencyMode == desiredEmergencyModeState);
     }
 
     modifier onlyMauveCompliant(address account) {

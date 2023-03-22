@@ -49,7 +49,7 @@ abstract contract LiquidityManagement is IUniswapV3MintCallback, MauveCompliance
     /// @notice Add liquidity to an initialized pool
     function addLiquidity(AddLiquidityParams memory params)
         internal
-        onlyNormalOperation
+        onlyEmergencyState(false)
         returns (
             uint128 liquidity,
             uint256 amount0,
