@@ -2,6 +2,10 @@ import {
   abi as FACTORY_ABI,
   bytecode as FACTORY_BYTECODE,
 } from '@violetprotocol/mauve-v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
+import {
+  abi as VIOLETID_ABI,
+  bytecode as VIOLETID_BYTECODE,
+} from '@violetprotocol/violetid/artifacts/contracts/VioletID.sol/VioletID.json'
 import { abi as FACTORY_V2_ABI, bytecode as FACTORY_V2_BYTECODE } from '@uniswap/v2-core/build/UniswapV2Factory.json'
 import { Fixture } from 'ethereum-waffle'
 import { ethers, waffle } from 'hardhat'
@@ -64,4 +68,11 @@ export const v3RouterFixture: Fixture<{
   await factory.setRole(router.address, swapRouterBytes32)
 
   return { factory, weth9, router, verifier }
+}
+
+export const violetIDFixture: Fixture<Contract> = async ([wallet], provider) => {
+  return await waffle.deployContract(wallet, {
+    bytecode: VIOLETID_BYTECODE,
+    abi: VIOLETID_ABI,
+  })
 }

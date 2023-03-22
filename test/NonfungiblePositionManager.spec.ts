@@ -1,6 +1,6 @@
 import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
 import { Fixture } from 'ethereum-waffle'
-import { BigNumberish, constants, Wallet, BigNumber } from 'ethers'
+import { BigNumberish, constants, Wallet, BigNumber, Contract } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 import {
   IUniswapV3Factory,
@@ -42,6 +42,7 @@ describe('NonfungiblePositionManager', () => {
     signer: Wallet
     domain: Domain
     verifier: AccessTokenVerifier
+    violetID: Contract
   }> = async (wallets, provider) => {
     const {
       weth9,
@@ -53,6 +54,7 @@ describe('NonfungiblePositionManager', () => {
       signer,
       domain,
       verifier,
+      violetID,
     } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
@@ -61,6 +63,12 @@ describe('NonfungiblePositionManager', () => {
       await token.connect(other).approve(nft.address, constants.MaxUint256)
       await token.transfer(other.address, expandTo18Decimals(1_000_000))
     }
+
+    // issue NTT to wallet only
+    await violetID.grantStatus(wallet.address, 0, '0x00')
+
+    expect(await violetID.callStatic.hasVioletVerificationStatus(wallet.address)).to.be.true
+    console.log(await violetID.callStatic.hasVioletVerificationStatus(wallet.address))
 
     return {
       nft,
@@ -72,6 +80,7 @@ describe('NonfungiblePositionManager', () => {
       signer,
       domain,
       verifier,
+      violetID,
     }
   }
 
@@ -84,6 +93,7 @@ describe('NonfungiblePositionManager', () => {
   let signer: Wallet
   let domain: Domain
   let verifier: AccessTokenVerifier
+  let violetID: Contract
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -105,6 +115,7 @@ describe('NonfungiblePositionManager', () => {
       signer,
       domain,
       verifier,
+      violetID,
     } = await loadFixture(nftFixture))
   })
 

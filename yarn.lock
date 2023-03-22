@@ -768,6 +768,11 @@
     "@types/sinon-chai" "^3.2.3"
     "@types/web3" "1.0.19"
 
+"@openzeppelin/contracts-upgradeable@^4.8.1":
+  version "4.8.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.8.2.tgz#edef522bdbc46d478481391553bababdd2199e27"
+  integrity sha512-zIggnBwemUmmt9IS73qxi+tumALxCY4QEs3zLCII78k0Gfse2hAOdAkuAeLUzvWUpneMUfFE5sGHzEUSTvn4Ag==
+
 "@openzeppelin/contracts@3.4.2-solc-0.7":
   version "3.4.2-solc-0.7"
   resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-3.4.2-solc-0.7.tgz#38f4dbab672631034076ccdf2f3201fab1726635"
@@ -1074,6 +1079,13 @@
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-v3-core/-/mauve-v3-core-1.2.2.tgz#61d6b22ac1e873118535bcb02adbb2f70656dc9c"
   integrity sha512-dn68jW81ND3q3GT/bCUVULU+M6e3kC3hMTE6oDISctk5XbjEoiq3xv6rzH2I3VPKuom9Q5wWKkDOsOLQdqRP0Q==
+
+"@violetprotocol/violetid@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/violetid/-/violetid-1.2.0.tgz#1c8b897edd48f7b5be5d6bce45655b4db5f4aa2f"
+  integrity sha512-y6997rXQ2IzC7YybOkK55etf345/wiJXtlyV47eN8BNhINnMMTkCh2bU0XZsSEvmlnzUq2cVNMK2+YPby+N4dg==
+  dependencies:
+    "@openzeppelin/contracts-upgradeable" "^4.8.1"
 
 "@yarnpkg/lockfile@^1.1.0":
   version "1.1.0"

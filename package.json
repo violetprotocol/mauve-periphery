@@ -35,6 +35,7 @@
     "@uniswap/v2-core": "1.0.1",
     "@violetprotocol/ethereum-access-token": "0.2.0-sol07",
     "@violetprotocol/mauve-v3-core": "1.2.2",
+    "@violetprotocol/violetid": "1.2.0",
     "base64-sol": "1.0.1",
     "hardhat-watcher": "^2.1.1"
   },
