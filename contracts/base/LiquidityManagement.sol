@@ -2,7 +2,6 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Factory.sol';
 import '@violetprotocol/mauve-v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/TickMath.sol';
 
