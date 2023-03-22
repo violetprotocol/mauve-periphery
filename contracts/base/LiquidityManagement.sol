@@ -17,8 +17,8 @@ import './PeripheryImmutableState.sol';
 /// @notice Internal functions for safely managing liquidity in Uniswap V3
 abstract contract LiquidityManagement is IUniswapV3MintCallback, PeripheryImmutableState, PeripheryPayments {
     struct MintCallbackData {
-        PoolAddress.PoolKey poolKey;
         address payer;
+        PoolAddress.PoolKey poolKey;
     }
 
     /// @inheritdoc IUniswapV3MintCallback
@@ -36,11 +36,11 @@ abstract contract LiquidityManagement is IUniswapV3MintCallback, PeripheryImmuta
 
     struct AddLiquidityParams {
         address token0;
-        address token1;
         uint24 fee;
-        address recipient;
+        address token1;
         int24 tickLower;
         int24 tickUpper;
+        address recipient;
         uint256 amount0Desired;
         uint256 amount1Desired;
         uint256 amount0Min;
