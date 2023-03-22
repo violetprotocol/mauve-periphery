@@ -135,6 +135,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         checkDeadline(params.deadline)
+        onlyEmergencyState(false)
         returns (
             uint256 tokenId,
             uint128 liquidity,
@@ -211,6 +212,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         checkDeadline(params.deadline)
+        onlyEmergencyState(false)
         returns (
             uint128 liquidity,
             uint256 amount0,
@@ -264,6 +266,16 @@ contract NonfungiblePositionManager is
         emit IncreaseLiquidity(params.tokenId, liquidity, amount0, amount1);
     }
 
+    function emergencyDecreaseLiquidity(DecreaseLiquidityParams calldata params)
+        external
+        payable
+        isAuthorizedForToken(params.tokenId)
+        onlyEmergencyState(true)
+        returns (uint256 amount0, uint256 amount1)
+    {
+        return _decreaseLiquidity(params);
+    }
+
     /// @inheritdoc INonfungiblePositionManager
     function decreaseLiquidity(DecreaseLiquidityParams calldata params)
         external
@@ -271,6 +283,14 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
+        onlyEmergencyState(false)
+        returns (uint256 amount0, uint256 amount1)
+    {
+        return _decreaseLiquidity(params);
+    }
+
+    function _decreaseLiquidity(DecreaseLiquidityParams calldata params)
+        internal
         checkDeadline(params.deadline)
         returns (uint256 amount0, uint256 amount1)
     {
@@ -317,6 +337,16 @@ contract NonfungiblePositionManager is
         emit DecreaseLiquidity(params.tokenId, params.liquidity, amount0, amount1);
     }
 
+    function emergencyCollect(CollectParams calldata params)
+        external
+        payable
+        isAuthorizedForToken(params.tokenId)
+        onlyEmergencyState(true)
+        returns (uint256 amount0, uint256 amount1)
+    {
+        return _collect(params);
+    }
+
     /// @inheritdoc INonfungiblePositionManager
     function collect(CollectParams calldata params)
         external
@@ -326,6 +356,10 @@ contract NonfungiblePositionManager is
         isAuthorizedForToken(params.tokenId)
         returns (uint256 amount0, uint256 amount1)
     {
+        return _collect(params);
+    }
+
+    function _collect(CollectParams calldata params) internal returns (uint256 amount0, uint256 amount1) {
         require(params.amount0Max > 0 || params.amount1Max > 0);
         // allow collecting to the nft position manager address with address 0
         address recipient = params.recipient == address(0) ? address(this) : params.recipient;
@@ -387,7 +421,22 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function burn(uint256 tokenId) external payable override onlySelfMulticall isAuthorizedForToken(tokenId) {
+    function burn(uint256 tokenId)
+        external
+        payable
+        override
+        onlySelfMulticall
+        isAuthorizedForToken(tokenId)
+        onlyEmergencyState(false)
+    {
+        _burn_(tokenId);
+    }
+
+    function emergencyBurn(uint256 tokenId) external payable isAuthorizedForToken(tokenId) onlyEmergencyState(true) {
+        _burn_(tokenId);
+    }
+
+    function _burn_(uint256 tokenId) internal {
         Position storage position = _positions[tokenId];
         // NC -> Not cleared
         require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'NC');
