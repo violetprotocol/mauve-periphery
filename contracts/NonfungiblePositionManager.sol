@@ -70,13 +70,17 @@ contract NonfungiblePositionManager is
     address private immutable _violetID;
 
     modifier onlyMauveCompliant(address account) {
+        _checkMauveCompliant(account);
+        _;
+    }
+
+    function _checkMauveCompliant(address account) internal view virtual {
         uint256[] memory tokenIds = IUniswapV3Factory(factory).getMauveComplianceRegime();
 
         for (uint256 i = 0; i < tokenIds.length; i++) {
             // NID -> No Violet ID
             require(IVioletID(_violetID).isRegistered(account, tokenIds[i]), 'NID');
         }
-        _;
     }
 
     constructor(
@@ -203,8 +207,12 @@ contract NonfungiblePositionManager is
 
     modifier isAuthorizedForToken(uint256 tokenId) {
         // NO -> Not approved
-        require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
+       _checkAuthorizedForToken(tokenId);
         _;
+    }
+
+    function _checkAuthorizedForToken(uint256 tokenId) internal view virtual {
+        require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721, IERC721Metadata) returns (string memory) {
