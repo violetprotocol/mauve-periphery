@@ -6,14 +6,12 @@ import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/FixedPoint128.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/FullMath.sol';
 
-import './interfaces/external/IUniswapV3Factory.sol';
+import './interfaces/external/IUniswapV3FactoryReduced.sol';
 import './interfaces/INonfungiblePositionManager.sol';
 import './interfaces/INonfungibleTokenPositionDescriptor.sol';
-import './interfaces/external/IVioletID.sol';
 import './libraries/PositionKey.sol';
 import './libraries/PoolAddress.sol';
 import './base/LiquidityManagement.sol';
-import './base/PeripheryImmutableState.sol';
 import './base/EATMulticall.sol';
 import './base/ERC721Permit.sol';
 import './base/PeripheryValidation.sol';
@@ -24,7 +22,6 @@ contract NonfungiblePositionManager is
     INonfungiblePositionManager,
     EATMulticall,
     ERC721Permit,
-    PeripheryImmutableState,
     LiquidityManagement,
     PeripheryValidation
 {
@@ -67,35 +64,19 @@ contract NonfungiblePositionManager is
     /// @dev IDs of pools assigned by this contract
     mapping(address => uint80) private _poolIds;
 
-    address private immutable _violetID;
-
-    modifier onlyMauveCompliant(address account) {
-        _checkMauveCompliant(account);
-        _;
-    }
-
-    function _checkMauveCompliant(address account) internal view virtual {
-        uint256[] memory tokenIds = IUniswapV3Factory(factory).getMauveComplianceRegime();
-
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            // NID -> No Violet ID
-            require(IVioletID(_violetID).isRegistered(account, tokenIds[i]), 'NID');
-        }
-    }
-
     constructor(
         address _factory,
         address _WETH9,
         address _tokenDescriptor_,
         address _eatVerifier,
-        address _violetID_
+        address _violetID
     )
         ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1')
         PeripheryImmutableState(_factory, _WETH9)
+        MauveCompliance(_violetID)
         EATMulticall(_eatVerifier)
     {
         _tokenDescriptor = _tokenDescriptor_;
-        _violetID = _violetID_;
     }
 
     /// @inheritdoc INonfungiblePositionManager
@@ -207,7 +188,7 @@ contract NonfungiblePositionManager is
 
     modifier isAuthorizedForToken(uint256 tokenId) {
         // NO -> Not approved
-       _checkAuthorizedForToken(tokenId);
+        _checkAuthorizedForToken(tokenId);
         _;
     }
 
