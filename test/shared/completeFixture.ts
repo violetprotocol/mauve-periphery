@@ -82,7 +82,7 @@ const completeFixture: Fixture<{
   )) as MockTimeNonfungiblePositionManager
 
   await factory.setRole(nft.address, positionManagerBytes32)
-  await factory["setMauveComplianceRegime(uint256[])"]([BigNumber.from(0)])
+  await factory['setMauveComplianceRegime(uint256[])']([BigNumber.from(0)])
 
   const createAndInitializePoolIfNecessary: CreatePoolIfNecessary = createPoolIfNecessary(factory, wallet)
 

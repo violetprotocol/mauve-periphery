@@ -12,19 +12,19 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     address private immutable _violetID;
     bool private isEmergencyMode = false;
 
+    constructor(address _violetId) {
+        _violetID = _violetId;
+    }
+
     modifier onlyFactoryOwner {
         address factoryOwner = IUniswapV3FactoryReduced(factory).roles('owner');
         require(msg.sender == factoryOwner);
         _;
     }
 
-    modifier onlyWhenEmergencyModeIs(bool desiredEmergencyModeState) {
-        _checkEmergencyMode(desiredEmergencyModeState);
+    modifier onlyWhenNotEmergencyMode() {
+        require(!_isEmergencyModeActivated());
         _;
-    }
-
-    function _checkEmergencyMode(bool desiredEmergencyModeState) internal view virtual {
-        require(isEmergencyMode == desiredEmergencyModeState);
     }
 
     modifier onlyMauveCompliant(address account) {
@@ -32,8 +32,8 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         _;
     }
 
-    constructor(address _violetId) {
-        _violetID = _violetId;
+    function _isEmergencyModeActivated() internal view returns (bool) {
+        return isEmergencyMode == true;
     }
 
     function activateEmergencyMode() external onlyFactoryOwner {

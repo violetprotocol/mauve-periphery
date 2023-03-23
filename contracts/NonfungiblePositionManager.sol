@@ -79,6 +79,14 @@ contract NonfungiblePositionManager is
         _tokenDescriptor = _tokenDescriptor_;
     }
 
+    function checkAuthorization(address addressToCheck) private view {
+        if (_isEmergencyModeActivated()) {
+            _checkMauveCompliant(addressToCheck);
+        } else {
+            require(_isSelfMulticalling());
+        }
+    }
+
     /// @inheritdoc INonfungiblePositionManager
     function positions(uint256 tokenId)
         external
@@ -135,7 +143,6 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         checkDeadline(params.deadline)
-        onlyWhenEmergencyModeIs(false)
         returns (
             uint256 tokenId,
             uint128 liquidity,
@@ -212,7 +219,7 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         checkDeadline(params.deadline)
-        onlyWhenEmergencyModeIs(false)
+        onlyWhenNotEmergencyMode
         returns (
             uint128 liquidity,
             uint256 amount0,
@@ -266,34 +273,15 @@ contract NonfungiblePositionManager is
         emit IncreaseLiquidity(params.tokenId, liquidity, amount0, amount1);
     }
 
-    function emergencyDecreaseLiquidity(DecreaseLiquidityParams calldata params)
-        external
-        payable
-        isAuthorizedForToken(params.tokenId)
-        onlyWhenEmergencyModeIs(true)
-        returns (uint256 amount0, uint256 amount1)
-    {
-        return _decreaseLiquidity(params);
-    }
-
     /// @inheritdoc INonfungiblePositionManager
     function decreaseLiquidity(DecreaseLiquidityParams calldata params)
         external
         payable
         override
-        onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
-        onlyWhenEmergencyModeIs(false)
         returns (uint256 amount0, uint256 amount1)
     {
-        return _decreaseLiquidity(params);
-    }
-
-    function _decreaseLiquidity(DecreaseLiquidityParams calldata params)
-        internal
-        checkDeadline(params.deadline)
-        returns (uint256 amount0, uint256 amount1)
-    {
+        checkAuthorization(ownerOf(params.tokenId));
         require(params.liquidity > 0);
         Position storage position = _positions[params.tokenId];
 
@@ -337,30 +325,14 @@ contract NonfungiblePositionManager is
         emit DecreaseLiquidity(params.tokenId, params.liquidity, amount0, amount1);
     }
 
-    function emergencyCollect(CollectParams calldata params)
-        external
-        payable
-        isAuthorizedForToken(params.tokenId)
-        onlyWhenEmergencyModeIs(true)
-        returns (uint256 amount0, uint256 amount1)
-    {
-        return _collect(params);
-    }
-
     /// @inheritdoc INonfungiblePositionManager
     function collect(CollectParams calldata params)
         external
         payable
         override
-        onlySelfMulticall
-        isAuthorizedForToken(params.tokenId)
-        onlyWhenEmergencyModeIs(false)
         returns (uint256 amount0, uint256 amount1)
     {
-        return _collect(params);
-    }
-
-    function _collect(CollectParams calldata params) internal returns (uint256 amount0, uint256 amount1) {
+        checkAuthorization(ownerOf(params.tokenId));
         require(params.amount0Max > 0 || params.amount1Max > 0);
         // allow collecting to the nft position manager address with address 0
         address recipient = params.recipient == address(0) ? address(this) : params.recipient;
@@ -422,22 +394,8 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function burn(uint256 tokenId)
-        external
-        payable
-        override
-        onlySelfMulticall
-        isAuthorizedForToken(tokenId)
-        onlyWhenEmergencyModeIs(false)
-    {
-        _burn_(tokenId);
-    }
-
-    function emergencyBurn(uint256 tokenId) external payable isAuthorizedForToken(tokenId) onlyWhenEmergencyModeIs(true) {
-        _burn_(tokenId);
-    }
-
-    function _burn_(uint256 tokenId) internal {
+    function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) {
+        checkAuthorization(ownerOf(tokenId));
         Position storage position = _positions[tokenId];
         // NC -> Not cleared
         require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'NC');
@@ -464,13 +422,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @dev Overrides approve to restrict to only VioletID holders
-    function approve(address to, uint256 tokenId)
-        public
-        virtual
-        override(ERC721, IERC721)
-        onlyMauveCompliant(to)
-        onlyWhenEmergencyModeIs(false)
-    {
+    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
         super.approve(to, tokenId);
     }
 
@@ -492,7 +444,6 @@ contract NonfungiblePositionManager is
         virtual
         override(ERC721, IERC721)
         onlyMauveCompliant(operator)
-        onlyWhenEmergencyModeIs(false)
     {
         super.setApprovalForAll(operator, approved);
     }
@@ -514,7 +465,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenEmergencyModeIs(false) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenNotEmergencyMode {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -527,7 +478,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual requiresAuth(v, r, s, expiry) {
+    ) public virtual requiresAuth(v, r, s, expiry) onlyWhenNotEmergencyMode {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -536,7 +487,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenEmergencyModeIs(false) {
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenNotEmergencyMode {
         super.safeTransferFrom(from, to, tokenId);
     }
 
@@ -549,7 +500,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual requiresAuth(v, r, s, expiry) {
+    ) public virtual requiresAuth(v, r, s, expiry) onlyWhenNotEmergencyMode {
         super.safeTransferFrom(from, to, tokenId);
     }
 }
