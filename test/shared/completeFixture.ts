@@ -1,7 +1,7 @@
 import { Fixture } from 'ethereum-waffle'
 import { ethers } from 'hardhat'
-import { v3RouterFixture } from './externalFixtures'
-import { constants, Wallet } from 'ethers'
+import { v3RouterFixture, violetIDFixture } from './externalFixtures'
+import { constants, Contract, Wallet, BigNumber } from 'ethers'
 import {
   IWETH9,
   MockTimeNonfungiblePositionManager,
@@ -30,6 +30,7 @@ const completeFixture: Fixture<{
   nft: MockTimeNonfungiblePositionManager
   nftDescriptor: NonfungibleTokenPositionDescriptor
   tokens: [TestERC20, TestERC20, TestERC20]
+  violetID: Contract
   createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   signer: Wallet
   domain: Domain
@@ -55,6 +56,8 @@ const completeFixture: Fixture<{
     (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20,
   ]
 
+  const violetID = await violetIDFixture([wallet], provider)
+
   const nftDescriptorLibraryFactory = await ethers.getContractFactory('NFTDescriptor')
   const nftDescriptorLibrary = await nftDescriptorLibraryFactory.deploy()
   const positionDescriptorFactory = await ethers.getContractFactory('NonfungibleTokenPositionDescriptor', {
@@ -74,10 +77,12 @@ const completeFixture: Fixture<{
     factory.address,
     weth9.address,
     nftDescriptor.address,
-    verifier.address
+    verifier.address,
+    violetID.address
   )) as MockTimeNonfungiblePositionManager
 
   await factory.setRole(nft.address, positionManagerBytes32)
+  await factory['setMauveComplianceRegime(uint256[])']([BigNumber.from(0)])
 
   const createAndInitializePoolIfNecessary: CreatePoolIfNecessary = createPoolIfNecessary(factory, wallet)
 
@@ -90,6 +95,7 @@ const completeFixture: Fixture<{
     tokens,
     nft,
     nftDescriptor,
+    violetID,
     createAndInitializePoolIfNecessary,
     signer,
     verifier,

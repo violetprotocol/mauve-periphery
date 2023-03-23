@@ -1,11 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`PositionValue #fees when price is above the position range gas 1`] = `49922`;
+exports[`PositionValue #fees when price is above the position range gas 1`] = `49866`;
 
-exports[`PositionValue #fees when price is below the position range gas 1`] = `49890`;
+exports[`PositionValue #fees when price is below the position range gas 1`] = `49834`;
 
-exports[`PositionValue #fees when price is within the position range gas 1`] = `55480`;
+exports[`PositionValue #fees when price is within the position range gas 1`] = `55424`;
 
-exports[`PositionValue #principal gas 1`] = `25209`;
+exports[`PositionValue #principal gas 1`] = `25187`;
 
-exports[`PositionValue #total gas 1`] = `62249`;
+exports[`PositionValue #total gas 1`] = `62171`;

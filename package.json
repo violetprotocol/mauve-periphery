@@ -34,7 +34,8 @@
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "1.0.1",
     "@violetprotocol/ethereum-access-token": "0.2.0-sol07",
-    "@violetprotocol/mauve-v3-core": "1.2.1",
+    "@violetprotocol/mauve-v3-core": "1.2.2",
+    "@violetprotocol/violetid": "1.2.0",
     "base64-sol": "1.0.1",
     "hardhat-watcher": "^2.1.1"
   },
@@ -70,6 +71,7 @@
   "scripts": {
     "prepare": "yarn compile && yarn tsc",
     "compile": "hardhat compile",
+    "slither": "slither ./contracts/NonfungiblePositionManager.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin/ @violetprotocol=node_modules/@violetprotocol/ @uniswap=node_modules/@uniswap base64-sol=node_modules/base64-sol' --exclude naming-convention,external-function,low-level-calls --buidler-ignore-compile",
     "test": "hardhat test",
     "size": "hardhat size-contracts"
   }

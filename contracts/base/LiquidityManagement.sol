@@ -2,7 +2,6 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Factory.sol';
 import '@violetprotocol/mauve-v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/TickMath.sol';
 
@@ -11,11 +10,11 @@ import '../libraries/CallbackValidation.sol';
 import '../libraries/LiquidityAmounts.sol';
 
 import './PeripheryPayments.sol';
-import './PeripheryImmutableState.sol';
+import './MauveCompliance.sol';
 
 /// @title Liquidity management functions
 /// @notice Internal functions for safely managing liquidity in Uniswap V3
-abstract contract LiquidityManagement is IUniswapV3MintCallback, PeripheryImmutableState, PeripheryPayments {
+abstract contract LiquidityManagement is IUniswapV3MintCallback, MauveCompliance, PeripheryPayments {
     struct MintCallbackData {
         address payer;
         PoolAddress.PoolKey poolKey;
@@ -50,6 +49,7 @@ abstract contract LiquidityManagement is IUniswapV3MintCallback, PeripheryImmuta
     /// @notice Add liquidity to an initialized pool
     function addLiquidity(AddLiquidityParams memory params)
         internal
+        onlyWhenNotEmergencyMode
         returns (
             uint128 liquidity,
             uint256 amount0,

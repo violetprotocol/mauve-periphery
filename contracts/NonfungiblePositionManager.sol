@@ -6,12 +6,12 @@ import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/FixedPoint128.sol';
 import '@violetprotocol/mauve-v3-core/contracts/libraries/FullMath.sol';
 
+import './interfaces/external/IUniswapV3FactoryReduced.sol';
 import './interfaces/INonfungiblePositionManager.sol';
 import './interfaces/INonfungibleTokenPositionDescriptor.sol';
 import './libraries/PositionKey.sol';
 import './libraries/PoolAddress.sol';
 import './base/LiquidityManagement.sol';
-import './base/PeripheryImmutableState.sol';
 import './base/EATMulticall.sol';
 import './base/ERC721Permit.sol';
 import './base/PeripheryValidation.sol';
@@ -22,7 +22,6 @@ contract NonfungiblePositionManager is
     INonfungiblePositionManager,
     EATMulticall,
     ERC721Permit,
-    PeripheryImmutableState,
     LiquidityManagement,
     PeripheryValidation
 {
@@ -69,13 +68,27 @@ contract NonfungiblePositionManager is
         address _factory,
         address _WETH9,
         address _tokenDescriptor_,
-        address _eatVerifier
+        address _eatVerifier,
+        address _violetID
     )
         ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1')
         PeripheryImmutableState(_factory, _WETH9)
+        MauveCompliance(_violetID)
         EATMulticall(_eatVerifier)
     {
         _tokenDescriptor = _tokenDescriptor_;
+    }
+
+    /// Defines rules to let the transaction go through based on the state of `emergencyMode`.
+    /// Functions using this modifiers can only be called via EATMulticall, unless
+    /// emergency mode is activated, and in this case it checks if `addressToCheck` is compliant.
+    /// @param addressToCheck The address to verify the compliant status of
+    function checkAuthorization(address addressToCheck) private view {
+        if (_isEmergencyModeActivated()) {
+            _checkMauveCompliant(addressToCheck);
+        } else {
+            require(_isSelfMulticalling());
+        }
     }
 
     /// @inheritdoc INonfungiblePositionManager
@@ -187,8 +200,12 @@ contract NonfungiblePositionManager is
 
     modifier isAuthorizedForToken(uint256 tokenId) {
         // NA -> Not approved
-        require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
+        _checkAuthorizedForToken(tokenId);
         _;
+    }
+
+    function _checkAuthorizedForToken(uint256 tokenId) internal view virtual {
+        require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
     }
 
     function tokenURI(uint256 tokenId) public view override(ERC721, IERC721Metadata) returns (string memory) {
@@ -264,11 +281,11 @@ contract NonfungiblePositionManager is
         external
         payable
         override
-        onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
         checkDeadline(params.deadline)
         returns (uint256 amount0, uint256 amount1)
     {
+        checkAuthorization(ownerOf(params.tokenId));
         require(params.liquidity > 0);
         Position storage position = _positions[params.tokenId];
 
@@ -317,10 +334,10 @@ contract NonfungiblePositionManager is
         external
         payable
         override
-        onlySelfMulticall
         isAuthorizedForToken(params.tokenId)
         returns (uint256 amount0, uint256 amount1)
     {
+        checkAuthorization(ownerOf(params.tokenId));
         require(params.amount0Max > 0 || params.amount1Max > 0);
         // allow collecting to the nft position manager address with address 0
         address recipient = params.recipient == address(0) ? address(this) : params.recipient;
@@ -382,7 +399,8 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function burn(uint256 tokenId) external payable override onlySelfMulticall isAuthorizedForToken(tokenId) {
+    function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) {
+        checkAuthorization(ownerOf(tokenId));
         Position storage position = _positions[tokenId];
         // NC -> Not cleared
         require(position.liquidity == 0 && position.tokensOwed0 == 0 && position.tokensOwed1 == 0, 'NC');
@@ -408,50 +426,23 @@ contract NonfungiblePositionManager is
         emit Approval(ownerOf(tokenId), to, tokenId);
     }
 
-    /// @dev Overrides approve to block usage in favour of EAT-gated version
+    /// @dev Overrides approve to restrict to only VioletID holders
     function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
-        // NED -> non-EAT version disallowed
-        revert('NED');
-    }
-
-    /// @dev Overrides approve to block usage in favour of EAT-gated version
-    function approve(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        uint256 expiry,
-        address to,
-        uint256 tokenId
-    ) public virtual requiresAuth(v, r, s, expiry) {
         super.approve(to, tokenId);
     }
 
-    /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
+    /// @dev Overrides setApprovalForAll to restrict to only VioletID holders
     function setApprovalForAll(address operator, bool approved) public virtual override(ERC721, IERC721) {
-        // NED -> non-EAT version disallowed
-        revert('NED');
-    }
-
-    /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
-    function setApprovalForAll(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        uint256 expiry,
-        address operator,
-        bool approved
-    ) public virtual requiresAuth(v, r, s, expiry) {
         super.setApprovalForAll(operator, approved);
     }
 
-    /// @dev Overrides transferFrom to block usage in favour of EAT-gated version
+    /// @dev Overrides transferFrom to restrict to only VioletID holders
     function transferFrom(
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) {
-        // NED -> non-EAT version disallowed
-        revert('NED');
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenNotEmergencyMode {
+        super.transferFrom(from, to, tokenId);
     }
 
     /// @dev Overrides transferFrom to block usage in favour of EAT-gated version
@@ -463,20 +454,17 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual requiresAuth(v, r, s, expiry) {
+    ) public virtual requiresAuth(v, r, s, expiry) onlyWhenNotEmergencyMode {
         super.transferFrom(from, to, tokenId);
     }
 
-    /**
-     * @dev See {IERC721-safeTransferFrom}.
-     */
+    /// @dev Overrides safeTransferFrom to restrict to only VioletID holders
     function safeTransferFrom(
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) {
-        // NED -> non-EAT version disallowed
-        revert('NED');
+    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenNotEmergencyMode {
+        super.safeTransferFrom(from, to, tokenId);
     }
 
     /// @dev Overrides safeTransferFrom to block usage in favour of EAT-gated version
@@ -488,7 +476,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual requiresAuth(v, r, s, expiry) {
+    ) public virtual requiresAuth(v, r, s, expiry) onlyWhenNotEmergencyMode {
         super.safeTransferFrom(from, to, tokenId);
     }
 }
