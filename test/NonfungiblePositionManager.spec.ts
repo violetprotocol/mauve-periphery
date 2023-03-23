@@ -1136,15 +1136,20 @@ describe('NonfungiblePositionManager', () => {
 
     it('emits an event')
 
-    it('cannot be called by other addresses', async () => {
+    it('cannot be called by other addresses through multicall', async () => {
+      await prologueToCollect()
+      const collectParams = {
+        tokenId: tokenId,
+        recipient: wallet.address,
+        amount0Max: MaxUint128,
+        amount1Max: MaxUint128,
+      }
+
+      const parameters = [nft.interface.encodeFunctionData('collect', [collectParams])]
+      const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallet, nft, parameters)
       await expect(
-        nft.collect({
-          tokenId,
-          recipient: wallet.address,
-          amount0Max: MaxUint128,
-          amount1Max: MaxUint128,
-        })
-      ).to.be.revertedWith('only callable by self multicall')
+        nft.connect(wallet)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
+      ).to.be.revertedWith('NA')
     })
 
     it('cannot be called with 0 for both amounts', async () => {
@@ -1234,6 +1239,22 @@ describe('NonfungiblePositionManager', () => {
       await expect(
         nft.connect(other).collect(collectParams)
       ).to.not.be.reverted
+    });
+
+    it('should not collect with VID while not in emergency mode', async () => {
+      await prologueToCollect()
+
+      await violetID.grantStatus(other.address, VIOLET_VERIFICATION_STATUS, '0x00')
+      expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
+      const collectParams = {
+        tokenId: tokenId,
+        recipient: wallet.address,
+        amount0Max: MaxUint128,
+        amount1Max: MaxUint128,
+      }
+      await expect(
+        nft.connect(other).collect(collectParams)
+      ).to.be.reverted
     });
 
     it('gas transfers both', async () => {
