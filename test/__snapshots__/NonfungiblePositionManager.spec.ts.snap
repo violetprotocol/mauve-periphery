@@ -32,7 +32,7 @@ exports[`NonfungiblePositionManager #positions gas 1`] = `22076`;
 
 exports[`NonfungiblePositionManager #transferFrom, approve gas 1`] = `153359`;
 
-exports[`NonfungiblePositionManager #transferFrom, approve gas comes from approved 1`] = `151950`;
+exports[`NonfungiblePositionManager #transferFrom, approve gas comes from approved 1`] = `151974`;
 
 exports[`NonfungiblePositionManager bytecode size 1`] = `23794`;
 
