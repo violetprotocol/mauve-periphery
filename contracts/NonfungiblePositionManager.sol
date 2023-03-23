@@ -195,7 +195,7 @@ contract NonfungiblePositionManager is
     }
 
     modifier isAuthorizedForToken(uint256 tokenId) {
-        // NO -> Not approved
+        // NA -> Not approved
         _checkAuthorizedForToken(tokenId);
         _;
     }
