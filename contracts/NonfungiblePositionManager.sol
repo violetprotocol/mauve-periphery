@@ -219,7 +219,6 @@ contract NonfungiblePositionManager is
         override
         onlySelfMulticall
         checkDeadline(params.deadline)
-        onlyWhenNotEmergencyMode
         returns (
             uint128 liquidity,
             uint256 amount0,
