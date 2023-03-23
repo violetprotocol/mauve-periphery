@@ -347,13 +347,7 @@ describe('NonfungiblePositionManager', () => {
 
       await nft.activateEmergencyMode()
       await expect(
-          nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          mintMulticallParameters
-        )
+        nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, mintMulticallParameters)
       ).to.be.reverted
     })
 
@@ -698,7 +692,7 @@ describe('NonfungiblePositionManager', () => {
       const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallet, nft, multicallParameters)
 
       await nft.activateEmergencyMode()
-      await expect (
+      await expect(
         nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       ).to.be.reverted
     })
@@ -890,10 +884,10 @@ describe('NonfungiblePositionManager', () => {
       const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, other, nft, multicallParameters)
 
       nft.activateEmergencyMode()
-      await expect (
+      await expect(
         nft
-        .connect(other)
-        ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
+          .connect(other)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
       ).to.be.reverted
     })
 
@@ -909,11 +903,7 @@ describe('NonfungiblePositionManager', () => {
       expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
       nft.activateEmergencyMode()
 
-      await expect (
-        nft
-        .connect(other)
-        .decreaseLiquidity(decreaseLiquidityParams)
-      ).to.not.be.reverted
+      await expect(nft.connect(other).decreaseLiquidity(decreaseLiquidityParams)).to.not.be.reverted
     })
 
     // @TODO: Discuss if multicall should be payable and checking if subsequent calls receive the value
@@ -1104,7 +1094,6 @@ describe('NonfungiblePositionManager', () => {
           decreaseExpiry,
           decreaseMulticallParameters
         )
-
     }
     beforeEach('create a position', async () => {
       await createAndInitializePoolIfNecessary(
@@ -1222,7 +1211,7 @@ describe('NonfungiblePositionManager', () => {
       await expect(
         nft.connect(other)['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
       ).to.be.reverted
-    });
+    })
 
     it('should collect with VID while in emergency mode', async () => {
       await prologueToCollect()
@@ -1236,10 +1225,8 @@ describe('NonfungiblePositionManager', () => {
         amount0Max: MaxUint128,
         amount1Max: MaxUint128,
       }
-      await expect(
-        nft.connect(other).collect(collectParams)
-      ).to.not.be.reverted
-    });
+      await expect(nft.connect(other).collect(collectParams)).to.not.be.reverted
+    })
 
     it('should not collect with VID while not in emergency mode', async () => {
       await prologueToCollect()
@@ -1252,10 +1239,8 @@ describe('NonfungiblePositionManager', () => {
         amount0Max: MaxUint128,
         amount1Max: MaxUint128,
       }
-      await expect(
-        nft.connect(other).collect(collectParams)
-      ).to.be.reverted
-    });
+      await expect(nft.connect(other).collect(collectParams)).to.be.reverted
+    })
 
     it('gas transfers both', async () => {
       const decreaseLiquidityParams = {
@@ -1383,7 +1368,7 @@ describe('NonfungiblePositionManager', () => {
   describe('#burn', () => {
     const tokenId = 1
     const prologueToBurn = async () => {
-            const decreaseLiquidityParams = {
+      const decreaseLiquidityParams = {
         tokenId: tokenId,
         liquidity: 100,
         amount0Min: 0,
@@ -1549,7 +1534,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('deletes the token', async () => {
-      await prologueToBurn();
+      await prologueToBurn()
       const burnParams = tokenId
       const multicallParameters = [nft.connect(other).interface.encodeFunctionData('burn', [burnParams])]
       const { eat: burnEat, expiry: burnExpiry } = await generateAccessTokenForMulticall(
@@ -1574,7 +1559,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('should not delete with EAT while in emergency mode', async () => {
-      await prologueToBurn();
+      await prologueToBurn()
       const burnParams = tokenId
       const multicallParameters = [nft.connect(other).interface.encodeFunctionData('burn', [burnParams])]
       const { eat: burnEat, expiry: burnExpiry } = await generateAccessTokenForMulticall(
@@ -1599,14 +1584,13 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('should delete with VID while in emergency mode', async () => {
-      await prologueToBurn();
+      await prologueToBurn()
 
       await violetID.grantStatus(other.address, VIOLET_VERIFICATION_STATUS, '0x00')
       expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
       await nft.activateEmergencyMode()
 
       await expect(nft.connect(other).burn(tokenId)).to.not.be.reverted
-
     })
 
     it('gas', async () => {
@@ -1756,17 +1740,19 @@ describe('NonfungiblePositionManager', () => {
         [other.address, wallet.address, tokenId]
       )
       await nft.activateEmergencyMode()
-      await expect(nft
-        .connect(other)
-        ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.be.reverted
+      await expect(
+        nft
+          .connect(other)
+          ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+            eat.v,
+            eat.r,
+            eat.s,
+            expiry,
+            other.address,
+            wallet.address,
+            tokenId
+          )
+      ).to.be.reverted
     })
 
     it('should not change owner with EAT with safeTransfer in emergency mode', async () => {
@@ -1779,17 +1765,19 @@ describe('NonfungiblePositionManager', () => {
         [other.address, wallet.address, tokenId]
       )
       await nft.activateEmergencyMode()
-      await expect(nft
-        .connect(other)
-        ['safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          other.address,
-          wallet.address,
-          tokenId
-        )).to.be.reverted
+      await expect(
+        nft
+          .connect(other)
+          ['safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+            eat.v,
+            eat.r,
+            eat.s,
+            expiry,
+            other.address,
+            wallet.address,
+            tokenId
+          )
+      ).to.be.reverted
     })
 
     it('should change owner with VID', async () => {
