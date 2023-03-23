@@ -79,6 +79,10 @@ contract NonfungiblePositionManager is
         _tokenDescriptor = _tokenDescriptor_;
     }
 
+    /// Defines rules to let the transaction go through based on the state of `emergencyMode`.
+    /// Functions using this modifiers can only be called via EATMulticall, unless
+    /// emergency mode is activated, and in this case it checks if `addressToCheck` is compliant.
+    /// @param addressToCheck The address to verify the compliant status of
     function checkAuthorization(address addressToCheck) private view {
         if (_isEmergencyModeActivated()) {
             _checkMauveCompliant(addressToCheck);
