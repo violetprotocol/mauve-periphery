@@ -423,19 +423,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @dev Overrides approve to restrict to only VioletID holders
-    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) {
-        super.approve(to, tokenId);
-    }
-
-    /// @dev Overrides approve to block usage in favour of EAT-gated version
-    function approve(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        uint256 expiry,
-        address to,
-        uint256 tokenId
-    ) public virtual requiresAuth(v, r, s, expiry) {
+    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
         super.approve(to, tokenId);
     }
 
@@ -444,20 +432,7 @@ contract NonfungiblePositionManager is
         public
         virtual
         override(ERC721, IERC721)
-        onlyMauveCompliant(operator)
     {
-        super.setApprovalForAll(operator, approved);
-    }
-
-    /// @dev Overrides setApprovalForAll to block usage in favour of EAT-gated version
-    function setApprovalForAll(
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
-        uint256 expiry,
-        address operator,
-        bool approved
-    ) public virtual requiresAuth(v, r, s, expiry) {
         super.setApprovalForAll(operator, approved);
     }
 

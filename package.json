@@ -71,6 +71,7 @@
   "scripts": {
     "prepare": "yarn compile && yarn tsc",
     "compile": "hardhat compile",
+    "slither": "slither ./contracts/NonfungiblePositionManager.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin/ @violetprotocol=node_modules/@violetprotocol/ @uniswap=node_modules/@uniswap base64-sol=node_modules/base64-sol' --exclude naming-convention,external-function,low-level-calls --buidler-ignore-compile",
     "test": "hardhat test",
     "size": "hardhat size-contracts"
   }

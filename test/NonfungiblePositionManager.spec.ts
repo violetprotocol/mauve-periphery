@@ -872,7 +872,7 @@ describe('NonfungiblePositionManager', () => {
       expect(liquidity).to.eq(75)
     })
 
-    it('should not decrease with EAT when in emergency mode', async () => {
+    it('should not decreaseLiquidity with EAT when in emergency mode', async () => {
       const decreaseLiquidityParams = {
         tokenId: tokenId,
         liquidity: 25,
@@ -1839,53 +1839,19 @@ describe('NonfungiblePositionManager', () => {
       ).to.be.reverted
     })
 
-    it('should approve if recipient has VID', async () => {
-      await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
-
-      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
-    })
-
-    it('should not approve if recipient does not have VID', async () => {
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
-
-      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.be.reverted
-    })
-
-    it('should setApproveForAll if operator has VID', async () => {
-      await violetID.grantStatus(wallet.address, VIOLET_VERIFICATION_STATUS, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
-
-      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
-    })
-
-    it('should not setApprovalForAll if operator does not have VID', async () => {
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
-
-      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.be.reverted
-    })
-
     it('removes existing approval', async () => {
-      let { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'approve(uint8,bytes32,bytes32,uint256,address,uint256)',
-        other,
-        nft,
-        [wallet.address, tokenId]
-      )
       await nft
         .connect(other)
-        ['approve(uint8,bytes32,bytes32,uint256,address,uint256)'](eat.v, eat.r, eat.s, expiry, wallet.address, tokenId)
+        ['approve(address,uint256)'](wallet.address, tokenId)
       expect(await nft.getApproved(tokenId)).to.eq(wallet.address)
-      ;({ eat, expiry } = await generateAccessToken(
+      const { eat, expiry } = await generateAccessToken(
         signer,
         domain,
         'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
         wallet,
         nft,
         [other.address, wallet.address, tokenId]
-      ))
+      )
       await nft['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
         eat.v,
         eat.r,
@@ -1923,25 +1889,17 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('gas comes from approved', async () => {
-      let { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'approve(uint8,bytes32,bytes32,uint256,address,uint256)',
-        other,
-        nft,
-        [wallet.address, tokenId]
-      )
       await nft
         .connect(other)
-        ['approve(uint8,bytes32,bytes32,uint256,address,uint256)'](eat.v, eat.r, eat.s, expiry, wallet.address, tokenId)
-      ;({ eat, expiry } = await generateAccessToken(
+        ['approve(address,uint256)'](wallet.address, tokenId)
+      const { eat, expiry } = await generateAccessToken(
         signer,
         domain,
         'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
         wallet,
         nft,
         [other.address, wallet.address, tokenId]
-      ))
+      )
       await snapshotGasCost(
         nft['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
           eat.v,
