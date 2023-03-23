@@ -329,6 +329,7 @@ contract NonfungiblePositionManager is
         external
         payable
         override
+        isAuthorizedForToken(params.tokenId)
         returns (uint256 amount0, uint256 amount1)
     {
         checkAuthorization(ownerOf(params.tokenId));
