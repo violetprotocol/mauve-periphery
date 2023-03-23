@@ -1840,9 +1840,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('removes existing approval', async () => {
-      await nft
-        .connect(other)
-        ['approve(address,uint256)'](wallet.address, tokenId)
+      await nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)
       expect(await nft.getApproved(tokenId)).to.eq(wallet.address)
       const { eat, expiry } = await generateAccessToken(
         signer,
@@ -1889,9 +1887,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('gas comes from approved', async () => {
-      await nft
-        .connect(other)
-        ['approve(address,uint256)'](wallet.address, tokenId)
+      await nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)
       const { eat, expiry } = await generateAccessToken(
         signer,
         domain,

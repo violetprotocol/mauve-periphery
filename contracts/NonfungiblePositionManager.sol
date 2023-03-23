@@ -428,11 +428,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @dev Overrides setApprovalForAll to restrict to only VioletID holders
-    function setApprovalForAll(address operator, bool approved)
-        public
-        virtual
-        override(ERC721, IERC721)
-    {
+    function setApprovalForAll(address operator, bool approved) public virtual override(ERC721, IERC721) {
         super.setApprovalForAll(operator, approved);
     }
 
