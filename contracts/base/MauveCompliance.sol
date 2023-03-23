@@ -33,7 +33,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     }
 
     function _isEmergencyModeActivated() internal view returns (bool) {
-        return isEmergencyMode == true;
+        return isEmergencyMode;
     }
 
     function activateEmergencyMode() external onlyFactoryOwner {
