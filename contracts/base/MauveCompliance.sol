@@ -25,7 +25,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
 
     modifier onlyWhenNotEmergencyMode() {
         // EMA -> Emergency Mode Activated
-        require(!_isEmergencyModeActivated(), "EMA");
+        require(!_isEmergencyModeActivated(), 'EMA');
         _;
     }
 
