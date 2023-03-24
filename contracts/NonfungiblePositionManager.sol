@@ -87,7 +87,8 @@ contract NonfungiblePositionManager is
         if (_isEmergencyModeActivated()) {
             _checkMauveCompliant(addressToCheck);
         } else {
-            require(_isSelfMulticalling());
+            // NMC -> Not self multi calling
+            require(_isSelfMulticalling(), "NSMC");
         }
     }
 
@@ -205,6 +206,7 @@ contract NonfungiblePositionManager is
     }
 
     function _checkAuthorizedForToken(uint256 tokenId) internal view virtual {
+        // NA -> Not approved or owner
         require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
     }
 
@@ -290,7 +292,8 @@ contract NonfungiblePositionManager is
         Position storage position = _positions[params.tokenId];
 
         uint128 positionLiquidity = position.liquidity;
-        require(positionLiquidity >= params.liquidity);
+        // NEL -> not enough liquidity
+        require(positionLiquidity >= params.liquidity, 'NEL');
 
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
         IUniswapV3Pool pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
