@@ -19,7 +19,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     modifier onlyFactoryOwner {
         address factoryOwner = IUniswapV3FactoryReduced(factory).roles('owner');
         // NFO -> Not Factory Owner
-        require(msg.sender == factoryOwner, "NFO");
+        require(msg.sender == factoryOwner, 'NFO');
         _;
     }
 

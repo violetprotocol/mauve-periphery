@@ -88,7 +88,7 @@ contract NonfungiblePositionManager is
             _checkMauveCompliant(addressToCheck);
         } else {
             // NMC -> Not self multi calling
-            require(_isSelfMulticalling(), "NSMC");
+            require(_isSelfMulticalling(), 'NSMC');
         }
     }
 
