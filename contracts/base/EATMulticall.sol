@@ -42,7 +42,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     }
 
     /// @inheritdoc IMulticall
-    function multicall(bytes[] calldata data) public payable override returns (bytes[] memory results) {
+    function multicall(bytes[] calldata) public payable override returns (bytes[] memory) {
         // NED -> non-EAT multicall disallowed
         revert('NED');
     }
