@@ -21,7 +21,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     // be careful with external contract function calls made by functions you modify with this
     // keep in mind possible re-entrancy
     modifier onlySelfMulticall {
-        // NMC -> Not self multi calling
+        // NSMC -> Not self multi calling
         require(_isSelfMulticalling(), 'NSMC');
         _;
     }

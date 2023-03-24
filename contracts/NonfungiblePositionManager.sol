@@ -87,7 +87,7 @@ contract NonfungiblePositionManager is
         if (_isEmergencyModeActivated()) {
             _checkMauveCompliant(addressToCheck);
         } else {
-            // NMC -> Not self multi calling
+            // NSMC -> Not self multi calling
             require(_isSelfMulticalling(), 'NSMC');
         }
     }

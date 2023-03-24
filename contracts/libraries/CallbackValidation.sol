@@ -31,7 +31,7 @@ library CallbackValidation {
         returns (IUniswapV3Pool pool)
     {
         pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
-        // Unexpected sender
+        // US -> Unexpected sender
         require(msg.sender == address(pool), 'US');
     }
 }
