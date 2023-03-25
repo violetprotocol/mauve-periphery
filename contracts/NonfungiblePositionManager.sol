@@ -85,7 +85,7 @@ contract NonfungiblePositionManager is
     /// @param addressToCheck The address to verify the compliant status of
     function checkAuthorization(address addressToCheck) private view {
         if (_isEmergencyModeActivated()) {
-            _checkMauveCompliant(addressToCheck);
+            _checkIfAllowedToInteract(addressToCheck);
         } else {
             // NSMC -> Not self multi calling
             require(_isSelfMulticalling(), 'NSMC');
@@ -444,7 +444,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenNotEmergencyMode {
+    ) public virtual override(ERC721, IERC721) onlyAllowedToInteract(to) onlyWhenNotEmergencyMode {
         super.transferFrom(from, to, tokenId);
     }
 
@@ -466,7 +466,7 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyMauveCompliant(to) onlyWhenNotEmergencyMode {
+    ) public virtual override(ERC721, IERC721) onlyAllowedToInteract(to) onlyWhenNotEmergencyMode {
         super.safeTransferFrom(from, to, tokenId);
     }
 
