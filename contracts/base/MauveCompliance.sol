@@ -18,12 +18,14 @@ abstract contract MauveCompliance is PeripheryImmutableState {
 
     modifier onlyFactoryOwner {
         address factoryOwner = IUniswapV3FactoryReduced(factory).roles('owner');
-        require(msg.sender == factoryOwner);
+        // NFO -> Not Factory Owner
+        require(msg.sender == factoryOwner, 'NFO');
         _;
     }
 
     modifier onlyWhenNotEmergencyMode() {
-        require(!_isEmergencyModeActivated());
+        // EMA -> Emergency Mode Activated
+        require(!_isEmergencyModeActivated(), 'EMA');
         _;
     }
 
