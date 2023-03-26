@@ -6,7 +6,6 @@ import {
   abi as VIOLETID_ABI,
   bytecode as VIOLETID_BYTECODE,
 } from '@violetprotocol/violetid/artifacts/contracts/VioletID.sol/VioletID.json'
-import { abi as FACTORY_V2_ABI, bytecode as FACTORY_V2_BYTECODE } from '@uniswap/v2-core/build/UniswapV2Factory.json'
 import { Fixture } from 'ethereum-waffle'
 import { ethers, waffle } from 'hardhat'
 import { AccessTokenVerifier, IMauveFactory, IWETH9, MockTimeSwapRouter } from '../../typechain'
@@ -24,19 +23,6 @@ const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
   })) as IWETH9
 
   return { weth9 }
-}
-
-export const v2FactoryFixture: Fixture<{ factory: Contract }> = async ([wallet]) => {
-  const factory = await waffle.deployContract(
-    wallet,
-    {
-      bytecode: FACTORY_V2_BYTECODE,
-      abi: FACTORY_V2_ABI,
-    },
-    [constants.AddressZero]
-  )
-
-  return { factory }
 }
 
 const v3CoreFactoryFixture: Fixture<IMauveFactory> = async ([wallet]) => {
