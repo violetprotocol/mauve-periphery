@@ -16,7 +16,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         _violetID = _violetId;
     }
 
-    modifier onlyFactoryOwner {
+    modifier onlyFactoryOwner() {
         address factoryOwner = IUniswapV3FactoryReduced(factory).roles('owner');
         // NFO -> Not Factory Owner
         require(msg.sender == factoryOwner, 'NFO');
@@ -29,8 +29,9 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         _;
     }
 
-    modifier onlyMauveCompliant(address account) {
-        _checkMauveCompliant(account);
+    modifier onlyAllowedToInteract(address account) {
+        // NID -> No Violet ID
+        require(_checkIfAllowedToInteract(account), 'NID');
         _;
     }
 
@@ -42,12 +43,17 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         isEmergencyMode = true;
     }
 
-    function _checkMauveCompliant(address account) internal view virtual {
-        uint256[] memory tokenIds = IUniswapV3FactoryReduced(factory).getMauveComplianceRegime();
+    function _checkIfAllowedToInteract(address account) internal view virtual returns (bool) {
+        uint256[] memory tokenIds = IUniswapV3FactoryReduced(factory).getMauveTokenIdsAllowedToInteract();
 
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            // NID -> No Violet ID
-            require(IVioletID(_violetID).hasStatus(account, tokenIds[i]), 'NID');
+        IVioletID violetID = IVioletID(_violetID);
+        uint256 length = tokenIds.length;
+        for (uint256 i = 0; i < length; i++) {
+            bool hasStatus = violetID.hasStatus(account, tokenIds[i]);
+            if (hasStatus) {
+                return true;
+            }
         }
+        return false;
     }
 }

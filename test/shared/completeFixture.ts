@@ -23,6 +23,9 @@ export type Domain = {
   verifyingContract: string
 }
 
+export const MAUVE_VERIFIED_ACCOUNT_TOKEN_ID = BigNumber.from(0)
+export const MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID = BigNumber.from(1)
+
 const completeFixture: Fixture<{
   weth9: IWETH9
   factory: IUniswapV3Factory
@@ -82,7 +85,8 @@ const completeFixture: Fixture<{
   )) as MockTimeNonfungiblePositionManager
 
   await factory.setRole(nft.address, positionManagerBytes32)
-  await factory['setMauveComplianceRegime(uint256[])']([BigNumber.from(0)])
+  const mauveWhitelistedTokenIds = [MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID]
+  await factory['setMauveTokenIdsAllowedToInteract(uint256[])'](mauveWhitelistedTokenIds)
 
   const createAndInitializePoolIfNecessary: CreatePoolIfNecessary = createPoolIfNecessary(factory, wallet)
 
