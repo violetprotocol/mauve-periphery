@@ -71,7 +71,7 @@ contract NonfungiblePositionManager is
         address _eatVerifier,
         address _violetID
     )
-        ERC721Permit('Uniswap V3 Positions NFT-V1', 'UNI-V3-POS', '1')
+        ERC721Permit('Mauve Positions NFT-V1', 'MAUV-V3-POS', '1')
         PeripheryImmutableState(_factory, _WETH9)
         MauveCompliance(_violetID)
         EATMulticall(_eatVerifier)
