@@ -25,32 +25,30 @@ const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
   return { weth9 }
 }
 
-const v3CoreFactoryFixture: Fixture<IMauveFactory> = async ([wallet]) => {
+const coreFactoryFixture: Fixture<IMauveFactory> = async ([wallet]) => {
   return (await waffle.deployContract(wallet, {
     bytecode: FACTORY_BYTECODE,
     abi: FACTORY_ABI,
   })) as IMauveFactory
 }
 
-export const v3RouterFixture: Fixture<{
+export const routerFixture: Fixture<{
   weth9: IWETH9
   factory: IMauveFactory
   router: MockTimeSwapRouter
   verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {
   const { weth9 } = await wethFixture([wallet], provider)
-  const factory = await v3CoreFactoryFixture([wallet], provider)
+  const factory = await coreFactoryFixture([wallet], provider)
 
   // ETHEREUM ACCESS TOKEN SETUP
   const signer = new ethers.Wallet(EAT_ISSUER_PK, provider)
   const verifierFactory = await ethers.getContractFactory('AccessTokenVerifier')
   const verifier = <AccessTokenVerifier>await verifierFactory.deploy(signer.address)
 
-  const router = await(await ethers.getContractFactory('MockTimeSwapRouter')).deploy(
-    factory.address,
-    weth9.address,
-    verifier.address
-  ) as MockTimeSwapRouter
+  const router = (await (
+    await ethers.getContractFactory('MockTimeSwapRouter')
+  ).deploy(factory.address, weth9.address, verifier.address)) as MockTimeSwapRouter
   await factory.setRole(router.address, swapRouterBytes32)
 
   return { factory, weth9, router, verifier }

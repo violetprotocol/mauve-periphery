@@ -38,7 +38,7 @@ contract QuoterV2 is IQuoterV2, IMauveSwapCallback, PeripheryImmutableState {
     }
 
     /// @inheritdoc IMauveSwapCallback
-    function mauveV3SwapCallback(
+    function mauveSwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes memory path

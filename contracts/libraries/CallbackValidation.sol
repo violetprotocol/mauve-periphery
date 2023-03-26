@@ -11,7 +11,7 @@ library CallbackValidation {
     /// @param tokenA The contract address of either token0 or token1
     /// @param tokenB The contract address of the other token
     /// @param fee The fee collected upon every swap in the pool, denominated in hundredths of a bip
-    /// @return pool The V3 pool contract address
+    /// @return pool The Mauve pool contract address
     function verifyCallback(
         address factory,
         address tokenA,
@@ -23,8 +23,8 @@ library CallbackValidation {
 
     /// @notice Returns the address of a valid Mauve Pool
     /// @param factory The contract address of the Mauve factory
-    /// @param poolKey The identifying key of the V3 pool
-    /// @return pool The V3 pool contract address
+    /// @param poolKey The identifying key of the pool
+    /// @return pool The Mauve pool contract address
     function verifyCallback(address factory, PoolAddress.PoolKey memory poolKey)
         internal
         view

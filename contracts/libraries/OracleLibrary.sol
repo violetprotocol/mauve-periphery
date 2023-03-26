@@ -6,7 +6,7 @@ import '@violetprotocol/mauve-core/contracts/libraries/TickMath.sol';
 import '@violetprotocol/mauve-core/contracts/interfaces/IMauvePool.sol';
 
 /// @title Oracle library
-/// @notice Provides functions to integrate with V3 pool oracle
+/// @notice Provides functions to integrate with Mauve pool oracle
 library OracleLibrary {
     /// @notice Calculates time-weighted means of tick and liquidity for a given Mauve pool
     /// @param pool Address of the pool that we want to observe
