@@ -1,5 +1,5 @@
 {
-  "name": "@violetprotocol/mauve-v3-periphery",
+  "name": "@violetprotocol/mauve-periphery",
   "description": "Peripheral smart contracts for interacting with Mauve",
   "license": "GPL-2.0-or-later",
   "publishConfig": {
@@ -9,12 +9,11 @@
   "homepage": "https://mauve.org",
   "keywords": [
     "mauve",
-    "periphery",
-    "v3"
+    "periphery"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/violetprotocol/mauve-v3-periphery"
+    "url": "https://github.com/violetprotocol/mauve-periphery"
   },
   "files": [
     "contracts/base",
