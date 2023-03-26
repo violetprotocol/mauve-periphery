@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity >=0.5.0;
 
-/// @title The interface for the Uniswap V3 Factory
-/// @notice The Uniswap V3 Factory facilitates creation of Uniswap V3 pools and control over the protocol fees
-interface IUniswapV3FactoryReduced {
+/// @title The interface for Mauve Factory (reduced version)
+/// @notice Mauve Factory facilitates creation of Mauve pools and control over the protocol fees
+interface IMauveFactoryReduced {
     /// @notice Returns the current address registered as a role on the factory
     /// @dev Can be called by anyone
     /// @param roleKey The selected role to be retrieved from the factory

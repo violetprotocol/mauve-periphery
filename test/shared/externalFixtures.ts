@@ -1,7 +1,7 @@
 import {
   abi as FACTORY_ABI,
   bytecode as FACTORY_BYTECODE,
-} from '@violetprotocol/mauve-v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json'
+} from '@violetprotocol/mauve-core/artifacts/contracts/MauveFactory.sol/MauveFactory.json'
 import {
   abi as VIOLETID_ABI,
   bytecode as VIOLETID_BYTECODE,
@@ -9,7 +9,7 @@ import {
 import { abi as FACTORY_V2_ABI, bytecode as FACTORY_V2_BYTECODE } from '@uniswap/v2-core/build/UniswapV2Factory.json'
 import { Fixture } from 'ethereum-waffle'
 import { ethers, waffle } from 'hardhat'
-import { AccessTokenVerifier, IUniswapV3Factory, IWETH9, MockTimeSwapRouter } from '../../typechain'
+import { AccessTokenVerifier, IMauveFactory, IWETH9, MockTimeSwapRouter } from '../../typechain'
 
 import WETH9 from '../contracts/WETH9.json'
 import { Contract } from '@ethersproject/contracts'
@@ -39,16 +39,16 @@ export const v2FactoryFixture: Fixture<{ factory: Contract }> = async ([wallet])
   return { factory }
 }
 
-const v3CoreFactoryFixture: Fixture<IUniswapV3Factory> = async ([wallet]) => {
+const v3CoreFactoryFixture: Fixture<IMauveFactory> = async ([wallet]) => {
   return (await waffle.deployContract(wallet, {
     bytecode: FACTORY_BYTECODE,
     abi: FACTORY_ABI,
-  })) as IUniswapV3Factory
+  })) as IMauveFactory
 }
 
 export const v3RouterFixture: Fixture<{
   weth9: IWETH9
-  factory: IUniswapV3Factory
+  factory: IMauveFactory
   router: MockTimeSwapRouter
   verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {
@@ -60,11 +60,11 @@ export const v3RouterFixture: Fixture<{
   const verifierFactory = await ethers.getContractFactory('AccessTokenVerifier')
   const verifier = <AccessTokenVerifier>await verifierFactory.deploy(signer.address)
 
-  const router = (await (await ethers.getContractFactory('MockTimeSwapRouter')).deploy(
+  const router = await(await ethers.getContractFactory('MockTimeSwapRouter')).deploy(
     factory.address,
     weth9.address,
     verifier.address
-  )) as MockTimeSwapRouter
+  ) as MockTimeSwapRouter
   await factory.setRole(router.address, swapRouterBytes32)
 
   return { factory, weth9, router, verifier }

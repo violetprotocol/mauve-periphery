@@ -1,15 +1,8 @@
-import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
+import { abi as IMauvePoolABI } from '@violetprotocol/mauve-core/artifacts/contracts/interfaces/IMauvePool.sol/IMauvePool.json'
 import { Fixture } from 'ethereum-waffle'
 import { BigNumber, constants, ContractTransaction, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
-import {
-  IUniswapV3Pool,
-  IWETH9,
-  MockTimeSwapRouter,
-  TestERC20,
-  AccessTokenVerifier,
-  IUniswapV3Factory,
-} from '../typechain'
+import { IMauvePool, IWETH9, MockTimeSwapRouter, TestERC20, AccessTokenVerifier, IMauveFactory } from '../typechain'
 import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
@@ -31,23 +24,14 @@ describe('SwapRouter gas tests', function () {
     weth9: IWETH9
     router: MockTimeSwapRouter
     tokens: [TestERC20, TestERC20, TestERC20]
-    pools: [IUniswapV3Pool, IUniswapV3Pool, IUniswapV3Pool]
+    pools: [IMauvePool, IMauvePool, IMauvePool]
     signer: Wallet
     domain: Domain
     verifier: AccessTokenVerifier
-    factory: IUniswapV3Factory
+    factory: IMauveFactory
   }> = async (wallets, provider) => {
-    const {
-      weth9,
-      factory,
-      router,
-      tokens,
-      nft,
-      createAndInitializePoolIfNecessary,
-      signer,
-      domain,
-      verifier,
-    } = await completeFixture(wallets, provider)
+    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } =
+      await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
@@ -117,10 +101,10 @@ describe('SwapRouter gas tests', function () {
       factory.getPool(weth9.address, tokens[0].address, FeeAmount.MEDIUM),
     ])
 
-    const pools = poolAddresses.map((poolAddress) => new ethers.Contract(poolAddress, IUniswapV3PoolABI, wallet)) as [
-      IUniswapV3Pool,
-      IUniswapV3Pool,
-      IUniswapV3Pool
+    const pools = poolAddresses.map((poolAddress) => new ethers.Contract(poolAddress, IMauvePoolABI, wallet)) as [
+      IMauvePool,
+      IMauvePool,
+      IMauvePool
     ]
 
     return {
@@ -138,11 +122,11 @@ describe('SwapRouter gas tests', function () {
   let weth9: IWETH9
   let router: MockTimeSwapRouter
   let tokens: [TestERC20, TestERC20, TestERC20]
-  let pools: [IUniswapV3Pool, IUniswapV3Pool, IUniswapV3Pool]
+  let pools: [IMauvePool, IMauvePool, IMauvePool]
   let signer: Wallet
   let domain: Domain
   let verifier: AccessTokenVerifier
-  let factory: IUniswapV3Factory
+  let factory: IMauveFactory
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 
@@ -323,7 +307,7 @@ describe('SwapRouter gas tests', function () {
     })
 
     it('0 -> 1 minimal', async () => {
-      const calleeFactory = await ethers.getContractFactory('TestUniswapV3Callee')
+      const calleeFactory = await ethers.getContractFactory('TestMauveCallee')
       const callee = await calleeFactory.deploy()
 
       await tokens[0].connect(trader).approve(callee.address, constants.MaxUint256)

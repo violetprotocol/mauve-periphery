@@ -1,15 +1,17 @@
-# Uniswap V3 Periphery
+# Mauve Periphery
+
+<!-- TODO: TO UPDATE -->
 
 [![Tests](https://github.com/Uniswap/uniswap-v3-periphery/workflows/Tests/badge.svg)](https://github.com/Uniswap/uniswap-v3-periphery/actions?query=workflow%3ATests)
 [![Lint](https://github.com/Uniswap/uniswap-v3-periphery/workflows/Lint/badge.svg)](https://github.com/Uniswap/uniswap-v3-periphery/actions?query=workflow%3ALint)
 
-This repository contains the periphery smart contracts for the Uniswap V3 Protocol.
+This repository contains the periphery smart contracts for the Mauve Protocol.
 For the lower level core contracts, see the [uniswap-v3-core](https://github.com/Uniswap/uniswap-v3-core)
 repository.
 
 ## Bug bounty
 
-This repository is subject to the Uniswap V3 bug bounty program,
+This repository is subject to the Mauve bug bounty program,
 per the terms defined [here](./bug-bounty.md).
 
 ## Local deployment
@@ -35,7 +37,7 @@ your local deployment.
 
 ## Using solidity interfaces
 
-The Uniswap v3 periphery interfaces are available for import into solidity smart contracts
+The Mauve periphery interfaces are available for import into solidity smart contracts
 via the npm artifact `@uniswap/v3-periphery`, e.g.:
 
 ```solidity

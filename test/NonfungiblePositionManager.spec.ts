@@ -1,9 +1,9 @@
-import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
+import { abi as IMauvePoolABI } from '@violetprotocol/mauve-core/artifacts/contracts/interfaces/IMauvePool.sol/IMauvePool.json'
 import { Fixture } from 'ethereum-waffle'
 import { BigNumberish, constants, Wallet, BigNumber, Contract } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 import {
-  IUniswapV3Factory,
+  IMauveFactory,
   IWETH9,
   MockTimeNonfungiblePositionManager,
   NonfungiblePositionManagerPositionsGasTest,
@@ -38,7 +38,7 @@ describe('NonfungiblePositionManager', () => {
 
   const nftFixture: Fixture<{
     nft: MockTimeNonfungiblePositionManager
-    factory: IUniswapV3Factory
+    factory: IMauveFactory
     tokens: [TestERC20, TestERC20, TestERC20]
     weth9: IWETH9
     router: MockTimeSwapRouter
@@ -82,7 +82,7 @@ describe('NonfungiblePositionManager', () => {
     }
   }
 
-  let factory: IUniswapV3Factory
+  let factory: IMauveFactory
   let nft: MockTimeNonfungiblePositionManager
   let tokens: [TestERC20, TestERC20, TestERC20]
   let weth9: IWETH9
@@ -103,18 +103,8 @@ describe('NonfungiblePositionManager', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({
-      nft,
-      factory,
-      tokens,
-      weth9,
-      router,
-      createAndInitializePoolIfNecessary,
-      signer,
-      domain,
-      verifier,
-      violetID,
-    } = await loadFixture(nftFixture))
+    ;({ nft, factory, tokens, weth9, router, createAndInitializePoolIfNecessary, signer, domain, verifier, violetID } =
+      await loadFixture(nftFixture))
   })
 
   it('bytecode size', async () => {
@@ -175,7 +165,7 @@ describe('NonfungiblePositionManager', () => {
         FeeAmount.MEDIUM
       )
       await factory.createPool(tokens[0].address, tokens[1].address, FeeAmount.MEDIUM)
-      const pool = new ethers.Contract(expectedAddress, IUniswapV3PoolABI, wallet)
+      const pool = new ethers.Contract(expectedAddress, IMauvePoolABI, wallet)
 
       await pool.initialize(encodePriceSqrt(3, 1))
       const code = await wallet.provider.getCode(expectedAddress)

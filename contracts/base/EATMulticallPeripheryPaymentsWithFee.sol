@@ -3,7 +3,7 @@ pragma abicoder v2;
 pragma solidity >=0.7.5;
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@violetprotocol/mauve-v3-core/contracts/libraries/LowGasSafeMath.sol';
+import '@violetprotocol/mauve-core/contracts/libraries/LowGasSafeMath.sol';
 
 import '../interfaces/external/IWETH9.sol';
 import '../libraries/TransferHelper.sol';
