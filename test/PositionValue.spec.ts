@@ -39,8 +39,16 @@ describe('PositionValue', async () => {
     domain: Domain
     verifier: AccessTokenVerifier
   }> = async (wallets, provider) => {
-    const { nft, router, tokens, factory, createAndInitializePoolIfNecessary, signer, domain, verifier } =
-      await completeFixture(wallets, provider)
+    const {
+      nft,
+      router,
+      tokens,
+      factory,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
     const positionValueFactory = await ethers.getContractFactory('PositionValueTest')
     const positionValue = (await positionValueFactory.deploy()) as PositionValueTest
 
@@ -81,8 +89,17 @@ describe('PositionValue', async () => {
   })
 
   beforeEach(async () => {
-    ;({ positionValue, tokens, nft, router, factory, createAndInitializePoolIfNecessary, signer, domain, verifier } =
-      await loadFixture(positionValueCompleteFixture))
+    ;({
+      positionValue,
+      tokens,
+      nft,
+      router,
+      factory,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await loadFixture(positionValueCompleteFixture))
     await createAndInitializePoolIfNecessary(
       tokens[0].address,
       tokens[1].address,

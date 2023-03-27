@@ -85,7 +85,7 @@ contract NonfungiblePositionManager is
     /// @param addressToCheck The address to verify the compliant status of
     function checkAuthorization(address addressToCheck) private view {
         if (_isEmergencyModeActivated()) {
-            require(_checkIfAllowedToInteract(addressToCheck), "NID");
+            require(_checkIfAllowedToInteract(addressToCheck), 'NID');
         } else {
             // NSMC -> Not self multi calling
             require(_isSelfMulticalling(), 'NSMC');

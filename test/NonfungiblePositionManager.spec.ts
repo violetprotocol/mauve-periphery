@@ -103,8 +103,18 @@ describe('NonfungiblePositionManager', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({ nft, factory, tokens, weth9, router, createAndInitializePoolIfNecessary, signer, domain, verifier, violetID } =
-      await loadFixture(nftFixture))
+    ;({
+      nft,
+      factory,
+      tokens,
+      weth9,
+      router,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+      violetID,
+    } = await loadFixture(nftFixture))
   })
 
   it('bytecode size', async () => {

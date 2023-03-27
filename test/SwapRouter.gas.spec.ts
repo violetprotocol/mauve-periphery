@@ -37,8 +37,17 @@ describe('SwapRouter gas tests', function () {
     verifier: AccessTokenVerifier
     factory: IMauveFactoryReduced
   }> = async (wallets, provider) => {
-    const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } =
-      await completeFixture(wallets, provider)
+    const {
+      weth9,
+      factory,
+      router,
+      tokens,
+      nft,
+      createAndInitializePoolIfNecessary,
+      signer,
+      domain,
+      verifier,
+    } = await completeFixture(wallets, provider)
 
     // approve & fund wallets
     for (const token of tokens) {
