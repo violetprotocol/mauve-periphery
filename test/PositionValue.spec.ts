@@ -5,9 +5,9 @@ import {
   PositionValueTest,
   SwapRouter,
   MockTimeNonfungiblePositionManager,
-  IUniswapV3Pool,
+  IMauvePool,
   TestERC20,
-  IUniswapV3Factory,
+  IMauveFactoryReduced,
   AccessTokenVerifier,
   MockTimeSwapRouter,
 } from '../typechain'
@@ -22,7 +22,7 @@ import snapshotGasCost from './shared/snapshotGasCost'
 
 import { expect } from './shared/expect'
 
-import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
+import { abi as IMauvePoolABI } from '@violetprotocol/mauve-core/artifacts/contracts/interfaces/IMauvePool.sol/IMauvePool.json'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
@@ -33,7 +33,7 @@ describe('PositionValue', async () => {
     tokens: [TestERC20, TestERC20, TestERC20]
     nft: MockTimeNonfungiblePositionManager
     router: MockTimeSwapRouter
-    factory: IUniswapV3Factory
+    factory: IMauveFactoryReduced
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
     signer: Wallet
     domain: Domain
@@ -76,7 +76,7 @@ describe('PositionValue', async () => {
   let positionValue: PositionValueTest
   let nft: MockTimeNonfungiblePositionManager
   let router: MockTimeSwapRouter
-  let factory: IUniswapV3Factory
+  let factory: IMauveFactoryReduced
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   let signer: Wallet
   let domain: Domain
@@ -108,7 +108,7 @@ describe('PositionValue', async () => {
     )
 
     const poolAddress = computePoolAddress(factory.address, [tokens[0].address, tokens[1].address], FeeAmount.MEDIUM)
-    pool = new ethers.Contract(poolAddress, IUniswapV3PoolABI, wallets[0])
+    pool = new ethers.Contract(poolAddress, IMauvePoolABI, wallets[0])
   })
 
   describe('#total', () => {

@@ -1,9 +1,9 @@
-import { abi as IUniswapV3PoolABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
+import { abi as IMauvePoolABI } from '@violetprotocol/mauve-core/artifacts/contracts/interfaces/IMauvePool.sol/IMauvePool.json'
 import { Fixture } from 'ethereum-waffle'
 import { BigNumberish, constants, Wallet, BigNumber, Contract } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 import {
-  IUniswapV3Factory,
+  IMauveFactoryReduced,
   IWETH9,
   MockTimeNonfungiblePositionManager,
   NonfungiblePositionManagerPositionsGasTest,
@@ -38,7 +38,7 @@ describe('NonfungiblePositionManager', () => {
 
   const nftFixture: Fixture<{
     nft: MockTimeNonfungiblePositionManager
-    factory: IUniswapV3Factory
+    factory: IMauveFactoryReduced
     tokens: [TestERC20, TestERC20, TestERC20]
     weth9: IWETH9
     router: MockTimeSwapRouter
@@ -82,7 +82,7 @@ describe('NonfungiblePositionManager', () => {
     }
   }
 
-  let factory: IUniswapV3Factory
+  let factory: IMauveFactoryReduced
   let nft: MockTimeNonfungiblePositionManager
   let tokens: [TestERC20, TestERC20, TestERC20]
   let weth9: IWETH9
@@ -175,7 +175,7 @@ describe('NonfungiblePositionManager', () => {
         FeeAmount.MEDIUM
       )
       await factory.createPool(tokens[0].address, tokens[1].address, FeeAmount.MEDIUM)
-      const pool = new ethers.Contract(expectedAddress, IUniswapV3PoolABI, wallet)
+      const pool = new ethers.Contract(expectedAddress, IMauvePoolABI, wallet)
 
       await pool.initialize(encodePriceSqrt(3, 1))
       const code = await wallet.provider.getCode(expectedAddress)
@@ -902,7 +902,7 @@ describe('NonfungiblePositionManager', () => {
         deadline: 1,
       }
       await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       nft.activateEmergencyMode()
 
       await expect(nft.connect(other).decreaseLiquidity(decreaseLiquidityParams)).to.not.be.reverted
@@ -1234,7 +1234,7 @@ describe('NonfungiblePositionManager', () => {
       await prologueToCollect()
 
       await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       nft.activateEmergencyMode()
       const collectParams = {
         tokenId: tokenId,
@@ -1264,7 +1264,7 @@ describe('NonfungiblePositionManager', () => {
       await prologueToCollect()
 
       await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       const collectParams = {
         tokenId: tokenId,
         recipient: wallet.address,
@@ -1619,7 +1619,7 @@ describe('NonfungiblePositionManager', () => {
       await prologueToBurn()
 
       await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(other.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       await nft.activateEmergencyMode()
 
       await expect(nft.connect(other).burn(tokenId)).to.not.be.reverted
@@ -1697,7 +1697,7 @@ describe('NonfungiblePositionManager', () => {
     })
   })
 
-  describe.only('#transferFrom, approve', () => {
+  describe('#transferFrom, approve', () => {
     const tokenId = 1
     beforeEach('create a position', async () => {
       await createAndInitializePoolIfNecessary(
@@ -1824,7 +1824,7 @@ describe('NonfungiblePositionManager', () => {
 
     it('should change owner with a VID token', async () => {
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
       await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
         .to.not.be.reverted
@@ -1846,7 +1846,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('should not change owner without VID', async () => {
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
 
       await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
         .to.be.reverted
@@ -1855,7 +1855,7 @@ describe('NonfungiblePositionManager', () => {
 
     it('should not transfer with VID if emergencyMode is activated', async () => {
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
       await nft.activateEmergencyMode()
 
@@ -1865,7 +1865,7 @@ describe('NonfungiblePositionManager', () => {
 
     it('safeTransfer should execute with a Violet ID Token for Mauve', async () => {
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
       await expect(
         nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
@@ -1887,7 +1887,7 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('safeTransfer should revert without VID', async () => {
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.false
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
 
       await expect(
         nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
@@ -1897,7 +1897,7 @@ describe('NonfungiblePositionManager', () => {
 
     it('should not safeTransfer if emergencyMode is activated', async () => {
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasVioletVerificationStatus(wallet.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
       await nft.activateEmergencyMode()
 

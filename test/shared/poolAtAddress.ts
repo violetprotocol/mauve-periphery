@@ -1,7 +1,7 @@
-import { abi as POOL_ABI } from '@violetprotocol/mauve-v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
+import { abi as POOL_ABI } from '@violetprotocol/mauve-core/artifacts/contracts/MauvePool.sol/MauvePool.json'
 import { Contract, Wallet } from 'ethers'
-import { IUniswapV3Pool } from '../../typechain'
+import { IMauvePool } from '../../typechain'
 
-export default function poolAtAddress(address: string, wallet: Wallet): IUniswapV3Pool {
-  return new Contract(address, POOL_ABI, wallet) as IUniswapV3Pool
+export default function poolAtAddress(address: string, wallet: Wallet): IMauvePool {
+  return new Contract(address, POOL_ABI, wallet) as IMauvePool
 }

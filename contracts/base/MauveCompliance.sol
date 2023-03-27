@@ -2,12 +2,12 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '../interfaces/external/IUniswapV3FactoryReduced.sol';
+import '../interfaces/external/IMauveFactoryReduced.sol';
 import '../interfaces/external/IVioletID.sol';
 import './PeripheryImmutableState.sol';
 
-/// @title NFT positions
-/// @notice Wraps Uniswap V3 positions in the ERC721 non-fungible token interface
+/// @title Mauve Compliance
+/// @notice Defines extra rules for access control beyond what is provided by Violet EATs
 abstract contract MauveCompliance is PeripheryImmutableState {
     address private immutable _violetID;
     bool private isEmergencyMode = false;
@@ -17,7 +17,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     }
 
     modifier onlyFactoryOwner() {
-        address factoryOwner = IUniswapV3FactoryReduced(factory).roles('owner');
+        address factoryOwner = IMauveFactoryReduced(factory).roles('owner');
         // NFO -> Not Factory Owner
         require(msg.sender == factoryOwner, 'NFO');
         _;
@@ -44,7 +44,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     }
 
     function _checkIfAllowedToInteract(address account) internal view virtual returns (bool) {
-        uint256[] memory tokenIds = IUniswapV3FactoryReduced(factory).getMauveTokenIdsAllowedToInteract();
+        uint256[] memory tokenIds = IMauveFactoryReduced(factory).getMauveTokenIdsAllowedToInteract();
 
         IVioletID violetID = IVioletID(_violetID);
         uint256 length = tokenIds.length;

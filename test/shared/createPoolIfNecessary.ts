@@ -1,5 +1,5 @@
 import { BigNumber, constants, Wallet } from 'ethers'
-import { IUniswapV3Factory, IUniswapV3Pool__factory } from '../../typechain'
+import { IMauveFactoryReduced, IMauvePool__factory } from '../../typechain'
 import { FeeAmount } from './constants'
 
 export type CreatePoolIfNecessary = (
@@ -10,7 +10,7 @@ export type CreatePoolIfNecessary = (
   value?: { value: number }
 ) => Promise<string>
 
-export const createPoolIfNecessary = (factory: IUniswapV3Factory, wallet: Wallet) => async (
+export const createPoolIfNecessary = (factory: IMauveFactoryReduced, wallet: Wallet) => async (
   token0: string,
   token1: string,
   fee: FeeAmount,
@@ -28,7 +28,7 @@ export const createPoolIfNecessary = (factory: IUniswapV3Factory, wallet: Wallet
         throw new Error('Failed to get pool address from creation')
       }
 
-      const poolContract = await IUniswapV3Pool__factory.connect(poolAddress, wallet)
+      const poolContract = await IMauvePool__factory.connect(poolAddress, wallet)
       await poolContract.initialize(initialSqrtPriceX96)
 
       return poolAddress
@@ -37,7 +37,7 @@ export const createPoolIfNecessary = (factory: IUniswapV3Factory, wallet: Wallet
     }
   } else {
     try {
-      const poolContract = await IUniswapV3Pool__factory.connect(pool, wallet)
+      const poolContract = await IMauvePool__factory.connect(pool, wallet)
       const { sqrtPriceX96 } = await poolContract.slot0()
       if (sqrtPriceX96.eq(0)) {
         await poolContract.initialize(initialSqrtPriceX96)

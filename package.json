@@ -1,20 +1,19 @@
 {
-  "name": "@violetprotocol/mauve-v3-periphery",
+  "name": "@violetprotocol/mauve-periphery",
   "description": "Peripheral smart contracts for interacting with Mauve",
   "license": "GPL-2.0-or-later",
   "publishConfig": {
     "access": "public"
   },
-  "version": "1.8.0",
+  "version": "1.8.1",
   "homepage": "https://mauve.org",
   "keywords": [
     "mauve",
-    "periphery",
-    "v3"
+    "periphery"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/violetprotocol/mauve-v3-periphery"
+    "url": "https://github.com/violetprotocol/mauve-periphery"
   },
   "files": [
     "contracts/base",
@@ -34,8 +33,8 @@
     "@uniswap/lib": "^4.0.1-alpha",
     "@uniswap/v2-core": "1.0.1",
     "@violetprotocol/ethereum-access-token": "0.2.0-sol07",
-    "@violetprotocol/mauve-v3-core": "1.2.2",
-    "@violetprotocol/violetid": "1.2.0",
+    "@violetprotocol/mauve-core": "1.2.3",
+    "@violetprotocol/violetid": "1.2.2",
     "base64-sol": "1.0.1",
     "hardhat-watcher": "^2.1.1"
   },
