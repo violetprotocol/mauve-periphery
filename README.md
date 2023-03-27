@@ -9,11 +9,6 @@ This repository contains the periphery smart contracts for the Mauve Protocol.
 For the lower level core contracts, see the [mauve-core](https://github.com/violetprotocol/mauve-core)
 repository.
 
-## Bug bounty
-
-This repository is subject to the Mauve bug bounty program,
-per the terms defined [here](./bug-bounty.md).
-
 ## Local deployment
 
 In order to deploy this code to a local testnet, you should install the npm package
