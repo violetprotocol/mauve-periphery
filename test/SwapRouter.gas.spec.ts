@@ -2,7 +2,14 @@ import { abi as IMauvePoolABI } from '@violetprotocol/mauve-core/artifacts/contr
 import { Fixture } from 'ethereum-waffle'
 import { BigNumber, constants, ContractTransaction, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
-import { IMauvePool, IWETH9, MockTimeSwapRouter, TestERC20, AccessTokenVerifier, IMauveFactory } from '../typechain'
+import {
+  IMauvePool,
+  IWETH9,
+  MockTimeSwapRouter,
+  TestERC20,
+  AccessTokenVerifier,
+  IMauveFactoryReduced,
+} from '../typechain'
 import completeFixture, { Domain } from './shared/completeFixture'
 import { FeeAmount, TICK_SPACINGS } from './shared/constants'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
@@ -28,7 +35,7 @@ describe('SwapRouter gas tests', function () {
     signer: Wallet
     domain: Domain
     verifier: AccessTokenVerifier
-    factory: IMauveFactory
+    factory: IMauveFactoryReduced
   }> = async (wallets, provider) => {
     const { weth9, factory, router, tokens, nft, createAndInitializePoolIfNecessary, signer, domain, verifier } =
       await completeFixture(wallets, provider)
@@ -126,7 +133,7 @@ describe('SwapRouter gas tests', function () {
   let signer: Wallet
   let domain: Domain
   let verifier: AccessTokenVerifier
-  let factory: IMauveFactory
+  let factory: IMauveFactoryReduced
 
   let loadFixture: ReturnType<typeof waffle.createFixtureLoader>
 

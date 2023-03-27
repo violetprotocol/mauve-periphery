@@ -1,5 +1,5 @@
 import { BigNumber, constants, Wallet } from 'ethers'
-import { IMauveFactory, IMauvePool__factory } from '../../typechain'
+import { IMauveFactoryReduced, IMauvePool__factory } from '../../typechain'
 import { FeeAmount } from './constants'
 
 export type CreatePoolIfNecessary = (
@@ -11,7 +11,7 @@ export type CreatePoolIfNecessary = (
 ) => Promise<string>
 
 export const createPoolIfNecessary =
-  (factory: IMauveFactory, wallet: Wallet) =>
+  (factory: IMauveFactoryReduced, wallet: Wallet) =>
   async (token0: string, token1: string, fee: FeeAmount, initialSqrtPriceX96: BigNumber) => {
     const pool = await factory.getPool(token0, token1, fee)
 

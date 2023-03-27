@@ -8,7 +8,7 @@ import {
   MockTimeSwapRouter,
   NonfungibleTokenPositionDescriptor,
   TestERC20,
-  IMauveFactory,
+  IMauveFactoryReduced,
   AccessTokenVerifier,
 } from '../../typechain'
 import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
@@ -28,7 +28,7 @@ export const MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID = BigNumber.from(1)
 
 const completeFixture: Fixture<{
   weth9: IWETH9
-  factory: IMauveFactory
+  factory: IMauveFactoryReduced
   router: MockTimeSwapRouter
   nft: MockTimeNonfungiblePositionManager
   nftDescriptor: NonfungibleTokenPositionDescriptor

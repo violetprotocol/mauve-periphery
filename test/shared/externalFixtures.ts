@@ -8,7 +8,7 @@ import {
 } from '@violetprotocol/violetid/artifacts/contracts/VioletID.sol/VioletID.json'
 import { Fixture } from 'ethereum-waffle'
 import { ethers, waffle } from 'hardhat'
-import { AccessTokenVerifier, IMauveFactory, IWETH9, MockTimeSwapRouter } from '../../typechain'
+import { AccessTokenVerifier, IMauveFactoryReduced, IWETH9, MockTimeSwapRouter } from '../../typechain'
 
 import WETH9 from '../contracts/WETH9.json'
 import { Contract } from '@ethersproject/contracts'
@@ -25,16 +25,16 @@ const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
   return { weth9 }
 }
 
-const coreFactoryFixture: Fixture<IMauveFactory> = async ([wallet]) => {
+const coreFactoryFixture: Fixture<IMauveFactoryReduced> = async ([wallet]) => {
   return (await waffle.deployContract(wallet, {
     bytecode: FACTORY_BYTECODE,
     abi: FACTORY_ABI,
-  })) as IMauveFactory
+  })) as IMauveFactoryReduced
 }
 
 export const routerFixture: Fixture<{
   weth9: IWETH9
-  factory: IMauveFactory
+  factory: IMauveFactoryReduced
   router: MockTimeSwapRouter
   verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {

@@ -7,7 +7,7 @@ import {
   MockTimeNonfungiblePositionManager,
   IMauvePool,
   TestERC20,
-  IMauveFactory,
+  IMauveFactoryReduced,
   AccessTokenVerifier,
   MockTimeSwapRouter,
 } from '../typechain'
@@ -33,7 +33,7 @@ describe('PositionValue', async () => {
     tokens: [TestERC20, TestERC20, TestERC20]
     nft: MockTimeNonfungiblePositionManager
     router: MockTimeSwapRouter
-    factory: IMauveFactory
+    factory: IMauveFactoryReduced
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
     signer: Wallet
     domain: Domain
@@ -68,7 +68,7 @@ describe('PositionValue', async () => {
   let positionValue: PositionValueTest
   let nft: MockTimeNonfungiblePositionManager
   let router: MockTimeSwapRouter
-  let factory: IMauveFactory
+  let factory: IMauveFactoryReduced
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   let signer: Wallet
   let domain: Domain

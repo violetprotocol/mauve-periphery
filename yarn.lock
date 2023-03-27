@@ -1075,15 +1075,15 @@
   resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token/-/ethereum-access-token-0.2.0-sol07.tgz#3309332b42c13128453361f72810f3ca49851591"
   integrity sha512-Lq8v7fiSM+hNjewguOSrBvW2ewqkiNdlaX61LsFViP6LD3jfrND8jMeLr3Bau1WEZUooNRaRsKTsRuCIGrrCkg==
 
-"@violetprotocol/mauve-core@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-core/-/mauve-core-1.2.2.tgz#61d6b22ac1e873118535bcb02adbb2f70656dc9c"
-  integrity sha512-dn68jW81ND3q3GT/bCUVULU+M6e3kC3hMTE6oDISctk5XbjEoiq3xv6rzH2I3VPKuom9Q5wWKkDOsOLQdqRP0Q==
+"@violetprotocol/mauve-core@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-core/-/mauve-core-1.2.3.tgz#61e00765959f7e690f471905418fad8f3a2cc61a"
+  integrity sha512-iZjTNvQj/mvGJBdaAVwWfyjiqdI49NKL4H5Kq8SQFpJR/d9QivcfjQuh/3R8TNCgJqGsjRd6HucfcgVQICQqUw==
 
-"@violetprotocol/violetid@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@violetprotocol/violetid/-/violetid-1.2.0.tgz#1c8b897edd48f7b5be5d6bce45655b4db5f4aa2f"
-  integrity sha512-y6997rXQ2IzC7YybOkK55etf345/wiJXtlyV47eN8BNhINnMMTkCh2bU0XZsSEvmlnzUq2cVNMK2+YPby+N4dg==
+"@violetprotocol/violetid@1.2.2":
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/violetid/-/violetid-1.2.2.tgz#3d626a04c92e611cb07b9f4e5f61ec50995329b8"
+  integrity sha512-AKJi4KTmFwMekxFWfks2hW6JZyhgX4oF1oUpnHpTbdSBCuPTbqTAdSc7nnrJfzT+vY1i6i1kmwl2vc0+Ficknw==
   dependencies:
     "@openzeppelin/contracts-upgradeable" "^4.8.1"
 
