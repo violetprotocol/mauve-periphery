@@ -2,11 +2,11 @@
 pragma solidity >=0.7.6;
 
 import '@openzeppelin/contracts/utils/Strings.sol';
-import '@violetprotocol/mauve-v3-core/contracts/libraries/BitMath.sol';
+import '@violetprotocol/mauve-core/contracts/libraries/BitMath.sol';
 import 'base64-sol/base64.sol';
 
 /// @title NFTSVG
-/// @notice Provides a function for generating an SVG associated with a Uniswap NFT
+/// @notice Provides a function for generating an SVG associated with a Mauve NFT
 library NFTSVG {
     using Strings for uint256;
 

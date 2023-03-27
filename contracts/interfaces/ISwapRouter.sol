@@ -2,11 +2,11 @@
 pragma solidity >=0.7.5;
 pragma abicoder v2;
 
-import '@violetprotocol/mauve-v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol';
+import '@violetprotocol/mauve-core/contracts/interfaces/callback/IMauveSwapCallback.sol';
 
 /// @title Router token swapping functionality
-/// @notice Functions for swapping tokens via Uniswap V3
-interface ISwapRouter is IUniswapV3SwapCallback {
+/// @notice Functions for swapping tokens via Mauve
+interface ISwapRouter is IMauveSwapCallback {
     struct ExactInputSingleParams {
         address tokenIn;
         address tokenOut;

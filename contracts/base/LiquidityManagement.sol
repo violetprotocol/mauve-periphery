@@ -2,8 +2,8 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '@violetprotocol/mauve-v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol';
-import '@violetprotocol/mauve-v3-core/contracts/libraries/TickMath.sol';
+import '@violetprotocol/mauve-core/contracts/interfaces/callback/IMauveMintCallback.sol';
+import '@violetprotocol/mauve-core/contracts/libraries/TickMath.sol';
 
 import '../libraries/PoolAddress.sol';
 import '../libraries/CallbackValidation.sol';
@@ -13,15 +13,15 @@ import './PeripheryPayments.sol';
 import './MauveCompliance.sol';
 
 /// @title Liquidity management functions
-/// @notice Internal functions for safely managing liquidity in Uniswap V3
-abstract contract LiquidityManagement is IUniswapV3MintCallback, MauveCompliance, PeripheryPayments {
+/// @notice Internal functions for safely managing liquidity in Mauve
+abstract contract LiquidityManagement is IMauveMintCallback, MauveCompliance, PeripheryPayments {
     struct MintCallbackData {
         address payer;
         PoolAddress.PoolKey poolKey;
     }
 
-    /// @inheritdoc IUniswapV3MintCallback
-    function uniswapV3MintCallback(
+    /// @inheritdoc IMauveMintCallback
+    function mauveMintCallback(
         uint256 amount0Owed,
         uint256 amount1Owed,
         bytes calldata data
@@ -54,13 +54,13 @@ abstract contract LiquidityManagement is IUniswapV3MintCallback, MauveCompliance
             uint128 liquidity,
             uint256 amount0,
             uint256 amount1,
-            IUniswapV3Pool pool
+            IMauvePool pool
         )
     {
         PoolAddress.PoolKey memory poolKey =
             PoolAddress.PoolKey({token0: params.token0, token1: params.token1, fee: params.fee});
 
-        pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
+        pool = IMauvePool(PoolAddress.computeAddress(factory, poolKey));
 
         // compute the liquidity amount
         {

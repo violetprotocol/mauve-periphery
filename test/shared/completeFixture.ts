@@ -1,6 +1,6 @@
 import { Fixture } from 'ethereum-waffle'
 import { ethers } from 'hardhat'
-import { v3RouterFixture, violetIDFixture } from './externalFixtures'
+import { routerFixture, violetIDFixture } from './externalFixtures'
 import { constants, Contract, Wallet, BigNumber } from 'ethers'
 import {
   IWETH9,
@@ -8,7 +8,7 @@ import {
   MockTimeSwapRouter,
   NonfungibleTokenPositionDescriptor,
   TestERC20,
-  IUniswapV3Factory,
+  IMauveFactoryReduced,
   AccessTokenVerifier,
 } from '../../typechain'
 import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
@@ -28,7 +28,7 @@ export const MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID = BigNumber.from(1)
 
 const completeFixture: Fixture<{
   weth9: IWETH9
-  factory: IUniswapV3Factory
+  factory: IMauveFactoryReduced
   router: MockTimeSwapRouter
   nft: MockTimeNonfungiblePositionManager
   nftDescriptor: NonfungibleTokenPositionDescriptor
@@ -39,7 +39,7 @@ const completeFixture: Fixture<{
   domain: Domain
   verifier: AccessTokenVerifier
 }> = async ([wallet], provider) => {
-  const { weth9, factory, router, verifier } = await v3RouterFixture([wallet], provider)
+  const { weth9, factory, router, verifier } = await routerFixture([wallet], provider)
 
   const signer = new ethers.Wallet(EAT_ISSUER_PK, provider)
   await wallet.sendTransaction({ to: signer.address, value: parseEther('1') })

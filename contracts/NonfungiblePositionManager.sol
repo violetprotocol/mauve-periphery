@@ -2,11 +2,11 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
-import '@violetprotocol/mauve-v3-core/contracts/interfaces/IUniswapV3Pool.sol';
-import '@violetprotocol/mauve-v3-core/contracts/libraries/FixedPoint128.sol';
-import '@violetprotocol/mauve-v3-core/contracts/libraries/FullMath.sol';
+import '@violetprotocol/mauve-core/contracts/interfaces/IMauvePool.sol';
+import '@violetprotocol/mauve-core/contracts/libraries/FixedPoint128.sol';
+import '@violetprotocol/mauve-core/contracts/libraries/FullMath.sol';
 
-import './interfaces/external/IUniswapV3FactoryReduced.sol';
+import './interfaces/external/IMauveFactoryReduced.sol';
 import './interfaces/INonfungiblePositionManager.sol';
 import './interfaces/INonfungibleTokenPositionDescriptor.sol';
 import './libraries/PositionKey.sol';
@@ -17,7 +17,7 @@ import './base/ERC721Permit.sol';
 import './base/PeripheryValidation.sol';
 
 /// @title NFT positions
-/// @notice Wraps Uniswap V3 positions in the ERC721 non-fungible token interface
+/// @notice Wraps Mauve positions in the ERC721 non-fungible token interface
 contract NonfungiblePositionManager is
     INonfungiblePositionManager,
     EATMulticall,
@@ -25,7 +25,7 @@ contract NonfungiblePositionManager is
     LiquidityManagement,
     PeripheryValidation
 {
-    // details about the uniswap position
+    // details about the mauve position
     struct Position {
         // how many uncollected tokens are owed to the position, as of the last computation
         uint128 tokensOwed0;
@@ -71,7 +71,7 @@ contract NonfungiblePositionManager is
         address _eatVerifier,
         address _violetID
     )
-        ERC721Permit('Mauve Positions NFT-V1', 'MAUV-V3-POS', '1')
+        ERC721Permit('Mauve Positions NFT-V1', 'MAUVE-POS', '1')
         PeripheryImmutableState(_factory, _WETH9)
         MauveCompliance(_violetID)
         EATMulticall(_eatVerifier)
@@ -85,7 +85,7 @@ contract NonfungiblePositionManager is
     /// @param addressToCheck The address to verify the compliant status of
     function checkAuthorization(address addressToCheck) private view {
         if (_isEmergencyModeActivated()) {
-            _checkIfAllowedToInteract(addressToCheck);
+            require(_checkIfAllowedToInteract(addressToCheck), 'NID');
         } else {
             // NSMC -> Not self multi calling
             require(_isSelfMulticalling(), 'NSMC');
@@ -155,7 +155,7 @@ contract NonfungiblePositionManager is
             uint256 amount1
         )
     {
-        IUniswapV3Pool pool;
+        IMauvePool pool;
         (liquidity, amount0, amount1, pool) = addLiquidity(
             AddLiquidityParams({
                 token0: params.token0,
@@ -235,7 +235,7 @@ contract NonfungiblePositionManager is
 
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
 
-        IUniswapV3Pool pool;
+        IMauvePool pool;
         (liquidity, amount0, amount1, pool) = addLiquidity(
             AddLiquidityParams({
                 token0: poolKey.token0,
@@ -296,7 +296,7 @@ contract NonfungiblePositionManager is
         require(positionLiquidity >= params.liquidity, 'NEL');
 
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
-        IUniswapV3Pool pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
+        IMauvePool pool = IMauvePool(PoolAddress.computeAddress(factory, poolKey));
         (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity);
 
         require(amount0 >= params.amount0Min && amount1 >= params.amount1Min, 'Price slippage check');
@@ -349,7 +349,7 @@ contract NonfungiblePositionManager is
 
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
 
-        IUniswapV3Pool pool = IUniswapV3Pool(PoolAddress.computeAddress(factory, poolKey));
+        IMauvePool pool = IMauvePool(PoolAddress.computeAddress(factory, poolKey));
 
         (uint128 tokensOwed0, uint128 tokensOwed1) = (position.tokensOwed0, position.tokensOwed1);
 

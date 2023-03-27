@@ -22,7 +22,7 @@ interface IVioletID {
 
     function hasStatus(address account, uint256 tokenId) external view returns (bool);
 
-    function hasVioletVerificationStatus(address account) external view returns (bool);
+    function hasMauveVerificationStatus(address account) external view returns (bool);
 
-    function numberWithVioletVerificationStatus() external view returns (uint256);
+    function numberWithMauveVerificationStatus() external view returns (uint256);
 }

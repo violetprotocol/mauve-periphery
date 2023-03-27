@@ -3,7 +3,7 @@ pragma solidity >=0.5.0;
 
 /// @title Provides functions for deriving a pool address from the factory, tokens, and the fee
 library PoolAddress {
-    bytes32 internal constant POOL_INIT_CODE_HASH = 0xff18488a66e3e0e9216215d17eeeb718265f0a9b9d14a34b19d6705986e61b12;
+    bytes32 internal constant POOL_INIT_CODE_HASH = 0x35cf190007bfd8b78434816f3c1a816e2f40d11142531305b87684814b75dae4;
 
     /// @notice The identifying key of the pool
     struct PoolKey {
@@ -27,9 +27,9 @@ library PoolAddress {
     }
 
     /// @notice Deterministically computes the pool address given the factory and PoolKey
-    /// @param factory The Uniswap V3 factory contract address
+    /// @param factory The Mauve factory contract address
     /// @param key The PoolKey
-    /// @return pool The contract address of the V3 pool
+    /// @return pool The contract address of the Mauve pool
     function computeAddress(address factory, PoolKey memory key) internal pure returns (address pool) {
         require(key.token0 < key.token1);
         pool = address(
