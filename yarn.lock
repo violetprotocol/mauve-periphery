@@ -1061,11 +1061,7 @@
   version "4.0.1-alpha"
   resolved "https://registry.yarnpkg.com/@uniswap/lib/-/lib-4.0.1-alpha.tgz#2881008e55f075344675b3bca93f020b028fbd02"
 
-"@uniswap/v2-core@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@uniswap/v2-core/-/v2-core-1.0.1.tgz#af8f508bf183204779938969e2e54043e147d425"
-
-"@violetprotocol/ethereum-access-token-helpers@^0.2.0":
+"@violetprotocol/ethereum-access-token-helpers@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token-helpers/-/ethereum-access-token-helpers-0.2.0.tgz#e826309674c1dc8e47c2c8f00664ad0b0c9a3ea7"
   integrity sha512-YrQSEFmCwnrjKTG3oS9bbA1CwzGQB95EpH+eYPIZ8UQFTO11+XOWlFq6RhZ6MhvSpJK5xxQsvp2GsBRmj0yeZg==
@@ -7492,9 +7488,10 @@ typedarray@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/typedarray/-/typedarray-0.0.6.tgz#867ac74e3864187b1d3d47d996a78ec5c8830777"
 
-typescript@^3.7.3:
-  version "3.9.7"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.9.7.tgz#98d600a5ebdc38f40cb277522f12dc800e9e25fa"
+typescript@^4.0.0:
+  version "4.9.5"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
+  integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
 
 typewise-core@^1.2, typewise-core@^1.2.0:
   version "1.2.0"
