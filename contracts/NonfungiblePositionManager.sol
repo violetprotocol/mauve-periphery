@@ -333,7 +333,7 @@ contract NonfungiblePositionManager is
     }
 
     function collectAmounts(CollectParams calldata params) external view returns (uint256 amount0, uint256 amount1) {
-        (bool _, bytes memory result) =
+        (, bytes memory result) =
             address(this).staticcall(abi.encodeWithSignature('collect((uint256,address,uint128,uint128))', params));
         (amount0, amount1) = abi.decode(result, (uint256, uint256));
     }
