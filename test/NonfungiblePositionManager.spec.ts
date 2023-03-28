@@ -1212,7 +1212,7 @@ describe('NonfungiblePositionManager', () => {
         .withArgs(poolAddress, wallet.address, 49)
     })
 
-    it('returns error message from collect without EAT', async () => {
+    it('returns amount values from collect without EAT', async () => {
       await prologueToCollect()
 
       const collectParams = {
