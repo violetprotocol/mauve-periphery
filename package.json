@@ -20,7 +20,6 @@
     "contracts/interfaces",
     "contracts/libraries",
     "artifacts/contracts/**/*.json",
-    "dist/generateAccessToken.ts",
     "!artifacts/contracts/**/*.dbg.json",
     "!artifacts/contracts/test/**/*",
     "!artifacts/contracts/base/**/*"
@@ -31,7 +30,6 @@
   "dependencies": {
     "@openzeppelin/contracts": "3.4.2-solc-0.7",
     "@uniswap/lib": "^4.0.1-alpha",
-    "@uniswap/v2-core": "1.0.1",
     "@violetprotocol/ethereum-access-token": "0.2.0-sol07",
     "@violetprotocol/mauve-core": "1.2.3",
     "@violetprotocol/violetid": "1.2.2",
@@ -45,7 +43,7 @@
     "@typechain/ethers-v5": "^4.0.0",
     "@types/chai": "^4.2.6",
     "@types/mocha": "^5.2.7",
-    "@violetprotocol/ethereum-access-token-helpers": "^0.2.0",
+    "@violetprotocol/ethereum-access-token-helpers": "0.2.0",
     "chai": "^4.2.0",
     "decimal.js": "^10.2.1",
     "dotenv": "^16.0.3",
@@ -65,10 +63,10 @@
     "ts-generator": "^0.1.1",
     "ts-node": "^8.5.4",
     "typechain": "^4.0.0",
-    "typescript": "^3.7.3"
+    "typescript": "^4.0.0"
   },
   "scripts": {
-    "prepare": "yarn compile && yarn tsc",
+    "prepare": "yarn compile",
     "compile": "hardhat compile",
     "slither": "slither ./contracts/NonfungiblePositionManager.sol --solc-remaps '@openzeppelin=node_modules/@openzeppelin/ @violetprotocol=node_modules/@violetprotocol/ @uniswap=node_modules/@uniswap base64-sol=node_modules/base64-sol' --exclude naming-convention,external-function,low-level-calls --buidler-ignore-compile",
     "test": "hardhat test",
