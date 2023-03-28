@@ -1212,6 +1212,22 @@ describe('NonfungiblePositionManager', () => {
         .withArgs(poolAddress, wallet.address, 49)
     })
 
+    it('returns error message from collect without EAT', async () => {
+      await prologueToCollect()
+
+      const collectParams = {
+        tokenId: tokenId,
+        recipient: wallet.address,
+        amount0Max: MaxUint128,
+        amount1Max: MaxUint128,
+      }
+
+      expect(await nft.connect(other).callStatic.collectAmounts(collectParams)).to.deep.equal([
+        BigNumber.from('0x08c379a000000000000000000000000000000000000000000000000000000000'),
+        BigNumber.from('0x2000000000000000000000000000000000000000000000000000000000'),
+      ])
+    })
+
     it('should not collect with EAT when in emergency mode', async () => {
       await prologueToCollect()
 
