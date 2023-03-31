@@ -1230,7 +1230,9 @@ describe('NonfungiblePositionManager', () => {
 
       console.log(expectedError)
 
-      await expect(nft.connect(other).callStatic.collectAmounts(collectParams)).to.be.reverted
+      await expect(nft.connect(other).callStatic.collectAmounts(collectParams))
+        .to.be.revertedWithCustomError({ interface: iface }, 'collectAmounts')
+        .withArgs([5, 5])
     })
 
     it('should not collect with EAT when in emergency mode', async () => {
