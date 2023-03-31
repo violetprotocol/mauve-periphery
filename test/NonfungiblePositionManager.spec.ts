@@ -1223,16 +1223,17 @@ describe('NonfungiblePositionManager', () => {
         amount1Max: MaxUint128,
       }
 
-      let ABI = ['function collectAmounts(uint256 amount0, uint256 amount1)']
+      let ABI = ['function CollectAmounts(uint256 amount0, uint256 amount1)']
 
       let iface = new ethers.utils.Interface(ABI)
-      const expectedError = iface.encodeFunctionData('collectAmounts', [5, 5])
+      const expectedError = iface.encodeFunctionData('CollectAmounts', [49, 49])
 
       console.log(expectedError)
+      const mock = await ethers.getContractAt('CollectAmountsTest', nft.address)
 
       await expect(nft.connect(other).callStatic.collectAmounts(collectParams))
-        .to.be.revertedWithCustomError({ interface: iface }, 'collectAmounts')
-        .withArgs([5, 5])
+        .to.be.revertedWithCustomError(mock, 'CollectAmounts')
+        .withArgs(49, 49)
     })
 
     it('should not collect with EAT when in emergency mode', async () => {

@@ -63,10 +63,24 @@ const DEFAULT_COMPILER_SETTINGS = {
   },
 }
 
+const NEW_COMPILTER = {
+  version: '0.8.4',
+  settings: {
+    evmVersion: 'istanbul',
+    optimizer: {
+      enabled: true,
+      runs: 1,
+    },
+    metadata: {
+      bytecodeHash: 'none',
+    },
+  },
+}
+
 export default {
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: false,
+      allowUnlimitedContractSize: true,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -112,6 +126,7 @@ export default {
       'contracts/test/NFTDescriptorTest.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/NonfungibleTokenPositionDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/libraries/NFTDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
+      'contracts/test/CollectAmountsTest.sol': NEW_COMPILTER,
     },
   },
   watcher: {
