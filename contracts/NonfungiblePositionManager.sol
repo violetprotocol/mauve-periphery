@@ -332,10 +332,12 @@ contract NonfungiblePositionManager is
         emit DecreaseLiquidity(params.tokenId, params.liquidity, amount0, amount1);
     }
 
-    function collectAmounts(CollectParams calldata params) external view returns (uint256 amount0, uint256 amount1) {
-        (, bytes memory result) =
-            address(this).staticcall(abi.encodeWithSignature('collect((uint256,address,uint128,uint128))', params));
-        (amount0, amount1) = abi.decode(result, (uint256, uint256));
+    function collectAmounts(CollectParams calldata params) external {
+        (uint256 amount0, uint256 amount1) = _collect(params);
+        bytes memory encodedReturn = abi.encodeWithSignature('collectAmounts(uint256,uint256)', amount0, amount1);
+        assembly {
+            revert(encodedReturn, 68)
+        }
     }
 
     /// @inheritdoc INonfungiblePositionManager
@@ -344,9 +346,13 @@ contract NonfungiblePositionManager is
         payable
         override
         isAuthorizedForToken(params.tokenId)
-        returns (uint256 amount0, uint256 amount1)
+        returns (uint256, uint256)
     {
         checkAuthorization(ownerOf(params.tokenId));
+        return _collect(params);
+    }
+
+    function _collect(CollectParams calldata params) internal returns (uint256 amount0, uint256 amount1) {
         require(params.amount0Max > 0 || params.amount1Max > 0);
         // allow collecting to the nft position manager address with address 0
         address recipient = params.recipient == address(0) ? address(this) : params.recipient;

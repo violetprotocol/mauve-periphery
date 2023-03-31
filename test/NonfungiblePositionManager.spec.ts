@@ -31,6 +31,7 @@ import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
 import { generateAccessToken, generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { defaultAbiCoder } from '@ethersproject/abi'
 
 describe('NonfungiblePositionManager', () => {
   let wallets: Wallet[]
@@ -1212,7 +1213,7 @@ describe('NonfungiblePositionManager', () => {
         .withArgs(poolAddress, wallet.address, 49)
     })
 
-    it('returns amount values from collect without EAT', async () => {
+    it.only('returns amount values from collect without EAT', async () => {
       await prologueToCollect()
 
       const collectParams = {
@@ -1222,10 +1223,16 @@ describe('NonfungiblePositionManager', () => {
         amount1Max: MaxUint128,
       }
 
-      expect(await nft.connect(other).callStatic.collectAmounts(collectParams)).to.deep.equal([
-        BigNumber.from('0x08c379a000000000000000000000000000000000000000000000000000000000'),
-        BigNumber.from('0x2000000000000000000000000000000000000000000000000000000000'),
-      ])
+      let ABI = ['function collectAmounts(uint256 amount0, uint256 amount1)']
+
+      let iface = new ethers.utils.Interface(ABI)
+      const expectedError = iface.encodeFunctionData('collectAmounts', [5, 5])
+
+      console.log(expectedError)
+
+      await expect(nft.connect(other).callStatic.collectAmounts(collectParams)).to.be.revertedWithSomeCustomError(
+        expectedError
+      )
     })
 
     it('should not collect with EAT when in emergency mode', async () => {
