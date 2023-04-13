@@ -1233,17 +1233,23 @@ describe('NonfungiblePositionManager', () => {
       const expectedError = iface.encodeFunctionData('CollectAmounts', [49, 49])
       const mock = await ethers.getContractAt('CollectAmountsTest', nft.address)
 
-      nft.connect(other).callStatic.collectAmounts(collectParams).then((tx) => {
-        console.log("******* THIS SHOULD NOT HAPPEN ********")
-        console.log(tx)
-        expect(true).to.be.equal(false)
-      }).catch((txError) => {
-        const errorData = txError.data
-        expect(errorData).to.be.equal(expectedError)
-      });
+      nft
+        .connect(other)
+        .callStatic.collectAmounts(collectParams)
+        .then((tx) => {
+          console.log('******* THIS SHOULD NOT HAPPEN ********')
+          console.log(tx)
+          expect(true).to.be.equal(false)
+        })
+        .catch((txError) => {
+          const errorData = txError.data
+          expect(errorData).to.be.equal(expectedError)
+        })
 
-      await expect(nft.connect(other).callStatic.collectAmounts(collectParams))
-      .to.be.revertedWithCustomError(mock, 'CollectAmounts')
+      await expect(nft.connect(other).callStatic.collectAmounts(collectParams)).to.be.revertedWithCustomError(
+        mock,
+        'CollectAmounts'
+      )
     })
 
     it('should not collect with EAT when in emergency mode', async () => {
@@ -2452,8 +2458,8 @@ describe('NonfungiblePositionManager', () => {
 
         const expectedToken1Balance = await tokens[1]['balanceOf(address)'](wallet.address)
         const tx1 = nft
-            .connect(wallet)
-            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
+          .connect(wallet)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, parameters)
         await expect(tx1).to.emit(tokens[0], 'Transfer').withArgs(poolAddress, wallet.address, 2501)
         // This was added in lieu of:
         //   .to.not.emit(tokens[1], 'Transfer')
@@ -2475,15 +2481,14 @@ describe('NonfungiblePositionManager', () => {
           parameters2
         )
 
-        const tx2  = nft
-            .connect(wallet)
-            ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat2.v, eat2.r, eat2.s, expiry2, parameters2)
+        const tx2 = nft
+          .connect(wallet)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat2.v, eat2.r, eat2.s, expiry2, parameters2)
         await expect(tx2).to.emit(tokens[0], 'Transfer').withArgs(poolAddress, wallet.address, 7503)
         // This was added in lieu of:
         //   .to.not.emit(tokens[1], 'Transfer')
         // due to hardhat bugs that prevent checking a second event on a emit after new hardhat chai matchers were introduced
         expect(await tokens[1]['balanceOf(address)'](wallet.address)).to.equal(expectedToken1Balance)
-
       })
     })
   })
