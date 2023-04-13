@@ -1,3 +1,4 @@
+import '@nomicfoundation/hardhat-chai-matchers'
 import '@nomiclabs/hardhat-ethers'
 import '@nomiclabs/hardhat-etherscan'
 import '@nomiclabs/hardhat-waffle'
@@ -12,7 +13,7 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
     evmVersion: 'istanbul',
     optimizer: {
       enabled: true,
-      runs: 333,
+      runs: 500,
     },
     metadata: {
       bytecodeHash: 'none',
@@ -50,6 +51,20 @@ const LOWEST_OPTIMIZER_COMPILER_SETTINGS = {
 
 const DEFAULT_COMPILER_SETTINGS = {
   version: '0.7.6',
+  settings: {
+    evmVersion: 'istanbul',
+    optimizer: {
+      enabled: true,
+      runs: 1_000_000,
+    },
+    metadata: {
+      bytecodeHash: 'none',
+    },
+  },
+}
+
+const SOLIDITY_08_COMPILTER = {
+  version: '0.8.4',
   settings: {
     evmVersion: 'istanbul',
     optimizer: {
@@ -111,6 +126,7 @@ export default {
       'contracts/test/NFTDescriptorTest.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/NonfungibleTokenPositionDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/libraries/NFTDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
+      'contracts/test/CollectAmountsTest.sol': SOLIDITY_08_COMPILTER,
     },
   },
   watcher: {
