@@ -335,6 +335,8 @@ contract NonfungiblePositionManager is
     function collectAmounts(CollectParams calldata params) external {
         (uint256 amount0, uint256 amount1) = _collect(params);
         bytes memory encodedReturn = abi.encodeWithSignature('CollectAmounts(uint256,uint256)', amount0, amount1);
+        // Adds the correct offset to the pointer, with length 0x44 that contains the revert reason
+        // Revert reason contains the amounts returned by collect, useful to frontend interface for UX reasons
         assembly {
             revert(add(32, encodedReturn), 0x44)
         }
