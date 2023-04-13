@@ -23,9 +23,6 @@ import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { encodePriceSqrt } from './shared/encodePriceSqrt'
 import { expandTo18Decimals } from './shared/expandTo18Decimals'
 import { expect } from './shared/expect'
-// import { expect } from '@nomicfoundation/hardhat-chai-matchers'
-import revertedWithCustomError from '@nomicfoundation/hardhat-chai-matchers'
-import rejectedWithCustomError from '@nomicfoundation/hardhat-chai-matchers'
 import { extractJSONFromURI } from './shared/extractJSONFromURI'
 import getPermitNFTSignature from './shared/getPermitNFTSignature'
 import { encodePath } from './shared/path'
@@ -34,7 +31,6 @@ import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
 import { generateAccessToken, generateAccessTokenForMulticall } from './shared/generateAccessToken'
-import { defaultAbiCoder } from '@ethersproject/abi'
 
 describe('NonfungiblePositionManager', () => {
   let wallets: Wallet[]
