@@ -15,7 +15,6 @@ import './base/LiquidityManagement.sol';
 import './base/EATMulticall.sol';
 import './base/ERC721Permit.sol';
 import './base/PeripheryValidation.sol';
-import 'hardhat/console.sol';
 
 /// @title NFT positions
 /// @notice Wraps Mauve positions in the ERC721 non-fungible token interface
@@ -336,9 +335,8 @@ contract NonfungiblePositionManager is
     function collectAmounts(CollectParams calldata params) external {
         (uint256 amount0, uint256 amount1) = _collect(params);
         bytes memory encodedReturn = abi.encodeWithSignature('CollectAmounts(uint256,uint256)', amount0, amount1);
-        console.logBytes(encodedReturn);
         assembly {
-            revert(encodedReturn, 68)
+            revert(add(32, encodedReturn), 0x44)
         }
     }
 
@@ -348,7 +346,7 @@ contract NonfungiblePositionManager is
         payable
         override
         isAuthorizedForToken(params.tokenId)
-        returns (uint256, uint256)
+        returns (uint256 amount0, uint256 amount1)
     {
         checkAuthorization(ownerOf(params.tokenId));
         return _collect(params);
