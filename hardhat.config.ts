@@ -63,13 +63,13 @@ const DEFAULT_COMPILER_SETTINGS = {
   },
 }
 
-const NEW_COMPILTER = {
+const SOLIDITY_08_COMPILTER = {
   version: '0.8.4',
   settings: {
     evmVersion: 'istanbul',
     optimizer: {
       enabled: true,
-      runs: 1,
+      runs: 1_000_000,
     },
     metadata: {
       bytecodeHash: 'none',
@@ -80,7 +80,7 @@ const NEW_COMPILTER = {
 export default {
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: true,
+      allowUnlimitedContractSize: false,
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
@@ -126,7 +126,7 @@ export default {
       'contracts/test/NFTDescriptorTest.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/NonfungibleTokenPositionDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/libraries/NFTDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
-      'contracts/test/CollectAmountsTest.sol': NEW_COMPILTER,
+      'contracts/test/CollectAmountsTest.sol': SOLIDITY_08_COMPILTER,
     },
   },
   watcher: {
