@@ -1216,7 +1216,6 @@ describe('NonfungiblePositionManager', () => {
         .withArgs(poolAddress, wallet.address, 49)
     })
 
-    // HERE
     it('returns amount values from collect without EAT', async () => {
       await prologueToCollect()
 
