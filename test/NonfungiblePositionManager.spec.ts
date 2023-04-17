@@ -1762,6 +1762,32 @@ describe('NonfungiblePositionManager', () => {
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
+    it('can approve to VioletID holder without EAT', async () => {
+      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+
+      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
+    })
+
+    it('can approve to non VioletID holder without EAT', async () => {
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
+
+      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
+    })
+
+    it('can setApprovalForAll to VioletID holder without EAT', async () => {
+      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+
+      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
+    })
+
+    it('can setApprovalForAll to non VioletID holder without EAT', async () => {
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
+
+      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
+    })
+
     it('can only be called by authorized or owner', async () => {
       const { eat, expiry } = await generateAccessToken(
         signer,
