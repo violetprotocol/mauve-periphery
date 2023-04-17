@@ -3,7 +3,6 @@ pragma solidity =0.7.6;
 pragma abicoder v2;
 
 import '@violetprotocol/mauve-core/contracts/interfaces/IMauvePool.sol';
-import '@uniswap/lib/contracts/libraries/SafeERC20Namer.sol';
 
 import './libraries/ChainId.sol';
 import './interfaces/INonfungiblePositionManager.sol';
@@ -12,6 +11,7 @@ import './interfaces/IERC20Metadata.sol';
 import './libraries/PoolAddress.sol';
 import './libraries/NFTDescriptor.sol';
 import './libraries/TokenRatioSortOrder.sol';
+import './libraries/SafeERC20Namer.sol';
 
 /// @title Describes NFT token positions
 /// @notice Produces a string containing the data URI for a JSON metadata string
