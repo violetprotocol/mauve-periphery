@@ -1574,10 +1574,6 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@uniswap/lib@^4.0.1-alpha":
-  version "4.0.1-alpha"
-  resolved "https://registry.yarnpkg.com/@uniswap/lib/-/lib-4.0.1-alpha.tgz#2881008e55f075344675b3bca93f020b028fbd02"
-
 "@violetprotocol/ethereum-access-token-helpers@0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token-helpers/-/ethereum-access-token-helpers-0.2.0.tgz#e826309674c1dc8e47c2c8f00664ad0b0c9a3ea7"
