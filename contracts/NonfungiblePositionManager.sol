@@ -443,16 +443,6 @@ contract NonfungiblePositionManager is
         emit Approval(ownerOf(tokenId), to, tokenId);
     }
 
-    /// @dev Overrides approve to restrict to only VioletID holders
-    function approve(address to, uint256 tokenId) public virtual override(ERC721, IERC721) {
-        super.approve(to, tokenId);
-    }
-
-    /// @dev Overrides setApprovalForAll to restrict to only VioletID holders
-    function setApprovalForAll(address operator, bool approved) public virtual override(ERC721, IERC721) {
-        super.setApprovalForAll(operator, approved);
-    }
-
     /// @dev Overrides transferFrom to restrict to only VioletID holders
     function transferFrom(
         address from,
