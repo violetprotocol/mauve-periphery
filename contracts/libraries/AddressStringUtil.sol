@@ -2,6 +2,7 @@
 
 pragma solidity >=0.5.0;
 
+// This library was originally from '@uniswap/lib/contracts/libraries/AddressStringUtil.sol'
 library AddressStringUtil {
     // converts an address to the uppercase hex string, extracting only len bytes (up to 20, multiple of 2)
     function toAsciiString(address addr, uint256 len) internal pure returns (string memory) {
