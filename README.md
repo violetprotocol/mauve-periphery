@@ -19,9 +19,9 @@ For example:
 
 ```typescript
 import {
-  abi as SWAP_ROUTER_ABI,
-  bytecode as SWAP_ROUTER_BYTECODE,
-} from '@violetprotocol/mauve-periphery/artifacts/contracts/SwapRouter.sol/SwapRouter.json'
+  abi as MOCK_SWAP_ROUTER_ABI,
+  bytecode as MOCK_SWAP_ROUTER_BYTECODE,
+} from '@violetprotocol/mauve-periphery/artifacts/contracts/MockSwapRouter.sol/MockSwapRouter.json'
 
 // deploy the bytecode
 ```
@@ -36,12 +36,12 @@ The Mauve periphery interfaces are available for import into solidity smart cont
 via the npm artifact `@violetprotocol/mauve-periphery`, e.g.:
 
 ```solidity
-import '@violetprotocol/mauve-periphery/contracts/interfaces/ISwapRouter.sol';
+import '@violetprotocol/mauve-periphery/contracts/interfaces/IMockSwapRouter.sol';
 
 contract MyContract {
-  ISwapRouter router;
+  IMockSwapRouter router;
 
-  function doSomethingWithSwapRouter() {
+  function doSomethingWithMockSwapRouter() {
     // router.exactInput(...);
   }
 }
