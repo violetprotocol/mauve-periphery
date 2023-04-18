@@ -2088,7 +2088,9 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('should change owner with a VID token', async () => {
+      await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
       await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
@@ -2098,8 +2100,10 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('should change owner with two VID tokens', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID, '0x00')
-      expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID)).to.be.true
+      await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
       // Another arbitrary Violet Token Id
       await violetID.grantStatus(wallet.address, BigNumber.from(3), '0x00')
       expect(await violetID.hasStatus(wallet.address, BigNumber.from(3))).to.be.true
@@ -2110,7 +2114,9 @@ describe('NonfungiblePositionManager', () => {
       expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
     })
 
-    it('should not change owner without VID', async () => {
+    it('should not change owner if `to` address does not have a VID token', async () => {
+      await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
 
       await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
@@ -2118,8 +2124,20 @@ describe('NonfungiblePositionManager', () => {
       expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
     })
 
-    it('should not transfer with VID if emergencyMode is activated', async () => {
+    it('should not change owner if `from` address does not have a VID token', async () => {
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.false
+
+      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
+        .to.be.reverted
+      expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
+    })
+
+    it('should not transfer with VID if emergencyMode is activated', async () => {
+      await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
       await nft.setEmergencyMode(true)
@@ -2129,7 +2147,9 @@ describe('NonfungiblePositionManager', () => {
     })
 
     it('safeTransfer should execute with a Violet ID Token for Mauve', async () => {
+      await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
       await expect(
@@ -2141,8 +2161,10 @@ describe('NonfungiblePositionManager', () => {
 
     it('safeTransfer should execute with another Violet ID Token for Mauve', async () => {
       await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID, '0x00')
+      await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
       expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID)).to.be.false
       expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
 
       await expect(
         nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
@@ -2151,7 +2173,20 @@ describe('NonfungiblePositionManager', () => {
       expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
     })
 
-    it('safeTransfer should revert without VID', async () => {
+    it('safeTransfer should revert if `from` address does not have a VID token', async () => {
+      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.false
+
+      await expect(
+        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+      ).to.be.reverted
+      expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
+    })
+
+    it('safeTransfer should revert if `to` address does not have a VID token', async () => {
+      await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+      expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
       expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
 
       await expect(
