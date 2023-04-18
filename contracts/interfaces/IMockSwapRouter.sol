@@ -6,7 +6,7 @@ import '@violetprotocol/mauve-core/contracts/interfaces/callback/IMauveSwapCallb
 
 /// @title Router token swapping functionality
 /// @notice Functions for swapping tokens via Mauve
-interface ISwapRouter is IMauveSwapCallback {
+interface IMockSwapRouter is IMauveSwapCallback {
     struct ExactInputSingleParams {
         address tokenIn;
         address tokenOut;

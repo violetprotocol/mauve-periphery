@@ -6,7 +6,7 @@ import '@violetprotocol/mauve-core/contracts/libraries/SafeCast.sol';
 import '@violetprotocol/mauve-core/contracts/libraries/TickMath.sol';
 import '@violetprotocol/mauve-core/contracts/interfaces/IMauvePool.sol';
 
-import './interfaces/ISwapRouter.sol';
+import './interfaces/IMockSwapRouter.sol';
 import './base/PeripheryImmutableState.sol';
 import './base/PeripheryValidation.sol';
 import './base/EATMulticallPeripheryPaymentsWithFee.sol';
@@ -18,8 +18,8 @@ import './interfaces/external/IWETH9.sol';
 
 /// @title Mauve Swap Router
 /// @notice Router for stateless execution of swaps against Mauve
-contract SwapRouter is
-    ISwapRouter,
+contract MockSwapRouter is
+    IMockSwapRouter,
     PeripheryImmutableState,
     PeripheryValidation,
     EATMulticallPeripheryPaymentsWithFee,
@@ -113,7 +113,7 @@ contract SwapRouter is
         return uint256(-(zeroForOne ? amount1 : amount0));
     }
 
-    /// @inheritdoc ISwapRouter
+    /// @inheritdoc IMockSwapRouter
     function exactInputSingle(ExactInputSingleParams calldata params)
         external
         payable
@@ -131,7 +131,7 @@ contract SwapRouter is
         require(amountOut >= params.amountOutMinimum, 'Too little received');
     }
 
-    /// @inheritdoc ISwapRouter
+    /// @inheritdoc IMockSwapRouter
     function exactInput(ExactInputParams memory params)
         external
         payable
@@ -203,7 +203,7 @@ contract SwapRouter is
         if (sqrtPriceLimitX96 == 0) require(amountOutReceived == amountOut);
     }
 
-    /// @inheritdoc ISwapRouter
+    /// @inheritdoc IMockSwapRouter
     function exactOutputSingle(ExactOutputSingleParams calldata params)
         external
         payable
@@ -225,7 +225,7 @@ contract SwapRouter is
         amountInCached = DEFAULT_AMOUNT_IN_CACHED;
     }
 
-    /// @inheritdoc ISwapRouter
+    /// @inheritdoc IMockSwapRouter
     function exactOutput(ExactOutputParams calldata params)
         external
         payable
