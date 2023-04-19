@@ -11,11 +11,11 @@ import './Multicall.sol';
 abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer {
     constructor(address _EATVerifier) AccessTokenConsumer(_EATVerifier) {}
 
-    bool private isMulticalling;
+    uint256 private isMulticalling;
     modifier multicalling {
-        isMulticalling = true;
+        isMulticalling = 2;
         _;
-        isMulticalling = false;
+        isMulticalling = 1;
     }
 
     // be careful with external contract function calls made by functions you modify with this
@@ -27,7 +27,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     }
 
     function _isSelfMulticalling() internal view returns (bool) {
-        return isMulticalling;
+        return isMulticalling == 2;
     }
 
     function multicall(
