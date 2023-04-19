@@ -448,11 +448,11 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyAllowedToInteract(from, to) onlyWhenNotEmergencyMode {
+    ) public virtual override(ERC721, IERC721) onlyAllowedToInteract(from, to) {
         super.transferFrom(from, to, tokenId);
     }
 
-    /// @dev Overrides transferFrom to block usage in favour of EAT-gated version
+    /// @dev Overrides transferFrom with a version that requires an EAT
     function transferFrom(
         uint8 v,
         bytes32 r,
@@ -470,11 +470,11 @@ contract NonfungiblePositionManager is
         address from,
         address to,
         uint256 tokenId
-    ) public virtual override(ERC721, IERC721) onlyAllowedToInteract(from, to) onlyWhenNotEmergencyMode {
+    ) public virtual override(ERC721, IERC721) onlyAllowedToInteract(from, to) {
         super.safeTransferFrom(from, to, tokenId);
     }
 
-    /// @dev Overrides safeTransferFrom to block usage in favour of EAT-gated version
+    /// @dev Overrides safeTransferFrom with a version that requires an EAT
     function safeTransferFrom(
         uint8 v,
         bytes32 r,
