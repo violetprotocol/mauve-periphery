@@ -1884,6 +1884,7 @@ describe('NonfungiblePositionManager', () => {
         encodePriceSqrt(1, 1)
       )
 
+      // other.address is getting a LP NFT
       const mintParams = {
         token0: tokens[0].address,
         token1: tokens[1].address,
@@ -1904,271 +1905,347 @@ describe('NonfungiblePositionManager', () => {
       await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters)
     })
 
-    it('can approve to VioletID holder without EAT', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+    context('approve', () => {
+      it('can approve to VioletID holder without EAT', async () => {
+        await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+        expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
-      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
-      expect(await nft.getApproved(tokenId)).to.eq(wallet.address)
+        await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
+        expect(await nft.getApproved(tokenId)).to.eq(wallet.address)
+      })
+
+      it('can approve to non VioletID holder without EAT', async () => {
+        expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
+
+        await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
+        expect(await nft.getApproved(tokenId)).to.eq(wallet.address)
+      })
+
+      it('can setApprovalForAll to VioletID holder without EAT', async () => {
+        await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+        expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+
+        await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
+        expect(await nft['isApprovedForAll(address,address)'](other.address, wallet.address)).to.be.true
+      })
+
+      it('can setApprovalForAll to non VioletID holder without EAT', async () => {
+        expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
+
+        await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
+        expect(await nft['isApprovedForAll(address,address)'](other.address, wallet.address)).to.be.true
+      })
     })
 
-    it('can approve to non VioletID holder without EAT', async () => {
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
-
-      await expect(nft.connect(other)['approve(address,uint256)'](wallet.address, tokenId)).to.not.be.reverted
-      expect(await nft.getApproved(tokenId)).to.eq(wallet.address)
-    })
-
-    it('can setApprovalForAll to VioletID holder without EAT', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
-
-      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
-      expect(await nft['isApprovedForAll(address,address)'](other.address, wallet.address)).to.be.true
-    })
-
-    it('can setApprovalForAll to non VioletID holder without EAT', async () => {
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
-
-      await expect(nft.connect(other)['setApprovalForAll(address,bool)'](wallet.address, true)).to.not.be.reverted
-      expect(await nft['isApprovedForAll(address,address)'](other.address, wallet.address)).to.be.true
-    })
-
-    it('can only be called by authorized or owner', async () => {
-      const { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
-        wallet,
-        nft,
-        [other.address, wallet.address, tokenId]
-      )
-      await expect(
-        nft['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          other.address,
-          wallet.address,
-          tokenId
-        )
-      ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved')
-    })
-
-    it('changes the owner', async () => {
-      const { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
-        other,
-        nft,
-        [other.address, wallet.address, tokenId]
-      )
-      await nft
-        .connect(other)
-        ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-          eat.v,
-          eat.r,
-          eat.s,
-          expiry,
-          other.address,
-          wallet.address,
-          tokenId
-        )
-      expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    })
-
-    it('should not change owner with EAT with transferFrom in emergency mode', async () => {
-      const { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
-        other,
-        nft,
-        [other.address, wallet.address, tokenId]
-      )
-      await nft.setEmergencyMode(true)
-      await expect(
-        nft
-          .connect(other)
-          ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-            eat.v,
-            eat.r,
-            eat.s,
-            expiry,
-            other.address,
-            wallet.address,
-            tokenId
+    context('transferFrom', () => {
+      context('with an EAT', () => {
+        it('transferFrom can only be called by authorized or owner', async () => {
+          const { eat, expiry } = await generateAccessToken(
+            signer,
+            domain,
+            'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+            wallet,
+            nft,
+            [other.address, wallet.address, tokenId]
           )
-      ).to.be.reverted
-    })
+          await expect(
+            nft['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+              eat.v,
+              eat.r,
+              eat.s,
+              expiry,
+              other.address,
+              wallet.address,
+              tokenId
+            )
+          ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved')
+        })
 
-    it('should change owner with EAT with transferFrom after disabling emergency mode', async () => {
-      const { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
-        other,
-        nft,
-        [other.address, wallet.address, tokenId]
-      )
-      await nft.setEmergencyMode(true)
-
-      await nft.setEmergencyMode(false)
-
-      await expect(
-        nft
-          .connect(other)
-          ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-            eat.v,
-            eat.r,
-            eat.s,
-            expiry,
-            other.address,
-            wallet.address,
-            tokenId
+        it('changes the owner', async () => {
+          const { eat, expiry } = await generateAccessToken(
+            signer,
+            domain,
+            'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+            other,
+            nft,
+            [other.address, wallet.address, tokenId]
           )
-      ).to.not.be.reverted
-      expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    })
+          await nft
+            .connect(other)
+            ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+              eat.v,
+              eat.r,
+              eat.s,
+              expiry,
+              other.address,
+              wallet.address,
+              tokenId
+            )
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
 
-    it('should not change owner with EAT with safeTransferFrom in emergency mode', async () => {
-      const { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
-        other,
-        nft,
-        [other.address, wallet.address, tokenId]
-      )
-      await nft.setEmergencyMode(true)
-      await expect(
-        nft
-          .connect(other)
-          ['safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-            eat.v,
-            eat.r,
-            eat.s,
-            expiry,
-            other.address,
-            wallet.address,
-            tokenId
+        it('should not change owner with EAT with transferFrom in emergency mode', async () => {
+          const { eat, expiry } = await generateAccessToken(
+            signer,
+            domain,
+            'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+            other,
+            nft,
+            [other.address, wallet.address, tokenId]
           )
-      ).to.be.reverted
-    })
+          await nft.setEmergencyMode(true)
+          await expect(
+            nft
+              .connect(other)
+              ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+                eat.v,
+                eat.r,
+                eat.s,
+                expiry,
+                other.address,
+                wallet.address,
+                tokenId
+              )
+          ).to.be.reverted
+        })
 
-    it('should not change owner with EAT with safeTransferFrom in emergency mode', async () => {
-      const { eat, expiry } = await generateAccessToken(
-        signer,
-        domain,
-        'safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
-        other,
-        nft,
-        [other.address, wallet.address, tokenId]
-      )
-      await nft.setEmergencyMode(true)
-
-      await nft.setEmergencyMode(false)
-
-      await expect(
-        nft
-          .connect(other)
-          ['safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
-            eat.v,
-            eat.r,
-            eat.s,
-            expiry,
-            other.address,
-            wallet.address,
-            tokenId
+        it('should change owner with EAT with transferFrom after disabling emergency mode', async () => {
+          const { eat, expiry } = await generateAccessToken(
+            signer,
+            domain,
+            'transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+            other,
+            nft,
+            [other.address, wallet.address, tokenId]
           )
-      ).to.not.be.reverted
-      expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+          await nft.setEmergencyMode(true)
+
+          await nft.setEmergencyMode(false)
+
+          await expect(
+            nft
+              .connect(other)
+              ['transferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+                eat.v,
+                eat.r,
+                eat.s,
+                expiry,
+                other.address,
+                wallet.address,
+                tokenId
+              )
+          ).to.not.be.reverted
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
+      })
+
+      context('with a VID token', () => {
+        it('should change owner with a VID token', async () => {
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+
+          await expect(
+            nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.not.be.reverted
+
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
+
+        it('should change owner with two VID tokens', async () => {
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+          // Grant another arbitrary Violet Token Id token to wallet.address
+          await violetID.grantStatus(wallet.address, BigNumber.from(3), '0x00')
+          expect(await violetID.hasStatus(wallet.address, BigNumber.from(3))).to.be.true
+
+          await expect(
+            nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.not.be.reverted
+
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
+
+        it('should not change owner if `to` address does not have a VID token', async () => {
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
+
+          await expect(
+            nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.be.reverted
+          expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
+        })
+
+        it('should not change owner if `from` address does not have a VID token', async () => {
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.false
+
+          await expect(
+            nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.be.reverted
+          expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
+        })
+
+        it('should transfer with VID if emergencyMode is activated', async () => {
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+
+          await nft.setEmergencyMode(true)
+
+          await expect(
+            nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.not.be.reverted
+        })
+      })
     })
 
-    it('should change owner with a VID token', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+    context('safeTransferFrom', () => {
+      context('with an EAT', () => {
+        it('safeTransferFrom can only be called by authorized or owner', async () => {
+          const { eat, expiry } = await generateAccessToken(
+            signer,
+            domain,
+            'safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+            wallet,
+            nft,
+            [other.address, wallet.address, tokenId]
+          )
+          await expect(
+            nft['safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+              eat.v,
+              eat.r,
+              eat.s,
+              expiry,
+              other.address,
+              wallet.address,
+              tokenId
+            )
+          ).to.be.revertedWith('ERC721: transfer caller is not owner nor approved')
+        })
 
-      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
-        .to.not.be.reverted
+        it('should not change owner with EAT with safeTransferFrom in emergency mode', async () => {
+          const { eat, expiry } = await generateAccessToken(
+            signer,
+            domain,
+            'safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+            other,
+            nft,
+            [other.address, wallet.address, tokenId]
+          )
+          await nft.setEmergencyMode(true)
+          await expect(
+            nft
+              .connect(other)
+              ['safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+                eat.v,
+                eat.r,
+                eat.s,
+                expiry,
+                other.address,
+                wallet.address,
+                tokenId
+              )
+          ).to.be.reverted
+        })
 
-      expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    })
+        it('should change owner with EAT with safeTransferFrom after disabling emergency mode', async () => {
+          const { eat, expiry } = await generateAccessToken(
+            signer,
+            domain,
+            'safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)',
+            other,
+            nft,
+            [other.address, wallet.address, tokenId]
+          )
+          await nft.setEmergencyMode(true)
 
-    it('should change owner with two VID tokens', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID, '0x00')
-      expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID)).to.be.true
-      // Another arbitrary Violet Token Id
-      await violetID.grantStatus(wallet.address, BigNumber.from(3), '0x00')
-      expect(await violetID.hasStatus(wallet.address, BigNumber.from(3))).to.be.true
+          await nft.setEmergencyMode(false)
 
-      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
-        .to.not.be.reverted
+          await expect(
+            nft
+              .connect(other)
+              ['safeTransferFrom(uint8,bytes32,bytes32,uint256,address,address,uint256)'](
+                eat.v,
+                eat.r,
+                eat.s,
+                expiry,
+                other.address,
+                wallet.address,
+                tokenId
+              )
+          ).to.not.be.reverted
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
+      })
+      context('with a VID token', () => {
+        it('safeTransfer should execute with a Violet ID Token for Mauve', async () => {
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
 
-      expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    })
+          await expect(
+            nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.not.be.reverted
 
-    it('should not change owner without VID', async () => {
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
 
-      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
-        .to.be.reverted
-      expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
-    })
+        it('safeTransfer should execute with another Violet ID Token for Mauve', async () => {
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID, '0x00')
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID)).to.be.false
+          expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
 
-    it('should not transfer with VID if emergencyMode is activated', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+          await expect(
+            nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.not.be.reverted
 
-      await nft.setEmergencyMode(true)
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
 
-      await expect(nft.connect(other)['transferFrom(address,address,uint256)'](other.address, wallet.address, tokenId))
-        .to.be.reverted
-    })
+        it('safeTransfer should revert if `from` address does not have a VID token', async () => {
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.false
 
-    it('safeTransfer should execute with a Violet ID Token for Mauve', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
+          await expect(
+            nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.be.reverted
+          expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
+        })
 
-      await expect(
-        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
-      ).to.not.be.reverted
+        it('safeTransfer should revert if `to` address does not have a VID token', async () => {
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          expect(await violetID.hasMauveVerificationStatus(other.address)).to.be.true
+          expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
 
-      expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    })
+          await expect(
+            nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.be.reverted
+          expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
+        })
 
-    it('safeTransfer should execute with another Violet ID Token for Mauve', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID, '0x00')
-      expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID)).to.be.false
-      expect(await violetID.hasStatus(wallet.address, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID)).to.be.true
+        it('safeTransfer should execute even if emergencyMode is activated', async () => {
+          await violetID.grantStatus(other.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
+          await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
 
-      await expect(
-        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
-      ).to.not.be.reverted
+          await nft.setEmergencyMode(true)
 
-      expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
-    })
-
-    it('safeTransfer should revert without VID', async () => {
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.false
-
-      await expect(
-        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
-      ).to.be.reverted
-      expect(await nft.ownerOf(tokenId)).to.not.eq(wallet.address)
-    })
-
-    it('should not safeTransfer if emergencyMode is activated', async () => {
-      await violetID.grantStatus(wallet.address, MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, '0x00')
-      expect(await violetID.hasMauveVerificationStatus(wallet.address)).to.be.true
-
-      await nft.setEmergencyMode(true)
-
-      await expect(
-        nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
-      ).to.be.reverted
+          await expect(
+            nft.connect(other)['safeTransferFrom(address,address,uint256)'](other.address, wallet.address, tokenId)
+          ).to.not.be.reverted
+          expect(await nft.ownerOf(tokenId)).to.eq(wallet.address)
+        })
+      })
     })
 
     it('removes existing approval', async () => {
