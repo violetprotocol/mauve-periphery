@@ -11,6 +11,7 @@ import {
   TestPositionNFTOwner,
   AccessTokenVerifier,
   MockTimeSwapRouter,
+  TestERC20Reentrant,
 } from '../typechain'
 import completeFixture, {
   Domain,
@@ -40,6 +41,7 @@ describe('NonfungiblePositionManager', () => {
     nft: MockTimeNonfungiblePositionManager
     factory: IMauveFactoryReduced
     tokens: [TestERC20, TestERC20, TestERC20]
+    reentrantToken: TestERC20Reentrant
     weth9: IWETH9
     router: MockTimeSwapRouter
     createAndInitializePoolIfNecessary: CreatePoolIfNecessary
@@ -52,6 +54,7 @@ describe('NonfungiblePositionManager', () => {
       weth9,
       factory,
       tokens,
+      reentrantToken,
       nft,
       router,
       createAndInitializePoolIfNecessary,
@@ -61,8 +64,9 @@ describe('NonfungiblePositionManager', () => {
       violetID,
     } = await completeFixture(wallets, provider)
 
+    const allTokens = [...tokens, reentrantToken]
     // approve & fund wallets
-    for (const token of tokens) {
+    for (const token of allTokens) {
       await token.approve(nft.address, constants.MaxUint256)
       await token.connect(other).approve(nft.address, constants.MaxUint256)
       await token.transfer(other.address, expandTo18Decimals(1_000_000))
@@ -72,6 +76,7 @@ describe('NonfungiblePositionManager', () => {
       nft,
       factory,
       tokens,
+      reentrantToken,
       weth9,
       router,
       createAndInitializePoolIfNecessary,
@@ -85,6 +90,7 @@ describe('NonfungiblePositionManager', () => {
   let factory: IMauveFactoryReduced
   let nft: MockTimeNonfungiblePositionManager
   let tokens: [TestERC20, TestERC20, TestERC20]
+  let reentrantToken: TestERC20Reentrant
   let weth9: IWETH9
   let router: MockTimeSwapRouter
   let createAndInitializePoolIfNecessary: CreatePoolIfNecessary
@@ -103,10 +109,11 @@ describe('NonfungiblePositionManager', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;({
+    ;;({
       nft,
       factory,
       tokens,
+      reentrantToken,
       weth9,
       router,
       createAndInitializePoolIfNecessary,
@@ -447,8 +454,6 @@ describe('NonfungiblePositionManager', () => {
       const balanceAfter = await wallet.getBalance()
       expect(balanceBefore).to.eq(balanceAfter.add(receipt.gasUsed.mul(tx.gasPrice)).add(100))
     })
-
-    it('emits an event')
 
     it('gas first mint for pool', async () => {
       await createAndInitializePoolIfNecessary(
@@ -1170,10 +1175,10 @@ describe('NonfungiblePositionManager', () => {
 
   describe('#collect', () => {
     const tokenId = 1
-    const prologueToCollect = async () => {
+    const prologueToCollect = async (tokenId_ = tokenId, caller = other, liquidity = 50) => {
       const decreaseLiquidityParams = {
-        tokenId: tokenId,
-        liquidity: 50,
+        tokenId: tokenId_,
+        liquidity,
         amount0Min: 0,
         amount1Min: 0,
         deadline: 1,
@@ -1184,12 +1189,12 @@ describe('NonfungiblePositionManager', () => {
       const { eat: decreaseEat, expiry: decreaseExpiry } = await generateAccessTokenForMulticall(
         signer,
         domain,
-        other,
+        caller,
         nft,
         decreaseMulticallParameters
       )
       await nft
-        .connect(other)
+        .connect(caller)
         ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
           decreaseEat.v,
           decreaseEat.r,
@@ -1421,6 +1426,73 @@ describe('NonfungiblePositionManager', () => {
         amount1Max: MaxUint128,
       }
       await expect(nft.connect(other).collect(collectParams)).to.be.reverted
+    })
+
+    it('should not let tokens with arbitrary callbacks on transfer re-enter', async () => {
+      const oneHundredETH = ethers.utils.parseEther('100')
+
+      // #### SETUP ####
+      // # Create Pool
+      await createAndInitializePoolIfNecessary(
+        tokens[0].address,
+        reentrantToken.address,
+        FeeAmount.MEDIUM,
+        encodePriceSqrt(1, 1)
+      )
+      // # Mint
+      const mintParams = {
+        token0: tokens[0].address,
+        token1: reentrantToken.address,
+        fee: FeeAmount.MEDIUM,
+        tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
+        recipient: wallet.address,
+        amount0Desired: 100,
+        amount1Desired: 100,
+        amount0Min: 0,
+        amount1Min: 0,
+        deadline: 1,
+      }
+      const multicallParameters = [nft.interface.encodeFunctionData('mint', [mintParams])]
+      const { eat, expiry } = await generateAccessTokenForMulticall(signer, domain, wallet, nft, multicallParameters)
+      // Mint position and send extra ETH along with it
+      await nft['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat.v, eat.r, eat.s, expiry, multicallParameters, {
+        value: oneHundredETH,
+      })
+      expect(await nft.ownerOf(2)).to.eq(wallet.address)
+
+      // # Decrease liquidity, increase tokens owed
+      await prologueToCollect(2, wallet)
+
+      await nft.connect(wallet).setApprovalForAll(reentrantToken.address, true)
+
+      // #### COLLECT ####
+      const collectParams = {
+        tokenId: 2,
+        recipient: wallet.address,
+        amount0Max: MaxUint128,
+        amount1Max: MaxUint128,
+      }
+
+      const parameters = [nft.interface.encodeFunctionData('collect', [collectParams])]
+      const { eat: eat1, expiry: expiry1 } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallet,
+        nft,
+        parameters
+      )
+
+      // When called to transfer the fees to collect, the TestERC20Reentrant tries to re-enter the NonfungiblePositionManager contract,
+      // calling burn() to burn token with ID 2. It is expected that 'UNC' (unexpected number of calls) is caught as revert reasoned and logged,
+      //  without re-entrancy protection this would emit 'NC' since the position is not cleared yet.
+      await expect(
+        nft
+          .connect(wallet)
+          ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat1.v, eat1.r, eat1.s, expiry1, parameters)
+      )
+        .to.emit(reentrantToken, 'CustomError')
+        .withArgs('UNC')
     })
 
     it('gas transfers both', async () => {

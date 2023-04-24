@@ -12,7 +12,10 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     constructor(address _EATVerifier) AccessTokenConsumer(_EATVerifier) {}
 
     uint256 private isMulticalling;
-    modifier multicalling {
+    uint256 private numberOfCalls;
+
+    modifier multicalling(bytes[] calldata calls) {
+        numberOfCalls = calls.length;
         isMulticalling = 2;
         _;
         isMulticalling = 1;
@@ -21,13 +24,16 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     // be careful with external contract function calls made by functions you modify with this
     // keep in mind possible re-entrancy
     modifier onlySelfMulticall {
-        // NSMC -> Not self multi calling
-        require(_isSelfMulticalling(), 'NSMC');
+        _checkSelfMulticalling();
         _;
     }
 
-    function _isSelfMulticalling() internal view returns (bool) {
-        return isMulticalling == 2;
+    function _checkSelfMulticalling() internal {
+        // NSMC -> Not self multi calling
+        require(isMulticalling == 2 , 'NSMC');
+        // UNC -> Unexpected number of calls
+        require(numberOfCalls > 0, 'UNC');
+        numberOfCalls--;
     }
 
     function multicall(
@@ -36,7 +42,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
         bytes32 s,
         uint256 expiry,
         bytes[] calldata data
-    ) public payable override requiresAuth(v, r, s, expiry) multicalling returns (bytes[] memory results) {
+    ) public payable override requiresAuth(v, r, s, expiry) multicalling(data) returns (bytes[] memory results) {
         // performs an external call to self for core multicall logic
         return super.multicall(data);
     }
