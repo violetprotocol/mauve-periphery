@@ -1432,17 +1432,13 @@ describe('NonfungiblePositionManager', () => {
       const oneHundredETH = ethers.utils.parseEther('100')
 
       // #### SETUP ####
+      const [token0, token1] = sortedTokens(tokens[0], reentrantToken)
       // # Create Pool
-      await createAndInitializePoolIfNecessary(
-        tokens[0].address,
-        reentrantToken.address,
-        FeeAmount.MEDIUM,
-        encodePriceSqrt(1, 1)
-      )
+      await createAndInitializePoolIfNecessary(token0.address, token1.address, FeeAmount.MEDIUM, encodePriceSqrt(1, 1))
       // # Mint
       const mintParams = {
-        token0: tokens[0].address,
-        token1: reentrantToken.address,
+        token0: token0.address,
+        token1: token1.address,
         fee: FeeAmount.MEDIUM,
         tickLower: getMinTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
         tickUpper: getMaxTick(TICK_SPACINGS[FeeAmount.MEDIUM]),
@@ -1484,15 +1480,15 @@ describe('NonfungiblePositionManager', () => {
       )
 
       // When called to transfer the fees to collect, the TestERC20Reentrant tries to re-enter the NonfungiblePositionManager contract,
-      // calling burn() to burn token with ID 2. It is expected that 'UNC' (unexpected number of calls) is caught as revert reasoned and logged,
-      //  without re-entrancy protection this would emit 'NC' since the position is not cleared yet.
+      // calling burn() to burn token with ID 2. It is expected that 'CFL' (Cross Function Lock) is caught as revert reason and logged.
+      // Without re-entrancy protection this would emit 'NC' since the position is not cleared yet.
       await expect(
         nft
           .connect(wallet)
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat1.v, eat1.r, eat1.s, expiry1, parameters)
       )
         .to.emit(reentrantToken, 'CustomError')
-        .withArgs('UNC')
+        .withArgs('CFL')
     })
 
     it('gas transfers both', async () => {

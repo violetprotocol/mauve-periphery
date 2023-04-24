@@ -21,8 +21,18 @@ contract TestEATMulticall is EATMulticall {
         tuple = Tuple({b: a, a: b});
     }
 
-    function functionThatCanOnlyBeMulticalled() external onlySelfMulticall returns (string memory str) {
-        str = 'did it workz?';
+    function function1ThatCanOnlyBeMulticalled() external onlySelfMulticall returns (string memory str) {
+        str = 'hello from function 1';
+    }
+
+    function function2ThatCanOnlyBeMulticalled() external onlySelfMulticall returns (string memory str) {
+        try TestEATMulticall(address(this)).function1ThatCanOnlyBeMulticalled() returns (string memory response) {
+            return response;
+        } catch Error(
+            string memory reason
+        ) {
+            return reason;
+        }
     }
 
     uint256 public paid;

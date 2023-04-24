@@ -87,7 +87,18 @@ contract NonfungiblePositionManager is
         if (_isEmergencyModeActivated()) {
             require(_checkIfAllowedToInteract(addressToCheck), 'NID');
         } else {
-            _checkSelfMulticalling();
+        // Called through EAT Multicall
+        require(_isMulticalling == 2 , 'NSMC');
+        // Not already in another onlySelfMulticall-gated function
+        require(_functionLock == 1, 'CFL');
+        _functionLock = 2;
+        }
+    }
+
+    modifier unlockFunction() {
+        _;
+        if (!_isEmergencyModeActivated()) {
+            _functionLock = 1;
         }
     }
 
@@ -145,8 +156,8 @@ contract NonfungiblePositionManager is
         external
         payable
         override
-        onlySelfMulticall
         checkDeadline(params.deadline)
+        unlockFunction
         returns (
             uint256 tokenId,
             uint128 liquidity,
@@ -154,6 +165,8 @@ contract NonfungiblePositionManager is
             uint256 amount1
         )
     {
+        // Address does not matter here since addLiquidity will revert if emergency mode is activated
+        checkAuthorization(address(0));
         IMauvePool pool;
         (liquidity, amount0, amount1, pool) = addLiquidity(
             AddLiquidityParams({
@@ -222,14 +235,16 @@ contract NonfungiblePositionManager is
         external
         payable
         override
-        onlySelfMulticall
         checkDeadline(params.deadline)
+        unlockFunction
         returns (
             uint128 liquidity,
             uint256 amount0,
             uint256 amount1
         )
     {
+        // Address does not matter here since addLiquidity will revert if emergency mode is activated
+        checkAuthorization(address(0));
         Position storage position = _positions[params.tokenId];
 
         PoolAddress.PoolKey memory poolKey = _poolIdToPoolKey[position.poolId];
@@ -284,6 +299,7 @@ contract NonfungiblePositionManager is
         override
         isAuthorizedForToken(params.tokenId)
         checkDeadline(params.deadline)
+        unlockFunction
         returns (uint256 amount0, uint256 amount1)
     {
         checkAuthorization(ownerOf(params.tokenId));
@@ -347,6 +363,7 @@ contract NonfungiblePositionManager is
         payable
         override
         isAuthorizedForToken(params.tokenId)
+        unlockFunction
         returns (uint256 amount0, uint256 amount1)
     {
         checkAuthorization(ownerOf(params.tokenId));
@@ -415,7 +432,7 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) {
+    function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) unlockFunction {
         checkAuthorization(ownerOf(tokenId));
         Position storage position = _positions[tokenId];
         // NC -> Not cleared
