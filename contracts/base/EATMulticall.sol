@@ -11,6 +11,7 @@ import './Multicall.sol';
 abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer {
     constructor(address _EATVerifier) AccessTokenConsumer(_EATVerifier) {}
 
+    // variables for re-entrancy protection
     uint256 internal _isMulticalling;
     uint256 internal _functionLock = 1;
 
@@ -27,7 +28,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
         // NSMC -> Not self multi calling
         require(_isMulticalling == 2 , 'NSMC');
 
-        // Requires not to be in an onlySelfMulticall-gated function already
+        // Prevents cross-function re-entrancy
         // CFL -> Cross Function Lock
         require(_functionLock == 1, 'CFL');
 

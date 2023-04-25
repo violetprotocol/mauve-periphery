@@ -91,6 +91,8 @@ interface INonfungiblePositionManager is
     /// @notice Creates a new position wrapped in a NFT
     /// @dev Call this when the pool does exist and is initialized. Note that if the pool is created but not initialized
     /// a method does not exist, i.e. the pool is assumed to be initialized.
+    //  This function must be called via EATMulticall, and cannot call - or be called by - a function similarly protected
+    //  with `_functionLock`.
     /// @param params The params necessary to mint a position, encoded as `MintParams` in calldata
     /// @return tokenId The ID of the token that represents the minted position
     /// @return liquidity The amount of liquidity for this position
@@ -116,6 +118,8 @@ interface INonfungiblePositionManager is
     }
 
     /// @notice Increases the amount of liquidity in a position, with tokens paid by the `msg.sender`
+    /// @dev This function must be called via EATMulticall, and cannot call - or be called by - a function similarly protected
+    //  with `_functionLock`.
     /// @param params tokenId The ID of the token for which liquidity is being increased,
     /// amount0Desired The desired amount of token0 to be spent,
     /// amount1Desired The desired amount of token1 to be spent,
@@ -143,6 +147,8 @@ interface INonfungiblePositionManager is
     }
 
     /// @notice Decreases the amount of liquidity in a position and accounts it to the position
+    /// @dev This function must be called via EATMulticall, and cannot call - or be called by - a function similarly protected
+    //  with `_functionLock`.
     /// @param params tokenId The ID of the token for which liquidity is being decreased,
     /// amount The amount by which liquidity will be decreased,
     /// amount0Min The minimum amount of token0 that should be accounted for the burned liquidity,
@@ -163,6 +169,8 @@ interface INonfungiblePositionManager is
     }
 
     /// @notice Collects up to a maximum amount of fees owed to a specific position to the recipient
+    /// @dev This function must be called via EATMulticall, and cannot call - or be called by - a function similarly protected
+    //  with `_functionLock`.
     /// @param params tokenId The ID of the NFT for which tokens are being collected,
     /// recipient The account that should receive the tokens,
     /// amount0Max The maximum amount of token0 to collect,
@@ -173,6 +181,8 @@ interface INonfungiblePositionManager is
 
     /// @notice Burns a token ID, which deletes it from the NFT contract. The token must have 0 liquidity and all tokens
     /// must be collected first.
+    /// @dev This function must be called via EATMulticall, and cannot call - or be called by - a function similarly protected
+    //  with `_functionLock`.
     /// @param tokenId The ID of the token that is being burned
     function burn(uint256 tokenId) external payable;
 }
