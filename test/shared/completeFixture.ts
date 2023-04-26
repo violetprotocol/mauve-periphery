@@ -10,6 +10,7 @@ import {
   TestERC20,
   IMauveFactoryReduced,
   AccessTokenVerifier,
+  TestERC20Reentrant,
 } from '../../typechain'
 import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
 import { parseEther } from 'ethers/lib/utils'
@@ -33,6 +34,7 @@ const completeFixture: Fixture<{
   nft: MockTimeNonfungiblePositionManager
   nftDescriptor: NonfungibleTokenPositionDescriptor
   tokens: [TestERC20, TestERC20, TestERC20]
+  reentrantToken: TestERC20Reentrant
   violetID: Contract
   createAndInitializePoolIfNecessary: CreatePoolIfNecessary
   signer: Wallet
@@ -53,11 +55,13 @@ const completeFixture: Fixture<{
   }
 
   const tokenFactory = await ethers.getContractFactory('TestERC20')
+  const reetrantTokenFactory = await ethers.getContractFactory('TestERC20Reentrant')
   const tokens: [TestERC20, TestERC20, TestERC20] = [
     (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20, // do not use maxu256 to avoid overflowing
     (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20,
     (await tokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20,
   ]
+  const reentrantToken = (await reetrantTokenFactory.deploy(constants.MaxUint256.div(2))) as TestERC20Reentrant
 
   const violetID = await violetIDFixture([wallet], provider)
 
@@ -84,6 +88,8 @@ const completeFixture: Fixture<{
     violetID.address
   )) as MockTimeNonfungiblePositionManager
 
+  await reentrantToken.setPositionManagerAddress(nft.address)
+
   await factory.setRole(nft.address, positionManagerBytes32)
   const mauveWhitelistedTokenIds = [MAUVE_VERIFIED_ACCOUNT_TOKEN_ID, MAUVE_VERIFIED_PARTNER_APP_TOKEN_ID]
   await factory['setMauveTokenIdsAllowedToInteract(uint256[])'](mauveWhitelistedTokenIds)
@@ -97,6 +103,7 @@ const completeFixture: Fixture<{
     factory,
     router,
     tokens,
+    reentrantToken,
     nft,
     nftDescriptor,
     violetID,

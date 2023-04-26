@@ -143,7 +143,7 @@ describe('EATMulticall', async () => {
 
   describe('function only callable from self multicall', async () => {
     it('should succeed with multicall', async () => {
-      const parameters = [testMulticall.interface.encodeFunctionData('functionThatCanOnlyBeMulticalled')]
+      const parameters = [testMulticall.interface.encodeFunctionData('function1ThatCanOnlyBeMulticalled')]
 
       const { eat, expiry } = await generateAccessTokenForMulticall(
         signer,
@@ -160,12 +160,37 @@ describe('EATMulticall', async () => {
         parameters
       )
 
-      const str = testMulticall.interface.decodeFunctionResult('functionThatCanOnlyBeMulticalled', data).str
-      expect(str).to.equal('did it workz?')
+      const str = testMulticall.interface.decodeFunctionResult('function1ThatCanOnlyBeMulticalled', data).str
+      expect(str).to.equal('hello from function 1')
+    })
+
+    it('should not succeed to re-enter with multicall', async () => {
+      const parameters = [
+        testMulticall.interface.encodeFunctionData('function2ThatCanOnlyBeMulticalled'),
+        testMulticall.interface.encodeFunctionData('functionThatReturnsTuple', [1, 2]),
+      ]
+
+      const { eat, expiry } = await generateAccessTokenForMulticall(
+        signer,
+        domain,
+        wallets[0],
+        testMulticall,
+        parameters
+      )
+      const returned = await testMulticall.callStatic['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](
+        eat.v,
+        eat.r,
+        eat.s,
+        expiry,
+        parameters
+      )
+      const str = testMulticall.interface.decodeFunctionResult('function1ThatCanOnlyBeMulticalled', returned[0]).str
+
+      expect(str).to.equal('CFL')
     })
 
     it('should fail without multicall', async () => {
-      await expect(testMulticall.functionThatCanOnlyBeMulticalled()).to.be.revertedWith('NSMC')
+      await expect(testMulticall.function1ThatCanOnlyBeMulticalled()).to.be.revertedWith('NSMC')
     })
   })
 })
