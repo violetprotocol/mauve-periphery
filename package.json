@@ -2,10 +2,7 @@
   "name": "@violetprotocol/mauve-periphery",
   "description": "Peripheral smart contracts for interacting with Mauve",
   "license": "GPL-2.0-or-later",
-  "publishConfig": {
-    "access": "public"
-  },
-  "version": "1.8.2",
+  "version": "1.8.3",
   "homepage": "https://mauve.org",
   "keywords": [
     "mauve",
