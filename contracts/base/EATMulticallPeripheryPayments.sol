@@ -14,7 +14,7 @@ import './EATMulticall.sol';
 
 abstract contract EATMulticallPeripheryPayments is PeripheryPayments, EATMulticall {
     /// @inheritdoc IPeripheryPayments
-    function unwrapWETH9(uint256 amountMinimum, address recipient) public payable override onlySelfMulticall {
+    function unwrapWETH9(uint256 amountMinimum, address recipient) public payable override {
         super.unwrapWETH9(amountMinimum, recipient);
     }
 
@@ -23,12 +23,12 @@ abstract contract EATMulticallPeripheryPayments is PeripheryPayments, EATMultica
         address token,
         uint256 amountMinimum,
         address recipient
-    ) public payable override onlySelfMulticall {
+    ) public payable override {
         super.sweepToken(token, amountMinimum, recipient);
     }
 
     /// @inheritdoc IPeripheryPayments
-    function refundETH() public payable override onlySelfMulticall {
+    function refundETH() public payable override {
         super.refundETH();
     }
 }
