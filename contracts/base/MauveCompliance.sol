@@ -17,22 +17,35 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     }
 
     modifier onlyFactoryOwner() {
-        address factoryOwner = IMauveFactoryReduced(factory).roles('owner');
-        // NFO -> Not Factory Owner
-        require(msg.sender == factoryOwner, 'NFO');
+        _checkFactoryOwner();
         _;
     }
 
     modifier onlyWhenNotEmergencyMode() {
-        // EMA -> Emergency Mode Activated
-        require(!_isEmergencyModeActivated(), 'EMA');
+        _checkIsNotInEmergencyMode();
         _;
     }
 
     modifier onlyAllowedToInteract(address from, address to) {
+        _checkAllowedToInteract(from, to);
+        _;
+    }
+
+    function _checkAllowedToInteract(address from, address to) internal view {
         // NID -> No Violet ID
         require(_checkIfAllowedToInteract(from) && _checkIfAllowedToInteract(to), 'NID');
-        _;
+    }
+
+    function _checkFactoryOwner() internal view {
+        address factoryOwner = IMauveFactoryReduced(factory).roles('owner');
+        // NFO -> Not Factory Owner
+        require(msg.sender == factoryOwner, 'NFO');
+    }
+
+
+    function _checkIsNotInEmergencyMode() internal view {
+        // EMA -> Emergency Mode Activated
+        require(!_isEmergencyModeActivated(), 'EMA');
     }
 
     function _isEmergencyModeActivated() internal view returns (bool) {
