@@ -31,6 +31,24 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         _;
     }
 
+    function setEmergencyMode(bool isEmergencyMode_) external onlyFactoryOwner {
+        isEmergencyMode = isEmergencyMode_;
+    }
+
+    function _checkIfAllowedToInteract(address account) internal view virtual returns (bool) {
+        uint256[] memory tokenIds = IMauveFactoryReduced(factory).getMauveTokenIdsAllowedToInteract();
+
+        IVioletID violetID = IVioletID(_violetID);
+        uint256 length = tokenIds.length;
+        for (uint256 i = 0; i < length; i++) {
+            bool hasStatus = violetID.hasStatus(account, tokenIds[i]);
+            if (hasStatus) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function _checkAllowedToInteract(address from, address to) internal view {
         // NID -> No Violet ID
         require(_checkIfAllowedToInteract(from) && _checkIfAllowedToInteract(to), 'NID');
@@ -50,23 +68,5 @@ abstract contract MauveCompliance is PeripheryImmutableState {
 
     function _isEmergencyModeActivated() internal view returns (bool) {
         return isEmergencyMode;
-    }
-
-    function setEmergencyMode(bool isEmergencyMode_) external onlyFactoryOwner {
-        isEmergencyMode = isEmergencyMode_;
-    }
-
-    function _checkIfAllowedToInteract(address account) internal view virtual returns (bool) {
-        uint256[] memory tokenIds = IMauveFactoryReduced(factory).getMauveTokenIdsAllowedToInteract();
-
-        IVioletID violetID = IVioletID(_violetID);
-        uint256 length = tokenIds.length;
-        for (uint256 i = 0; i < length; i++) {
-            bool hasStatus = violetID.hasStatus(account, tokenIds[i]);
-            if (hasStatus) {
-                return true;
-            }
-        }
-        return false;
     }
 }
