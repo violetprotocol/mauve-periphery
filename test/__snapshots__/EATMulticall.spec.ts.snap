@@ -1,5 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`EATMulticall gas cost of pay w/ multicall 1`] = `109612`;
+exports[`EATMulticall gas cost of pay w/ multicall 1`] = `107393`;
 
 exports[`EATMulticall gas cost of pay w/o multicall 1`] = `43364`;
