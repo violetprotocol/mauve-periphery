@@ -9,6 +9,10 @@ This repository contains the periphery smart contracts for the Mauve Protocol.
 For the lower level core contracts, see the [mauve-core](https://github.com/violetprotocol/mauve-core)
 repository.
 
+NonfungiblePositionManager operates a specific guarding mechanism to protect against unauthorised function calls. The diagram below illustrates this through an example where a user attempts to perform a multicall transaction.
+
+<img width="1713" alt="callstates" src="https://user-images.githubusercontent.com/89014495/236201268-fc618b4b-2de5-421a-bb3d-598aadc96a1b.png">
+
 ## Local deployment
 
 In order to deploy this code to a local testnet, you should install the npm package
