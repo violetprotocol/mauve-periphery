@@ -22,7 +22,7 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
 import { swapRouterBytes32 } from './shared/roles'
 
-describe('SwapRouter gas tests', function () {
+describe('MockSwapRouter gas tests', function () {
   this.timeout(40000)
   let wallet: Wallet
   let trader: Wallet

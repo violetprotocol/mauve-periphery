@@ -109,7 +109,7 @@ describe('NonfungiblePositionManager', () => {
   })
 
   beforeEach('load fixture', async () => {
-    ;;({
+    ;({
       nft,
       factory,
       tokens,
@@ -1488,7 +1488,7 @@ describe('NonfungiblePositionManager', () => {
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat1.v, eat1.r, eat1.s, expiry1, parameters)
       )
         .to.emit(reentrantToken, 'CustomError')
-        .withArgs('CFL')
+        .withArgs('NSMC')
     })
 
     it('gas transfers both', async () => {
@@ -2865,25 +2865,24 @@ describe('NonfungiblePositionManager', () => {
 
   describe('#EATVerifier', async () => {
     it('should let the factory owner update the EAT verifier address', async () => {
-      expect(await nft.verifier()).to.eq(verifier.address);
+      expect(await nft.verifier()).to.eq(verifier.address)
       // using other as hypothetical new verifier address
-      expect(other.address).to.not.eq(verifier.address);
+      expect(other.address).to.not.eq(verifier.address)
 
       await nft.updateVerifier(other.address)
       expect(await nft.verifier()).to.eq(other.address)
 
       // restore
       await nft.updateVerifier(verifier.address)
-    });
+    })
     it('should only let the factory owner update the EAT verifier address', async () => {
-      expect(await nft.verifier()).to.eq(verifier.address);
+      expect(await nft.verifier()).to.eq(verifier.address)
       // using other as hypothetical new verifier address
-      expect(other.address).to.not.eq(verifier.address);
+      expect(other.address).to.not.eq(verifier.address)
 
-      await expect(nft.connect(other).updateVerifier(other.address)).to.be.revertedWith("NFO")
-    });
-
-  });
+      await expect(nft.connect(other).updateVerifier(other.address)).to.be.revertedWith('NFO')
+    })
+  })
 
   describe('#positions', async () => {
     it('gas', async () => {

@@ -6,19 +6,20 @@ import '@violetprotocol/ethereum-access-token/contracts/AccessTokenConsumer.sol'
 import '../interfaces/IEATMulticall.sol';
 import './Multicall.sol';
 
+enum CallState {IDLE, IS_MULTICALLING, IS_CALLING_PROTECTED_FUNCTION}
+
 /// @title Ethereum Access Token Multicall
 /// @notice Enables calling multiple methods in a single call to the contract
 abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer {
     constructor(address _EATVerifier) AccessTokenConsumer(_EATVerifier) {}
 
-    // variables for re-entrancy protection
-    uint256 internal _isMulticalling;
-    uint256 internal _functionLock = 1;
+    // track call state for re-entrancy protection
+    CallState internal _callState;
 
     modifier multicalling() {
-        _isMulticalling = 2;
+        _callState = CallState.IS_MULTICALLING;
         _;
-        _isMulticalling = 1;
+        _callState = CallState.IDLE;
     }
 
     // be careful with external contract function calls made by functions you modify with this
@@ -26,15 +27,15 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     modifier onlySelfMulticall {
         // Requires to be in a multicall
         // NSMC -> Not self multi calling
-        require(_isMulticalling == 2 , 'NSMC');
+        require(_callState >= CallState.IS_MULTICALLING, 'NSMC');
 
         // Prevents cross-function re-entrancy
         // CFL -> Cross Function Lock
-        require(_functionLock == 1, 'CFL');
+        require(_callState == CallState.IS_MULTICALLING, 'CFL');
 
-        _functionLock = 2;
+        _callState = CallState.IS_CALLING_PROTECTED_FUNCTION;
         _;
-        _functionLock = 1;
+        _callState = CallState.IS_MULTICALLING;
     }
 
     function multicall(
