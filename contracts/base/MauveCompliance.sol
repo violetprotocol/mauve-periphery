@@ -17,26 +17,18 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     }
 
     modifier onlyFactoryOwner() {
-        address factoryOwner = IMauveFactoryReduced(factory).roles('owner');
-        // NFO -> Not Factory Owner
-        require(msg.sender == factoryOwner, 'NFO');
+        _checkFactoryOwner();
         _;
     }
 
     modifier onlyWhenNotEmergencyMode() {
-        // EMA -> Emergency Mode Activated
-        require(!_isEmergencyModeActivated(), 'EMA');
+        _checkIsNotInEmergencyMode();
         _;
     }
 
     modifier onlyAllowedToInteract(address from, address to) {
-        // NID -> No Violet ID
-        require(_checkIfAllowedToInteract(from) && _checkIfAllowedToInteract(to), 'NID');
+        _checkAllowedToInteract(from, to);
         _;
-    }
-
-    function _isEmergencyModeActivated() internal view returns (bool) {
-        return isEmergencyMode;
     }
 
     function setEmergencyMode(bool isEmergencyMode_) external onlyFactoryOwner {
@@ -55,5 +47,26 @@ abstract contract MauveCompliance is PeripheryImmutableState {
             }
         }
         return false;
+    }
+
+    function _checkAllowedToInteract(address from, address to) internal view {
+        // NID -> No Violet ID
+        require(_checkIfAllowedToInteract(from) && _checkIfAllowedToInteract(to), 'NID');
+    }
+
+    function _checkFactoryOwner() internal view {
+        address factoryOwner = IMauveFactoryReduced(factory).roles('owner');
+        // NFO -> Not Factory Owner
+        require(msg.sender == factoryOwner, 'NFO');
+    }
+
+
+    function _checkIsNotInEmergencyMode() internal view {
+        // EMA -> Emergency Mode Activated
+        require(!_isEmergencyModeActivated(), 'EMA');
+    }
+
+    function _isEmergencyModeActivated() internal view returns (bool) {
+        return isEmergencyMode;
     }
 }

@@ -2435,18 +2435,18 @@ describe('NonfungiblePositionManager', () => {
 
       it('fails with invalid signature', async () => {
         const { v, r, s } = await getPermitNFTSignature(wallet, nft, wallet.address, tokenId, 1)
-        await expect(nft.permit(wallet.address, tokenId, 1, v + 3, r, s)).to.be.revertedWith('Invalid signature')
+        await expect(nft.permit(wallet.address, tokenId, 1, v + 3, r, s)).to.be.revertedWith('IS')
       })
 
       it('fails with signature not from owner', async () => {
         const { v, r, s } = await getPermitNFTSignature(wallet, nft, wallet.address, tokenId, 1)
-        await expect(nft.permit(wallet.address, tokenId, 1, v, r, s)).to.be.revertedWith('Unauthorized')
+        await expect(nft.permit(wallet.address, tokenId, 1, v, r, s)).to.be.revertedWith('UN')
       })
 
       it('fails with expired signature', async () => {
         await nft.setTime(2)
         const { v, r, s } = await getPermitNFTSignature(other, nft, wallet.address, tokenId, 1)
-        await expect(nft.permit(wallet.address, tokenId, 1, v, r, s)).to.be.revertedWith('Permit expired')
+        await expect(nft.permit(wallet.address, tokenId, 1, v, r, s)).to.be.revertedWith('PE')
       })
 
       it('gas', async () => {
@@ -2514,7 +2514,7 @@ describe('NonfungiblePositionManager', () => {
         await nft.setTime(2)
         const { v, r, s } = await getPermitNFTSignature(other, nft, wallet.address, tokenId, 1)
         await testPositionNFTOwner.setOwner(other.address)
-        await expect(nft.permit(wallet.address, tokenId, 1, v, r, s)).to.be.revertedWith('Permit expired')
+        await expect(nft.permit(wallet.address, tokenId, 1, v, r, s)).to.be.revertedWith('PE')
       })
 
       it('gas', async () => {
@@ -2862,6 +2862,28 @@ describe('NonfungiblePositionManager', () => {
       })
     })
   })
+
+  describe('#EATVerifier', async () => {
+    it('should let the factory owner update the EAT verifier address', async () => {
+      expect(await nft.verifier()).to.eq(verifier.address);
+      // using other as hypothetical new verifier address
+      expect(other.address).to.not.eq(verifier.address);
+
+      await nft.updateVerifier(other.address)
+      expect(await nft.verifier()).to.eq(other.address)
+
+      // restore
+      await nft.updateVerifier(verifier.address)
+    });
+    it('should only let the factory owner update the EAT verifier address', async () => {
+      expect(await nft.verifier()).to.eq(verifier.address);
+      // using other as hypothetical new verifier address
+      expect(other.address).to.not.eq(verifier.address);
+
+      await expect(nft.connect(other).updateVerifier(other.address)).to.be.revertedWith("NFO")
+    });
+
+  });
 
   describe('#positions', async () => {
     it('gas', async () => {

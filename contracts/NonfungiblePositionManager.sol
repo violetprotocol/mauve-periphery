@@ -84,6 +84,10 @@ contract NonfungiblePositionManager is
     // The same mutex is shared with functions with the `onlySelfMulticall` modifier.
     modifier unlockFunction() {
         _;
+        _removeFunctionLock();
+    }
+
+    function _removeFunctionLock() internal {
         if (!_isEmergencyModeActivated()) {
             _functionLock = 1;
         }
@@ -215,12 +219,6 @@ contract NonfungiblePositionManager is
         emit IncreaseLiquidity(tokenId, liquidity, amount0, amount1);
     }
 
-    modifier isAuthorizedForToken(uint256 tokenId) {
-        // NA -> Not approved
-        _checkAuthorizedForToken(tokenId);
-        _;
-    }
-
     function _checkAuthorizedForToken(uint256 tokenId) internal view virtual {
         // NA -> Not approved or owner
         require(_isApprovedOrOwner(msg.sender, tokenId), 'NA');
@@ -301,11 +299,11 @@ contract NonfungiblePositionManager is
         external
         payable
         override
-        isAuthorizedForToken(params.tokenId)
         checkDeadline(params.deadline)
         unlockFunction
         returns (uint256 amount0, uint256 amount1)
     {
+        _checkAuthorizedForToken(params.tokenId);
         checkAuthorization(ownerOf(params.tokenId));
         require(params.liquidity > 0);
         Position storage position = _positions[params.tokenId];
@@ -318,7 +316,8 @@ contract NonfungiblePositionManager is
         IMauvePool pool = IMauvePool(PoolAddress.computeAddress(factory, poolKey));
         (amount0, amount1) = pool.burn(position.tickLower, position.tickUpper, params.liquidity);
 
-        require(amount0 >= params.amount0Min && amount1 >= params.amount1Min, 'Price slippage check');
+        //PSC -> Price slippage check
+        require(amount0 >= params.amount0Min && amount1 >= params.amount1Min, 'PSC');
 
         bytes32 positionKey = PositionKey.compute(address(this), position.tickLower, position.tickUpper);
         // this is now updated to the current transaction
@@ -368,10 +367,10 @@ contract NonfungiblePositionManager is
         external
         payable
         override
-        isAuthorizedForToken(params.tokenId)
         unlockFunction
         returns (uint256 amount0, uint256 amount1)
     {
+        _checkAuthorizedForToken(params.tokenId);
         checkAuthorization(ownerOf(params.tokenId));
         return _collect(params);
     }
@@ -438,7 +437,8 @@ contract NonfungiblePositionManager is
     }
 
     /// @inheritdoc INonfungiblePositionManager
-    function burn(uint256 tokenId) external payable override isAuthorizedForToken(tokenId) unlockFunction {
+    function burn(uint256 tokenId) external payable override unlockFunction {
+        _checkAuthorizedForToken(tokenId);
         checkAuthorization(ownerOf(tokenId));
         Position storage position = _positions[tokenId];
         // NC -> Not cleared
@@ -507,5 +507,9 @@ contract NonfungiblePositionManager is
         uint256 tokenId
     ) public virtual requiresAuth(v, r, s, expiry) onlyWhenNotEmergencyMode {
         super.safeTransferFrom(from, to, tokenId);
+    }
+
+    function updateVerifier(address newVerifier) onlyFactoryOwner external {
+        super.setVerifier(newVerifier);
     }
 }

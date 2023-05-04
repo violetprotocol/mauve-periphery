@@ -1579,10 +1579,10 @@
   resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token-helpers/-/ethereum-access-token-helpers-0.2.0.tgz#e826309674c1dc8e47c2c8f00664ad0b0c9a3ea7"
   integrity sha512-YrQSEFmCwnrjKTG3oS9bbA1CwzGQB95EpH+eYPIZ8UQFTO11+XOWlFq6RhZ6MhvSpJK5xxQsvp2GsBRmj0yeZg==
 
-"@violetprotocol/ethereum-access-token@0.2.0-sol07":
-  version "0.2.0-sol07"
-  resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token/-/ethereum-access-token-0.2.0-sol07.tgz#3309332b42c13128453361f72810f3ca49851591"
-  integrity sha512-Lq8v7fiSM+hNjewguOSrBvW2ewqkiNdlaX61LsFViP6LD3jfrND8jMeLr3Bau1WEZUooNRaRsKTsRuCIGrrCkg==
+"@violetprotocol/ethereum-access-token@0.2.2-sol07":
+  version "0.2.2-sol07"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token/-/ethereum-access-token-0.2.2-sol07.tgz#71801e4e92f4cdb8b59eec9f81986443da96aaaa"
+  integrity sha512-ltLpdD/w9lnmhP4CrT6RAiNrF+gYYSjvK/Y3a7lbW+ikUX+kPn9jaCH2pNxz6Ebvxl2tN8SEq6suxFDPmA/B4g==
 
 "@violetprotocol/mauve-core@1.2.3":
   version "1.2.3"
