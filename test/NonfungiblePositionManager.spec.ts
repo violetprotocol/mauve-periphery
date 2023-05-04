@@ -1488,7 +1488,7 @@ describe('NonfungiblePositionManager', () => {
           ['multicall(uint8,bytes32,bytes32,uint256,bytes[])'](eat1.v, eat1.r, eat1.s, expiry1, parameters)
       )
         .to.emit(reentrantToken, 'CustomError')
-        .withArgs('NSMC')
+        .withArgs('CFL')
     })
 
     it('gas transfers both', async () => {

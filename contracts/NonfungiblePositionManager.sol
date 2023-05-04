@@ -104,8 +104,12 @@ contract NonfungiblePositionManager is
         if (_isEmergencyModeActivated()) {
             require(_checkIfAllowedToInteract(addressToCheck), 'NID');
         } else {
-            // Called through EAT Multicall
-            require(_callState == CallState.IS_MULTICALLING, 'NSMC');
+            // Prevents non-multicall calls
+            if (_callState == CallState.IDLE) revert('NSMC');
+
+            // Prevents cross-function re-entrancy
+            // CFL -> Cross Function Lock
+            if (_callState != CallState.IS_MULTICALLING) revert('CFL');
             _callState = CallState.IS_CALLING_PROTECTED_FUNCTION;
         }
     }
