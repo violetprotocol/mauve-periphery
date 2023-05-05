@@ -1589,10 +1589,10 @@
   resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-core/-/mauve-core-1.2.3.tgz#61e00765959f7e690f471905418fad8f3a2cc61a"
   integrity sha512-iZjTNvQj/mvGJBdaAVwWfyjiqdI49NKL4H5Kq8SQFpJR/d9QivcfjQuh/3R8TNCgJqGsjRd6HucfcgVQICQqUw==
 
-"@violetprotocol/violetid@1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@violetprotocol/violetid/-/violetid-1.2.2.tgz#3d626a04c92e611cb07b9f4e5f61ec50995329b8"
-  integrity sha512-AKJi4KTmFwMekxFWfks2hW6JZyhgX4oF1oUpnHpTbdSBCuPTbqTAdSc7nnrJfzT+vY1i6i1kmwl2vc0+Ficknw==
+"@violetprotocol/violetid@1.2.3":
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/violetid/-/violetid-1.2.3.tgz#9682b09f01c80a21d7ff00b616846b1439fbeb3a"
+  integrity sha512-W3DzKCSIsdEfFgSBMlZB9gNYt3m0I9DIYmsiQ2nerBJGo5o5H6+1jLf+qW1ZVSKdqEswH8haVBReS7FqPBBwNw==
   dependencies:
     "@openzeppelin/contracts-upgradeable" "^4.8.1"
 
