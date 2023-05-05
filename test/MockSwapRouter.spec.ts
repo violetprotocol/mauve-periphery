@@ -19,7 +19,7 @@ import { computePoolAddress } from './shared/computePoolAddress'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
 import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
 
-describe('SwapRouter', function () {
+describe('MockSwapRouter', function () {
   this.timeout(40000)
   let wallet: Wallet
   let trader: Wallet
