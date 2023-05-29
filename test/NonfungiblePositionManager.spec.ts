@@ -31,7 +31,7 @@ import poolAtAddress from './shared/poolAtAddress'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { sortedTokens } from './shared/tokenSort'
-import { generateAccessToken, generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { generateAccessToken, generateAccessTokenForMulticall } from '../utils/generateAccessToken'
 
 describe('NonfungiblePositionManager', () => {
   let wallets: Wallet[]

@@ -24,7 +24,7 @@ import { expect } from './shared/expect'
 
 import { abi as IMauvePoolABI } from '@violetprotocol/mauve-core/artifacts/contracts/interfaces/IMauvePool.sol/IMauvePool.json'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
-import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { generateAccessTokenForMulticall } from '../utils/generateAccessToken'
 
 describe('PositionValue', async () => {
   const [...wallets] = waffle.provider.getWallets()
