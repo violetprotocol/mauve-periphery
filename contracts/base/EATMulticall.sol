@@ -27,11 +27,12 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
     modifier onlySelfMulticall {
         // Requires to be in a multicall
         // NSMC -> Not self multi calling
-        if (_callState == CallState.IDLE) revert('NSMC');
+        CallState callState = _callState;
+        if (callState == CallState.IDLE) revert('NSMC');
 
         // Prevents cross-function re-entrancy
         // CFL -> Cross Function Lock
-        if (_callState != CallState.IS_MULTICALLING) revert('CFL');
+        if (callState != CallState.IS_MULTICALLING) revert('CFL');
 
         _callState = CallState.IS_CALLING_PROTECTED_FUNCTION;
         _;
