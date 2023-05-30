@@ -20,7 +20,7 @@ import { encodePath } from './shared/path'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { generateAccessTokenForMulticall } from '../utils'
-import { swapRouterBytes32 } from './shared/roles'
+import { swapRouterBytes32 } from '../utils/roles'
 
 describe('MockSwapRouter gas tests', function () {
   this.timeout(40000)

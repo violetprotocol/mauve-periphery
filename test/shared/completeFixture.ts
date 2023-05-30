@@ -15,7 +15,7 @@ import {
 import { CreatePoolIfNecessary, createPoolIfNecessary } from './createPoolIfNecessary'
 import { parseEther } from 'ethers/lib/utils'
 import { EAT_ISSUER_PK } from './eatSigner'
-import { positionManagerBytes32 } from './roles'
+import { positionManagerBytes32 } from '../../utils/roles'
 
 export type Domain = {
   name: string
