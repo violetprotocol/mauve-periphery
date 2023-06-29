@@ -2,7 +2,7 @@
   "name": "@violetprotocol/mauve-periphery",
   "description": "Peripheral smart contracts for interacting with Mauve",
   "license": "GPL-2.0-or-later",
-  "version": "1.8.6",
+  "version": "1.8.7",
   "homepage": "https://mauve.org",
   "keywords": [
     "mauve",
@@ -16,6 +16,8 @@
     "contracts/base",
     "contracts/interfaces",
     "contracts/libraries",
+    "contracts/lens",
+    "contracts/*.sol",
     "artifacts/contracts/**/*.json",
     "!artifacts/contracts/**/*.dbg.json",
     "!artifacts/contracts/test/**/*",
