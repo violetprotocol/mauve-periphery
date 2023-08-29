@@ -40,7 +40,7 @@ abstract contract MauveCompliance is PeripheryImmutableState {
 
         IVioletID violetID = IVioletID(_violetID);
         uint256 length = tokenIds.length;
-        for (uint256 i = 0; i < length; i++) {
+        for (uint256 i = 0; i < length; ++i) {
             bool hasStatus = violetID.hasStatus(account, tokenIds[i]);
             if (hasStatus) {
                 return true;
