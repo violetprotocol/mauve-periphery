@@ -35,6 +35,9 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         isEmergencyMode = isEmergencyMode_;
     }
 
+    /// @dev Checks whether an address is allowed to interact with Mauve.
+    // Used as an alternative to the EAT system, it verifies the compliance status of an account by
+    // checking that it owns at least one of the "tokenIds" necessary to be allowed to interact.
     function _checkIfAllowedToInteract(address account) internal view virtual returns (bool) {
         uint256[] memory tokenIds = IMauveFactoryReduced(factory).getMauveTokenIdsAllowedToInteract();
 
@@ -49,17 +52,18 @@ abstract contract MauveCompliance is PeripheryImmutableState {
         return false;
     }
 
+    /// @dev Verifies that both the `from` and `to` addresses are allowed to interact with Mauve.
     function _checkAllowedToInteract(address from, address to) internal view {
         // NID -> No Violet ID
         require(_checkIfAllowedToInteract(from) && _checkIfAllowedToInteract(to), 'NID');
     }
 
+    /// @dev Checks that `msg.sender` is the `factoryOwner`.
     function _checkFactoryOwner() internal view {
         address factoryOwner = IMauveFactoryReduced(factory).roles('owner');
         // NFO -> Not Factory Owner
         require(msg.sender == factoryOwner, 'NFO');
     }
-
 
     function _checkIsNotInEmergencyMode() internal view {
         // EMA -> Emergency Mode Activated

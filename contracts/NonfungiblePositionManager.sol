@@ -511,6 +511,7 @@ contract NonfungiblePositionManager is
         super.safeTransferFrom(from, to, tokenId);
     }
 
+    /// @dev Updates the EAT verifier contract used for EAT validation
     function updateVerifier(address newVerifier) external onlyFactoryOwner {
         super.setVerifier(newVerifier);
     }

@@ -9,7 +9,8 @@ import './Multicall.sol';
 enum CallState {IDLE, IS_MULTICALLING, IS_CALLING_PROTECTED_FUNCTION}
 
 /// @title Ethereum Access Token Multicall
-/// @notice Enables calling multiple methods in a single call to the contract
+/// @notice Enables calling multiple methods in a single call to the contract using
+// EATs for access control
 abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer {
     constructor(address _EATVerifier) AccessTokenConsumer(_EATVerifier) {}
 
@@ -39,6 +40,7 @@ abstract contract EATMulticall is Multicall, IEATMulticall, AccessTokenConsumer 
         _callState = CallState.IS_MULTICALLING;
     }
 
+    /// @inheritdoc IEATMulticall
     function multicall(
         uint8 v,
         bytes32 r,
