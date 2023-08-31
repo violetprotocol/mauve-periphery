@@ -354,7 +354,8 @@ contract NonfungiblePositionManager is
         emit DecreaseLiquidity(params.tokenId, params.liquidity, amount0, amount1);
     }
 
-    function collectAmounts(CollectParams calldata params) external {
+    /// @inheritdoc INonfungiblePositionManager
+    function collectAmounts(CollectParams calldata params) external override {
         (uint256 amount0, uint256 amount1) = _collect(params);
         bytes memory encodedReturn = abi.encodeWithSignature('CollectAmounts(uint256,uint256)', amount0, amount1);
         // Adds the correct offset to the pointer, with length 0x44 that contains the revert reason
@@ -511,8 +512,8 @@ contract NonfungiblePositionManager is
         super.safeTransferFrom(from, to, tokenId);
     }
 
-    /// @dev Updates the EAT verifier contract used for EAT validation
-    function updateVerifier(address newVerifier) external onlyFactoryOwner {
+    /// @inheritdoc INonfungiblePositionManager
+    function updateVerifier(address newVerifier) external override onlyFactoryOwner {
         super.setVerifier(newVerifier);
     }
 }

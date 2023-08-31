@@ -168,6 +168,15 @@ interface INonfungiblePositionManager is
         uint128 amount1Max;
     }
 
+    /// @notice Returns the amount of fees owed for a specific position.
+    /// @dev This function is not gated with an EAT but always reverts, as it's meant to be
+    /// called off-chain to display the amounts of fees available to collect.
+    /// @param params tokenId The ID of the NFT for which tokens are being collected,
+    /// recipient The account that should receive the tokens,
+    /// amount0Max The maximum amount of token0 to collect,
+    /// amount1Max The maximum amount of token1 to collect
+    function collectAmounts(CollectParams calldata params) external;
+
     /// @notice Collects up to a maximum amount of fees owed to a specific position to the recipient
     /// @dev This function must be called via EATMulticall, and cannot call - or be called by - a function similarly protected
     //  with `_functionLock`.
@@ -185,4 +194,8 @@ interface INonfungiblePositionManager is
     //  with `_functionLock`.
     /// @param tokenId The ID of the token that is being burned
     function burn(uint256 tokenId) external payable;
+
+    /// @dev Updates the EAT verifier contract used for EAT validation
+    /// It can only be called by the Factory Owner.
+    function updateVerifier(address newVerifier) external;
 }
