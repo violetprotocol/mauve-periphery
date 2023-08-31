@@ -5,10 +5,10 @@ import '@openzeppelin/contracts/token/ERC1155/ERC1155.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '@openzeppelin/contracts/utils/Pausable.sol';
 import '@openzeppelin/contracts/token/ERC1155/ERC1155Burnable.sol';
-import '../interfaces/external/IVioletID.sol';
+import '../interfaces/external/IVioletIDReduced.sol';
 
 // Mock the real VioletID contract just for testing in this repository.
-contract VioletIDTest is ERC1155, Ownable, Pausable, ERC1155Burnable, IVioletID {
+contract VioletIDTest is ERC1155, Ownable, Pausable, ERC1155Burnable, IVioletIDReduced {
     /// Mocked events are identical to VioletID
     event GrantedStatus(address account, uint256 tokenId);
     event RevokedStatus(address account, uint256 tokenId, bytes reason);
