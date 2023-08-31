@@ -41,11 +41,11 @@ export const routerFixture: Fixture<{
   const verifierFactory = await ethers.getContractFactory('AccessTokenVerifier')
   const verifier = <AccessTokenVerifier>await verifierFactory.deploy(signer.address)
 
-  const router = await(await ethers.getContractFactory('MockTimeSwapRouter')).deploy(
+  const router = (await (await ethers.getContractFactory('MockTimeSwapRouter')).deploy(
     factory.address,
     weth9.address,
     verifier.address
-  ) as MockTimeSwapRouter
+  )) as MockTimeSwapRouter
   await factory.setRole(router.address, swapRouterBytes32)
 
   return { factory, weth9, router, verifier }
@@ -53,6 +53,6 @@ export const routerFixture: Fixture<{
 
 export const violetIDFixture: Fixture<Contract> = async ([wallet], provider) => {
   const factory = await ethers.getContractFactory('VioletIDTest')
-  const contract = await factory.deploy('mockURI')
+  const contract = await factory.deploy()
   return contract
 }
