@@ -3,17 +3,17 @@ pragma solidity =0.7.6;
 pragma abicoder v2;
 
 import '../interfaces/external/IMauveFactoryReduced.sol';
-import '../interfaces/external/IVioletID.sol';
+import '../interfaces/external/IVioletIDReduced.sol';
 import './PeripheryImmutableState.sol';
 
 /// @title Mauve Compliance
 /// @notice Defines extra rules for access control beyond what is provided by Violet EATs
 abstract contract MauveCompliance is PeripheryImmutableState {
-    address private immutable _violetID;
+    IVioletIDReduced private immutable _violetID;
     bool public isEmergencyMode = false;
 
     constructor(address _violetId) {
-        _violetID = _violetId;
+        _violetID = IVioletIDReduced(_violetId);
     }
 
     modifier onlyFactoryOwner() {
@@ -41,10 +41,9 @@ abstract contract MauveCompliance is PeripheryImmutableState {
     function _checkIfAllowedToInteract(address account) internal view virtual returns (bool) {
         uint256[] memory tokenIds = IMauveFactoryReduced(factory).getMauveTokenIdsAllowedToInteract();
 
-        IVioletID violetID = IVioletID(_violetID);
         uint256 length = tokenIds.length;
         for (uint256 i = 0; i < length; ++i) {
-            bool hasStatus = violetID.hasStatus(account, tokenIds[i]);
+            bool hasStatus = _violetID.hasStatus(account, uint8(tokenIds[i]));
             if (hasStatus) {
                 return true;
             }

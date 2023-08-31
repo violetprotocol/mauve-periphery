@@ -1271,10 +1271,10 @@
     "@types/sinon-chai" "^3.2.3"
     "@types/web3" "1.0.19"
 
-"@openzeppelin/contracts-upgradeable@^4.8.1":
-  version "4.8.2"
-  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.8.2.tgz#edef522bdbc46d478481391553bababdd2199e27"
-  integrity sha512-zIggnBwemUmmt9IS73qxi+tumALxCY4QEs3zLCII78k0Gfse2hAOdAkuAeLUzvWUpneMUfFE5sGHzEUSTvn4Ag==
+"@openzeppelin/contracts-upgradeable@^4.9.3":
+  version "4.9.3"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.9.3.tgz#ff17a80fb945f5102571f8efecb5ce5915cc4811"
+  integrity sha512-jjaHAVRMrE4UuZNfDwjlLGDxTHWIOwTJS2ldnc278a0gevfXfPr8hxKEVBGFBE96kl2G3VHDZhUimw/+G3TG2A==
 
 "@openzeppelin/contracts@3.4.2-solc-0.7":
   version "3.4.2-solc-0.7"
@@ -1584,17 +1584,25 @@
   resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token/-/ethereum-access-token-0.2.2-sol07.tgz#71801e4e92f4cdb8b59eec9f81986443da96aaaa"
   integrity sha512-ltLpdD/w9lnmhP4CrT6RAiNrF+gYYSjvK/Y3a7lbW+ikUX+kPn9jaCH2pNxz6Ebvxl2tN8SEq6suxFDPmA/B4g==
 
+"@violetprotocol/ethereum-access-token@0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/ethereum-access-token/-/ethereum-access-token-0.3.2.tgz#387c6ecf799063e767422dfa31f8ce73c87692e0"
+  integrity sha512-XfbVNLKxOPi2O0VFCnLjcDk5MCIMACbxwPLv3dlD1p/QmBRKMS8ZQg9mxb+iwvo2DiWf3pcYyY6nWWHc8L715Q==
+  dependencies:
+    "@openzeppelin/contracts-upgradeable" "^4.9.3"
+
 "@violetprotocol/mauve-core@1.2.5":
   version "1.2.5"
   resolved "https://registry.yarnpkg.com/@violetprotocol/mauve-core/-/mauve-core-1.2.5.tgz#cfa211a979df93e5318c4b22c6f89a6b18836cda"
   integrity sha512-EtiBSbR4Ic1E4Uw2oz5p6nKXUtNrjuZWCymUZHYeJs/0HQXYnNKKU3x1mkRLLzW10QHPxZKYEGWzjoK3J9iyLA==
 
-"@violetprotocol/violetid@1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@violetprotocol/violetid/-/violetid-1.2.3.tgz#9682b09f01c80a21d7ff00b616846b1439fbeb3a"
-  integrity sha512-W3DzKCSIsdEfFgSBMlZB9gNYt3m0I9DIYmsiQ2nerBJGo5o5H6+1jLf+qW1ZVSKdqEswH8haVBReS7FqPBBwNw==
+"@violetprotocol/violetid@1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@violetprotocol/violetid/-/violetid-1.3.2.tgz#7f2f652b2a8c3e87b36ae72f959b8e74b488ac69"
+  integrity sha512-i/6cACcxz2NFh07gG4obbrKEfE8jR130bYawHBnLfv+Xa/VBSbOXo1ys2sUExGbcIZ3bFCvdlWXsJXUsr6n7zw==
   dependencies:
-    "@openzeppelin/contracts-upgradeable" "^4.8.1"
+    "@openzeppelin/contracts-upgradeable" "^4.9.3"
+    "@violetprotocol/ethereum-access-token" "0.3.2"
 
 "@yarnpkg/lockfile@^1.1.0":
   version "1.1.0"
