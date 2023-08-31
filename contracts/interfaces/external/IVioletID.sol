@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-/// @title VioletID interface
-/// @notice Allows checking for VioletID registration status to allow or disallow accounts
+/// @title A reduced VioletID interface
+/// @notice Allows checking for VioletID statuses
 /// @dev Make sure to keep this in sync with the interface from @violetprotocol/violetid!
 pragma solidity >=0.7.5;
 
