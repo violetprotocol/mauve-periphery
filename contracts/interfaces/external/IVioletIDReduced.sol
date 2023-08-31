@@ -5,5 +5,5 @@ pragma solidity >=0.7.5;
 /// @notice Allows checking for VioletID statuses
 /// @dev Make sure to keep this in sync with the interface from @violetprotocol/violetid!
 interface IVioletIDReduced {
-    function hasStatus(address account, uint256 tokenId) external view returns (bool);
+    function hasStatus(address account, uint8 tokenId) external view returns (bool);
 }
