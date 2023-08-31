@@ -10,7 +10,7 @@ import './PeripheryImmutableState.sol';
 /// @notice Defines extra rules for access control beyond what is provided by Violet EATs
 abstract contract MauveCompliance is PeripheryImmutableState {
     address private immutable _violetID;
-    bool private isEmergencyMode = false;
+    bool public isEmergencyMode = false;
 
     constructor(address _violetId) {
         _violetID = _violetId;
