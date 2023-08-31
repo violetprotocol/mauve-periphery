@@ -13,7 +13,7 @@ const LOW_OPTIMIZER_COMPILER_SETTINGS = {
     evmVersion: 'istanbul',
     optimizer: {
       enabled: true,
-      runs: 555,
+      runs: 549,
     },
     metadata: {
       bytecodeHash: 'none',
@@ -77,6 +77,20 @@ const SOLIDITY_08_COMPILTER = {
   },
 }
 
+const SOLIDITY_0820_COMPILTER = {
+  version: '0.8.20',
+  settings: {
+    evmVersion: 'istanbul',
+    optimizer: {
+      enabled: true,
+      runs: 1_000_000,
+    },
+    metadata: {
+      bytecodeHash: 'none',
+    },
+  },
+}
+
 export default {
   networks: {
     hardhat: {
@@ -127,6 +141,7 @@ export default {
       'contracts/NonfungibleTokenPositionDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/libraries/NFTDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/test/CollectAmountsTest.sol': SOLIDITY_08_COMPILTER,
+      'contracts/test/VioletIDTest.sol': SOLIDITY_0820_COMPILTER,
     },
   },
   watcher: {
