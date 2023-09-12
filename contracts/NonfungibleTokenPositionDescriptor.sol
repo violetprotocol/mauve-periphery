@@ -11,7 +11,6 @@ import './interfaces/IERC20Metadata.sol';
 import './libraries/PoolAddress.sol';
 import './libraries/NFTDescriptor.sol';
 import './libraries/TokenRatioSortOrder.sol';
-// This library was originally from '@uniswap/lib/contracts/libraries/SafeERC20Namer.sol'
 import './libraries/SafeERC20Namer.sol';
 
 /// @title Describes NFT token positions
