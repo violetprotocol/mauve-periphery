@@ -10,7 +10,7 @@ import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
-import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { generateAccessTokenForMulticall } from '../utils/generateAccessToken'
 
 describe('TickLens', () => {
   let wallets: Wallet[]

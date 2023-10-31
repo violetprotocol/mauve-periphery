@@ -4,7 +4,7 @@ import { FeeAmount, TICK_SPACINGS } from './constants'
 import { CreatePoolIfNecessary } from './createPoolIfNecessary'
 import { encodePriceSqrt } from './encodePriceSqrt'
 import { getMaxTick, getMinTick } from './ticks'
-import { generateAccessTokenForMulticall } from './generateAccessToken'
+import { generateAccessTokenForMulticall } from '../../utils'
 import { Domain } from './completeFixture'
 
 export async function createPool(

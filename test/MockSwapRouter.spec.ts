@@ -17,7 +17,7 @@ import { encodePath } from './shared/path'
 import { getMaxTick, getMinTick } from './shared/ticks'
 import { computePoolAddress } from './shared/computePoolAddress'
 import { CreatePoolIfNecessary } from './shared/createPoolIfNecessary'
-import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { generateAccessTokenForMulticall } from '../utils/'
 
 describe('MockSwapRouter', function () {
   this.timeout(40000)

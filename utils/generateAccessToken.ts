@@ -1,15 +1,14 @@
-import { Wallet, BigNumber } from 'ethers'
+import { Contract } from '@ethersproject/contracts'
+import { ethers, Wallet, BigNumber } from 'ethers'
 import { messages, utils } from '@violetprotocol/ethereum-access-token-helpers'
-import { EATMulticall } from '../../typechain'
 import { splitSignature } from 'ethers/lib/utils'
-import { ethers } from 'hardhat'
 
 export const generateAccessToken = async (
   signer: Wallet,
   domain: messages.Domain,
   functionName: string,
   caller: Wallet,
-  contract: EATMulticall,
+  contract: Contract,
   parameters: any[],
   expiry?: BigNumber
 ) => {
@@ -32,7 +31,7 @@ export const generateAccessTokenForMulticall = async (
   signer: Wallet,
   domain: messages.Domain,
   caller: Wallet,
-  contract: EATMulticall,
+  contract: Contract,
   parameters: any[],
   expiry?: BigNumber
 ) => {
@@ -57,7 +56,7 @@ export const generateAccessTokenForMulticallWithDeadline = async (
   signer: Wallet,
   domain: messages.Domain,
   caller: Wallet,
-  contract: EATMulticall,
+  contract: Contract,
   parameters: any[],
   expiry?: BigNumber
 ) => {

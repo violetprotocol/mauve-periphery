@@ -1,6 +1,6 @@
 import { abi as IMauvePoolABI } from '@violetprotocol/mauve-core/artifacts/contracts/interfaces/IMauvePool.sol/IMauvePool.json'
 import { Fixture } from 'ethereum-waffle'
-import { BigNumber, constants, ContractTransaction, Wallet } from 'ethers'
+import { BigNumber, constants, Contract, ContractTransaction, Wallet } from 'ethers'
 import { ethers, waffle } from 'hardhat'
 import {
   IMauvePool,
@@ -19,8 +19,8 @@ import { expect } from './shared/expect'
 import { encodePath } from './shared/path'
 import snapshotGasCost from './shared/snapshotGasCost'
 import { getMaxTick, getMinTick } from './shared/ticks'
-import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
-import { swapRouterBytes32 } from './shared/roles'
+import { generateAccessTokenForMulticall } from '../utils'
+import { swapRouterBytes32 } from '../utils/roles'
 
 describe('MockSwapRouter gas tests', function () {
   this.timeout(40000)

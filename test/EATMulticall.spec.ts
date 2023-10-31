@@ -1,13 +1,13 @@
-import { BigNumber, Wallet } from 'ethers'
+import { Wallet } from 'ethers'
 import { ethers } from 'hardhat'
 import { TestEATMulticall } from '../typechain/TestEATMulticall'
 import { AccessTokenVerifier } from '../typechain/AccessTokenVerifier'
 import { expect } from './shared/expect'
-import { utils, messages } from '@violetprotocol/ethereum-access-token-helpers'
+import { messages } from '@violetprotocol/ethereum-access-token-helpers'
 
 import snapshotGasCost from './shared/snapshotGasCost'
-import { parseEther, splitSignature } from 'ethers/lib/utils'
-import { generateAccessTokenForMulticall } from './shared/generateAccessToken'
+import { parseEther } from 'ethers/lib/utils'
+import { generateAccessTokenForMulticall } from '../utils/generateAccessToken'
 
 // generated randomly from privatekeys.pw
 // DO NOT USE IN SENSITIVE PLACES
@@ -45,7 +45,7 @@ describe('EATMulticall', async () => {
 
   beforeEach('create multicall', async () => {
     const multicallTestFactory = await ethers.getContractFactory('TestEATMulticall')
-    testMulticall = (await multicallTestFactory.deploy(verifier.address)) as TestEATMulticall
+    testMulticall = await multicallTestFactory.deploy(verifier.address)
   })
 
   it('revert messages are returned', async () => {

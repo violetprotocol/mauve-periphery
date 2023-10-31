@@ -9,7 +9,7 @@ import { AccessTokenVerifier, IMauveFactoryReduced, IWETH9, MockTimeSwapRouter }
 import WETH9 from '../contracts/WETH9.json'
 import { Contract } from '@ethersproject/contracts'
 import { EAT_ISSUER_PK } from './eatSigner'
-import { swapRouterBytes32 } from './roles'
+import { swapRouterBytes32 } from '../../utils/roles'
 
 const wethFixture: Fixture<{ weth9: IWETH9 }> = async ([wallet]) => {
   const weth9 = (await waffle.deployContract(wallet, {

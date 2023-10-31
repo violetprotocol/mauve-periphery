@@ -13,6 +13,7 @@
     "url": "https://github.com/violetprotocol/mauve-periphery"
   },
   "files": [
+    "utils/**/*",
     "contracts/base",
     "contracts/interfaces",
     "contracts/libraries",
